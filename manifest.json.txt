@@ -1,0 +1,20 @@
+{
+  "name": "IMPERSILVATECH - Loja Online",
+  "short_name": "IMPERSILVA",
+  "description": "A tua loja online de confiança em Angola",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0d0d1a",
+  "theme_color": "#ff6b9d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "pt-AO",
+  "dir": "ltr"
+}

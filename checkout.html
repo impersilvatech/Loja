@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }
+(function(){var t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Finalizar Pedido</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/estilo.css"/>
+<style>
+.steps{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:20px}
+.step{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;flex:1}
+.step::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
+.step:last-child::after{display:none}
+.step-n{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:.72rem;z-index:1;transition:var(--tr)}
+.step-n.done{background:var(--teal);color:#0d0d1a}
+.step-n.on{background:var(--grad);color:#fff}
+.step-n.off{background:var(--border);color:var(--muted)}
+.step-lbl{font-size:.58rem;color:var(--muted);text-align:center}
+.step-lbl.on{color:var(--pink)}
+.auth-info{background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted)}
+.auth-info i{color:var(--teal);font-size:1.1rem;flex-shrink:0}
+.guest-info{background:rgba(255,107,157,.06);border:1px solid rgba(255,107,157,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:10px}
+.guest-info i{color:var(--pink);flex-shrink:0}
+.guest-info a{color:var(--pink);cursor:pointer}
+select.fi option{background:var(--bg2);color:var(--white)}
+.ent-opts{display:flex;gap:8px;margin-bottom:10px}
+.eopt{flex:1;padding:10px 8px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);text-align:center;cursor:pointer;transition:var(--tr)}
+.eopt.on{border-color:var(--pink);background:rgba(255,107,157,.07)}
+.eopt-ico{font-size:1.2rem;margin-bottom:3px}
+.eopt-lbl{font-family:var(--ft);font-size:.68rem}
+.eopt-preco{font-size:.62rem;color:var(--muted)}
+.item-mini{display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg2);border-radius:10px;margin-bottom:7px}
+.im-img{width:42px;height:42px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:1.3rem}
+.im-img img{width:100%;height:100%;object-fit:cover}
+.im-nome{flex:1;font-family:var(--ft);font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.im-preco{font-family:var(--ft);font-size:.82rem;color:var(--pink);flex-shrink:0}
+.rl{display:flex;justify-content:space-between;font-size:.86rem;color:var(--muted);margin-bottom:7px}
+.rl.total{padding-top:10px;margin-top:4px;border-top:1px solid var(--border);font-family:var(--ft);font-size:1.05rem;color:var(--white)}
+.rl.total span:last-child{color:var(--pink)}
+.btn-final{width:100%;padding:13px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.92rem;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,157,.3);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--tr)}
+.btn-final:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-final:disabled{opacity:.4;cursor:not-allowed;transform:none}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-nome">Finalizar Pedido</div>
+  <div style="width:34px"></div>
+</header>
+
+<div class="ctn">
+  <div class="steps">
+    <div class="step"><div class="step-n done"><i class="fa-solid fa-check"></i></div><div class="step-lbl">Carrinho</div></div>
+    <div class="step"><div class="step-n on">2</div><div class="step-lbl on">Dados</div></div>
+    <div class="step"><div class="step-n off">3</div><div class="step-lbl">Confirmação</div></div>
+  </div>
+
+  <div id="authInfo" class="auth-info" style="display:none">
+    <i class="fa-solid fa-circle-check"></i>
+    <span>Sessão activa como <strong id="authNome"></strong> &mdash; dados preenchidos automaticamente.</span>
+  </div>
+  <div id="guestInfo" class="guest-info" style="display:none">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>A encomendar como convidado. <a onclick="location.href='conta.html'">Entrar / criar conta <i class="fa-solid fa-arrow-right"></i></a></span>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><i class="fa-solid fa-user"></i> Dados Pessoais</div>
+    <div class="fg"><label>Nome completo *</label><input class="fi" type="text" id="fNome" placeholder="O seu nome"/></div>
+    <div class="row2">
+      <div class="fg"><label>Email *</label><input class="fi" type="email" id="fEmail" placeholder="email@..."/></div>
+      <div class="fg"><label>Telefone *</label><input class="fi" type="tel" id="fTel" placeholder="+244 9XX..."/></div>
+    </div>
+    <div class="fg"><label>WhatsApp</label><input class="fi" type="tel" id="fWa" placeholder="+244 9XX..."/></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><i class="fa-solid fa-truck"></i> Entrega</div>
+    <div class="ent-opts" id="entOpts">
+      <div class="eopt on" id="eoptLev" onclick="setEnt('levantamento')">
+        <div class="eopt-ico"><i class="fa-solid fa-shop"></i></div>
+        <div class="eopt-lbl">Levantamento</div>
+        <div class="eopt-preco">Grátis</div>
+      </div>
+      <div class="eopt" id="eoptEnt" onclick="setEnt('entrega')">
+        <div class="eopt-ico"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="eopt-lbl">Entrega</div>
+        <div class="eopt-preco" id="eoptPreco">—</div>
+      </div>
+    </div>
+    <div id="camposEnt" style="display:none">
+      <div class="fg"><label>Morada *</label><input class="fi" type="text" id="fMorada" placeholder="Rua, número, bairro"/></div>
+      <div class="row2">
+        <div class="fg"><label>Cidade</label><input class="fi" type="text" id="fCidade" placeholder="Luanda"/></div>
+        <div class="fg"><label>Província</label>
+          <select class="fi" id="fProv">
+            <option value="">—</option>
+            <option>Luanda</option><option>Benguela</option><option>Huambo</option><option>Huíla</option>
+            <option>Cabinda</option><option>Bié</option><option>Malanje</option><option>Moxico</option>
+            <option>Cuando Cubango</option><option>Cunene</option><option>Namibe</option><option>Zaire</option>
+            <option>Uíge</option><option>Kwanza Norte</option><option>Kwanza Sul</option>
+            <option>Lunda Norte</option><option>Lunda Sul</option><option>Bengo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="fg"><label>Notas / Observações</label><input class="fi" type="text" id="fNotas" placeholder="Horário preferido, referência, etc."/></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><i class="fa-solid fa-receipt"></i> Resumo</div>
+    <div id="resumoItens"></div>
+    <div class="rl total"><span>Total</span><span id="totalFinal">—</span></div>
+  </div>
+
+  <button class="btn-final" id="btnFinal" onclick="submeter()">
+    <i class="fa-solid fa-check-double"></i> Confirmar Pedido
+  </button>
+  <p class="msg-err" id="msgErr"></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+<script src="catalogo.js?v=7"></script>
+<script>
+let _loja = {}, tipoEntrega = localStorage.getItem('ist_entrega') || 'levantamento';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initTheme(); syncThemeIcons();
+  await initCatalogo();
+  _loja = getLoja();
+
+  if (!getCarrinho().length) { location.href = 'carrinho.html'; return; }
+
+  const ePreco = document.getElementById('eoptPreco');
+  if (_loja.entrega_preco > 0) ePreco.textContent = kz(_loja.entrega_preco, _loja.simbolo_moeda);
+  else ePreco.textContent = 'Grátis';
+  if (!_loja.entrega_ativa) document.getElementById('eoptEnt').style.display = 'none';
+  setEnt(tipoEntrega);
+
+  const cli = getCliente();
+  if (cli) {
+    document.getElementById('authInfo').style.display = 'flex';
+    document.getElementById('authNome').textContent = cli.nome;
+    document.getElementById('fNome').value = cli.nome || '';
+    document.getElementById('fEmail').value = cli.email || '';
+  } else {
+    document.getElementById('guestInfo').style.display = 'flex';
+  }
+
+  renderResumo();
+});
+
+function setEnt(t) {
+  tipoEntrega = t;
+  localStorage.setItem('ist_entrega', t);
+  document.getElementById('eoptLev').classList.toggle('on', t === 'levantamento');
+  document.getElementById('eoptEnt').classList.toggle('on', t === 'entrega');
+  document.getElementById('camposEnt').style.display = t === 'entrega' ? '' : 'none';
+  renderResumo();
+}
+
+function renderResumo() {
+  const c = getCarrinho();
+  const cont = document.getElementById('resumoItens');
+  cont.innerHTML = c.map(i => `
+    <div class="item-mini">
+      <div class="im-img">${i.imagem ? `<img src="${i.imagem}" alt="" onerror="this.innerHTML='<i class=fa-solid fa-box-open></i>'">` : '<i class="fa-solid fa-box-open"></i>'}</div>
+      <div class="im-nome">${i.nome}${i.nota ? ` <span style="font-size:.68rem;color:var(--muted)">(${i.nota})</span>` : ''} &times; ${i.quantidade}</div>
+      <div class="im-preco">${kz((i.preco||0) * (i.quantidade||1), _loja.simbolo_moeda)}</div>
+    </div>`).join('');
+  const sub = c.reduce((s, i) => s + (i.preco||0) * (i.quantidade||1), 0);
+  const gratis = _loja.entrega_gratis > 0 && sub >= _loja.entrega_gratis;
+  const ent = tipoEntrega === 'entrega' && !gratis ? (_loja.entrega_preco || 0) : 0;
+  document.getElementById('totalFinal').textContent = kz(sub + ent, _loja.simbolo_moeda);
+}
+
+async function submeter() {
+  const btn = document.getElementById('btnFinal');
+  const msg = document.getElementById('msgErr');
+  msg.textContent = '';
+
+  const nome = document.getElementById('fNome').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const tel = document.getElementById('fTel').value.trim();
+  const wa = document.getElementById('fWa').value.trim();
+  const notas = document.getElementById('fNotas').value.trim();
+  const morada = document.getElementById('fMorada').value.trim();
+  const cidade = document.getElementById('fCidade').value.trim();
+  const prov = document.getElementById('fProv').value;
+
+  if (!nome) { msg.textContent = 'Nome obrigatório.'; document.getElementById('fNome').classList.add('err'); return; }
+  if (!email || !email.includes('@')) { msg.textContent = 'Email inválido.'; document.getElementById('fEmail').classList.add('err'); return; }
+  if (!tel) { msg.textContent = 'Telefone obrigatório.'; document.getElementById('fTel').classList.add('err'); return; }
+  if (tipoEntrega === 'entrega' && !morada) { msg.textContent = 'Morada obrigatória para entrega.'; document.getElementById('fMorada').classList.add('err'); return; }
+
+  const c = getCarrinho();
+  if (!c.length) { msg.textContent = 'Carrinho vazio.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A processar...';
+
+  const sub = c.reduce((s, i) => s + (i.preco||0) * (i.quantidade||1), 0);
+  const gratis = _loja.entrega_gratis > 0 && sub >= _loja.entrega_gratis;
+  const precoEnt = tipoEntrega === 'entrega' && !gratis ? (_loja.entrega_preco || 0) : 0;
+
+  const itens = c.map(i => ({
+    produto_id: i.produto_id || i.id,
+    variacao_id: i.variacao_id || null,
+    nome_produto: i.nome,
+    nome_variacao: i.nome_variacao || null,
+    preco_unit: i.preco,
+    quantidade: i.quantidade
+  }));
+
+  try {
+    const d = await criarEncomenda({
+      nome_cliente: nome, email_cliente: email,
+      telefone_cliente: tel, whatsapp_cliente: wa || tel,
+      morada_entrega: morada, cidade_entrega: cidade,
+      provincia_entrega: prov, tipo_entrega: tipoEntrega,
+      notas: notas, itens: itens
+    });
+
+    localStorage.setItem('ist_ref', d.ref);
+    localStorage.setItem('ist_total', d.total);
+    localStorage.setItem('ist_nome', nome);
+    localStorage.setItem('ist_wa', wa || tel);
+    limparCarrinho();
+    localStorage.removeItem('ist_entrega');
+    location.href = 'confirmacao.html';
+  } catch(e) {
+    msg.textContent = e.message || 'Erro de ligação. Tente novamente.';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Confirmar Pedido';
+  }
+}
+
+document.querySelectorAll('.fi').forEach(el => {
+  el.addEventListener('input', () => el.classList.remove('err'));
+});
+</script>
+</body>
+</html>

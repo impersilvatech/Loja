@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }
+(function(){var t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Carrinho</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/estilo.css"/>
+<style>
+.item{display:flex;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;transition:var(--tr)}
+.item:hover{border-color:rgba(255,107,157,.3)}
+.item-img{width:68px;height:68px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:2rem}
+.item-img img{width:100%;height:100%;object-fit:cover}
+.item-info{flex:1;min-width:0}
+.item-nome{font-family:var(--ft);font-size:.92rem;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-var{font-size:.7rem;color:var(--muted);margin-bottom:2px}
+.item-nota{font-size:.68rem;color:var(--muted2);font-style:italic;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-preco{font-family:var(--ft);font-size:.92rem;color:var(--pink);margin-bottom:8px}
+.item-acts{display:flex;align-items:center;gap:8px}
+.qty-ctrl{display:flex;align-items:center;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:2px}
+.qb{width:28px;height:28px;border-radius:6px;background:none;border:none;color:var(--white);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.qb:hover{background:var(--pink);color:#fff}
+.qv{min-width:28px;text-align:center;font-weight:700;font-size:.85rem}
+.btn-rm{width:32px;height:32px;border-radius:8px;background:none;border:1px solid var(--border);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;transition:var(--tr)}
+.btn-rm:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.resumo{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-top:14px}
+.resumo-h{font-family:var(--ft);font-size:1rem;color:var(--pink);margin-bottom:14px}
+.entrega-opts{display:flex;gap:8px;margin-bottom:14px}
+.eopt{flex:1;padding:11px 8px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);text-align:center;cursor:pointer;transition:var(--tr)}
+.eopt.on{border-color:var(--pink);background:rgba(255,107,157,.07)}
+.eopt-ico{font-size:1.2rem;margin-bottom:3px}
+.eopt-lbl{font-family:var(--ft);font-size:.68rem;color:var(--white)}
+.eopt-preco{font-size:.62rem;color:var(--muted)}
+.rl{display:flex;justify-content:space-between;margin-bottom:7px;font-size:.86rem;color:var(--muted)}
+.rl.total{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-family:var(--ft);font-size:1.1rem;color:var(--white)}
+.rl.total span:last-child{color:var(--pink)}
+.btn-final{width:100%;padding:13px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.92rem;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,157,.3);margin-top:14px;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-final:hover{filter:brightness(1.08);transform:translateY(-1px)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-nome">Carrinho</div>
+  <button class="hb" onclick="toggleTheme()"><i data-theme-ico class="fa-solid fa-sun"></i></button>
+</header>
+
+<div class="ctn" id="ctn"></div>
+
+<div class="nav">
+  <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
+  <button class="btn-cart-nav" style="background:none;border:1px solid var(--border);color:var(--muted);box-shadow:none" onclick="location.href='catalogo.html'"><i class="fa-solid fa-store"></i> Continuar a comprar</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+<script src="catalogo.js?v=7"></script>
+<script>
+var _loja = {}, tipoEntrega = localStorage.getItem('ist_entrega') || 'levantamento';
+
+document.addEventListener('DOMContentLoaded', async function() {
+  initTheme(); syncThemeIcons();
+  await initCatalogo();
+  _loja = getLoja();
+  render();
+});
+
+function render() {
+  var c = getCarrinho();
+  var cont = document.getElementById('ctn');
+  if (!c.length) {
+    cont.innerHTML = '<div class="vazio">' +
+      '<i class="fa-solid fa-cart-shopping" style="font-size:3rem;opacity:.2;color:var(--pink)"></i>' +
+      '<h2 style="font-family:var(--ft);font-size:1.3rem;margin:8px 0">Carrinho Vazio</h2>' +
+      '<p style="color:var(--muted);margin-bottom:16px">Adiciona produtos para continuar</p>' +
+      '<a href="catalogo.html" class="btn-sub" style="display:inline-flex;width:auto;padding:12px 26px"><i class="fa-solid fa-store"></i> Ver Produtos</a>' +
+    '</div>';
+    return;
+  }
+
+  var html = c.map(function(item) {
+    return '<div class="item">' +
+      '<div class="item-img">' + (item.imagem ? '<img src="' + item.imagem + '" alt="' + item.nome + '" onerror="this.parentElement.innerHTML=\\'<i class=fa-solid fa-image></i>\\'">' : '<i class="fa-solid fa-image"></i>') + '</div>' +
+      '<div class="item-info">' +
+        '<div class="item-nome">' + item.nome + '</div>' +
+        (item.nome_variacao ? '<div class="item-var">' + item.nome_variacao + '</div>' : '') +
+        (item.nota ? '<div class="item-nota">"' + item.nota + '"</div>' : '') +
+        '<div class="item-preco">' + kz(item.preco, _loja.simbolo_moeda) + ' <span style="font-size:.7rem;color:var(--muted)">un.</span></div>' +
+        '<div class="item-acts">' +
+          '<div class="qty-ctrl">' +
+            '<button class="qb" onclick="altQty(\'' + item.chave + '\',-1)"><i class="fa-solid fa-minus"></i></button>' +
+            '<span class="qv">' + item.quantidade + '</span>' +
+            '<button class="qb" onclick="altQty(\'' + item.chave + '\',1)"><i class="fa-solid fa-plus"></i></button>' +
+          '</div>' +
+          '<button class="btn-rm" onclick="remover(\'' + item.chave + '\')" title="Remover"><i class="fa-solid fa-trash-can"></i></button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  var subtotal = c.reduce(function(s, i) { return s + (i.preco||0) * (i.quantidade||1); }, 0);
+  var gratis = _loja.entrega_gratis > 0 && subtotal >= _loja.entrega_gratis;
+  var precoEnt = tipoEntrega === 'entrega' && !gratis ? (_loja.entrega_preco || 0) : 0;
+  var total = subtotal + precoEnt;
+
+  html += '<div class="resumo"><div class="resumo-h"><i class="fa-solid fa-receipt"></i> Resumo do Pedido</div>';
+
+  if (_loja.entrega_ativa) {
+    html += '<div class="entrega-opts">' +
+      '<div class="eopt ' + (tipoEntrega==='levantamento'?'on':'') + '" onclick="setEnt(\'levantamento\')">' +
+        '<div class="eopt-ico"><i class="fa-solid fa-shop"></i></div>' +
+        '<div class="eopt-lbl">Levantamento</div>' +
+        '<div class="eopt-preco">Grátis</div>' +
+      '</div>' +
+      '<div class="eopt ' + (tipoEntrega==='entrega'?'on':'') + '" onclick="setEnt(\'entrega\')">' +
+        '<div class="eopt-ico"><i class="fa-solid fa-truck"></i></div>' +
+        '<div class="eopt-lbl">Entrega</div>' +
+        '<div class="eopt-preco">' + (gratis ? 'Grátis' : kz(_loja.entrega_preco||0, _loja.simbolo_moeda)) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  html += '<div class="rl"><span>Subtotal</span><span>' + kz(subtotal, _loja.simbolo_moeda) + '</span></div>';
+  if (tipoEntrega === 'entrega') {
+    html += '<div class="rl"><span>Entrega' + (gratis?' (Grátis!)':'') + '</span><span>' + kz(precoEnt, _loja.simbolo_moeda) + '</span></div>';
+  }
+  html += '<div class="rl total"><span>Total</span><span>' + kz(total, _loja.simbolo_moeda) + '</span></div></div>';
+  html += '<button class="btn-final" onclick="finalizar()"><i class="fa-solid fa-check"></i> Finalizar Pedido</button>';
+
+  cont.innerHTML = html;
+  localStorage.setItem('ist_entrega', tipoEntrega);
+}
+
+function altQty(chave, d) {
+  var c = getCarrinho();
+  var i = c.findIndex(function(x) { return x.chave === chave; });
+  if (i < 0) return;
+  c[i].quantidade = Math.max(1, (c[i].quantidade||1) + d);
+  salvarCarrinho(c); render();
+}
+
+function remover(chave) {
+  salvarCarrinho(getCarrinho().filter(function(i) { return i.chave !== chave; }));
+  render(); toast('Item removido', 'ok');
+}
+
+function setEnt(t) { tipoEntrega = t; render(); }
+
+function finalizar() {
+  if (!getCarrinho().length) { toast('Carrinho vazio!', 'err'); return; }
+  window.location.href = 'checkout.html';
+}
+</script>
+</body>
+</html>
