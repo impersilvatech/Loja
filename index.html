@@ -17,8 +17,34 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="css/estilo.css"/>
 <style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s ease;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b0a0b8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547;--yellow:#a07800}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;transition:background .35s,color .35s;padding-bottom:68px}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.hdr-logo{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1}
+.hdr-acts{display:flex;gap:8px;align-items:center}
+.hb,.btn-bk{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;cursor:pointer;color:var(--white);transition:var(--tr);text-decoration:none}
+.hb:hover{border-color:var(--pink);color:var(--pink)}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 10px 8px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border)}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-home-nav{width:38px;height:38px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center;transition:var(--tr);text-decoration:none}
+.btn-cart-nav{flex:1;height:38px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,107,157,.3);text-decoration:none}
+.btn-cart-nav:disabled{opacity:.25;cursor:default;background:var(--border);box-shadow:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nl{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 10px;color:var(--muted);font-size:.52rem;text-decoration:none;transition:var(--tr)}
+.nl i{font-size:1.1rem}
+.nl.on,.nl:hover{color:var(--pink)}
+.cart-ct{background:rgba(255,255,255,.25);border-radius:50px;padding:1px 9px;font-size:.68rem}
+.spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite;margin:28px auto;display:block}
+@keyframes spin-anim{to{transform:rotate(360deg)}}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 18px;font-size:.82rem;font-weight:700;text-align:center;max-width:calc(100vw - 32px);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s ease}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:var(--pink);color:var(--pink)}
+.fab-wa{position:fixed;bottom:80px;right:14px;width:50px;height:50px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 16px rgba(37,211,102,.4);z-index:140;text-decoration:none;transition:var(--tr)}
+
 .hero{margin:12px;border-radius:22px;background:var(--grad);padding:28px 20px 24px;position:relative;overflow:hidden;min-height:185px;display:flex;flex-direction:column;justify-content:flex-end}
 .hero::before{content:'';position:absolute;top:-40px;right:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.1)}
 .hero::after{content:'';position:absolute;top:30px;right:40px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)}
@@ -28,7 +54,6 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 .hero-h1{font-family:var(--ft);font-size:2rem;color:#fff;line-height:1.1;margin-bottom:10px;position:relative;z-index:1}
 .hero-sub{font-size:.8rem;color:rgba(255,255,255,.8);margin-bottom:18px;line-height:1.5;position:relative;z-index:1}
 .hero-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);border-radius:50px;font-family:var(--ft);font-size:.78rem;color:#fff;text-decoration:none;backdrop-filter:blur(4px);transition:var(--tr);position:relative;z-index:1;width:fit-content}
-.hero-btn:hover{background:rgba(255,255,255,.3)}
 .auth-strip{margin:0 12px 12px;padding:13px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);display:none;align-items:center;gap:12px}
 .as-ico i{font-size:1.5rem;color:var(--pink)}
 .as-txt{flex:1}
@@ -46,39 +71,28 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 .cats-scroll{overflow-x:auto;scrollbar-width:none;padding:0 12px 12px}
 .cats-scroll::-webkit-scrollbar{display:none}
 .cats-row{display:flex;gap:9px;width:max-content}
-.ccat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;text-align:center;cursor:pointer;transition:var(--tr);text-decoration:none;min-width:84px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px}
-.ccat:hover,.ccat:active{border-color:var(--pink);background:rgba(255,107,157,.06)}
+.ccat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;text-align:center;cursor:pointer;transition:var(--tr);text-decoration:none;min-width:84px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--white)}
+.ccat:hover,.ccat:active{border-color:var(--pink)}
 .ccat-ico{font-size:1.5rem;line-height:1}
-.ccat-lbl{font-family:var(--ft);font-size:.64rem;color:var(--white)}
+.ccat-lbl{font-family:var(--ft);font-size:.64rem}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 12px}
-@media(min-width:520px){.pgrid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:780px){.pgrid{grid-template-columns:repeat(4,1fr)}}
 .pcard{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative;text-decoration:none;color:inherit;display:block}
 .pcard:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(255,107,157,.15);border-color:rgba(255,107,157,.35)}
-.pcard.esgotado{opacity:.5;filter:grayscale(.4);cursor:not-allowed}
 .pcard-img{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:3rem}
-.pcard-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.pcard:hover .pcard-img img{transform:scale(1.07)}
+.pcard-img img{width:100%;height:100%;object-fit:cover}
 .ptag{position:absolute;top:7px;left:7px;padding:2px 8px;font-family:var(--ft);font-size:.5rem;border-radius:6px}
 .ptag-promo{background:var(--red);color:#fff}
-.ptag-novo{background:var(--teal);color:#0d0d1a}
-.ptag-destaque{background:var(--grad);color:#fff}
 .pcard-body{padding:8px 10px 12px}
 .pcard-cat{font-size:.5rem;font-weight:700;color:var(--pink);opacity:.8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
 .pcard-nome{font-family:var(--ft);font-size:.88rem;line-height:1.25;margin-bottom:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .pcard-preco{font-family:var(--ft);font-size:.9rem;color:var(--pink)}
 .pcard-preco-orig{font-size:.68rem;color:var(--muted2);text-decoration:line-through;margin-left:4px}
-.btn-add-q{position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(255,107,157,.4);transition:var(--tr);z-index:2}
-.btn-add-q:hover{transform:scale(1.12)}
+.btn-add-q{position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(255,107,157,.4);z-index:2}
 .banner-entrega{margin:0 12px 12px;border-radius:var(--r);background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.2);padding:14px;display:none;align-items:center;gap:12px}
 .be-ico i{font-size:1.5rem;color:var(--teal);flex-shrink:0}
 .be-txt{flex:1}
 .be-txt h4{font-family:var(--ft);font-size:.88rem;color:var(--teal);margin-bottom:2px}
 .be-txt p{font-size:.74rem;color:var(--muted);line-height:1.4}
-.ptr{display:flex;justify-content:center;align-items:center;overflow:hidden;height:0;transition:height .2s;background:var(--bg)}
-.ptr.show{height:52px}
-.ptr-spin{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite}
-@keyframes spin-anim{to{transform:rotate(360deg)}}
 .empty-msg{text-align:center;padding:30px;color:var(--muted);font-size:.85rem}
 </style>
 </head>
@@ -92,73 +106,56 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
   </div>
 </header>
 
-<div class="ptr" id="ptr"><div class="ptr-spin"></div></div>
-
 <div class="hero" id="hero">
   <div class="hero-float"><i class="fa-solid fa-star"></i></div>
   <span class="hero-tag">Bem-vindo</span>
-  <h1 class="hero-h1" id="heroH1">Descobre o melhor<br>para ti</h1>
-  <p class="hero-sub" id="heroSub">Qualidade em cada detalhe.</p>
+  <h1 class="hero-h1" id="heroH1">A carregar...</h1>
+  <p class="hero-sub" id="heroSub"></p>
   <a href="catalogo.html" class="hero-btn"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
-</div>
-
-<div class="auth-strip" id="authStrip">
-  <span class="as-ico"><i class="fa-solid fa-user-plus"></i></span>
-  <div class="as-txt"><h4>Cria a tua conta</h4><p>Acompanha as tuas encomendas em tempo real</p></div>
-  <a href="conta.html" class="as-btn">Entrar</a>
 </div>
 
 <div class="search-home">
   <span class="shi-ico"><i class="fa-solid fa-magnifying-glass"></i></span>
-  <input class="shi" type="search" id="shi" placeholder="Pesquisar produto..." onkeydown="if(event.key==='Enter'&&this.value.trim()){sessionStorage.setItem('cf_busca_ini',this.value.trim());window.location.href='catalogo.html';}"/>
+  <input class="shi" type="search" placeholder="Pesquisar produto..." onkeydown="if(event.key==='Enter'&&this.value.trim()){sessionStorage.setItem('cf_busca_ini',this.value.trim());window.location.href='catalogo.html';}"/>
 </div>
 
-<div class="sec-h">
-  <span class="sec-t"><i class="fa-solid fa-tags"></i> Categorias</span>
-  <a href="catalogo.html" class="sec-a">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
-</div>
+<div class="sec-h"><span class="sec-t"><i class="fa-solid fa-tags"></i> Categorias</span><a href="catalogo.html" class="sec-a">Ver tudo <i class="fa-solid fa-chevron-right"></i></a></div>
 <div class="cats-scroll"><div class="cats-row" id="catsRow"><div class="spin"></div></div></div>
 
-<div class="sec-h">
-  <span class="sec-t"><i class="fa-solid fa-fire"></i> Em Destaque</span>
-  <a href="catalogo.html" class="sec-a">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
-</div>
+<div class="sec-h"><span class="sec-t"><i class="fa-solid fa-fire"></i> Em Destaque</span><a href="catalogo.html" class="sec-a">Ver tudo <i class="fa-solid fa-chevron-right"></i></a></div>
 <div class="pgrid" id="pgDest"><p class="empty-msg" style="grid-column:1/-1"><span class="spin"></span></p></div>
-
-<div class="banner-entrega" id="bannerEntrega">
-  <span class="be-ico"><i class="fa-solid fa-truck-fast"></i></span>
-  <div class="be-txt"><h4>Entrega ao domicílio</h4><p id="beSub">Recebe as tuas encomendas em casa.</p></div>
-</div>
 
 <a href="#" class="fab-wa" id="fabWa" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
 
 <div class="nav">
-  <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
+  <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
   <div class="nav-links">
     <a href="catalogo.html" class="nl"><i class="fa-solid fa-store"></i><span>Catálogo</span></a>
     <a href="conta.html" class="nl"><i class="fa-solid fa-user"></i><span>Conta</span></a>
     <a href="sobre.html" class="nl"><i class="fa-solid fa-circle-info"></i><span>Sobre</span></a>
   </div>
-  <button class="btn-cart-nav" id="btnCart" disabled onclick="location.href='carrinho.html'">
-    <i class="fa-solid fa-cart-shopping"></i> Ver Carrinho
-  </button>
+  <button class="btn-cart-nav" id="btnCart" disabled onclick="location.href='carrinho.html'"><i class="fa-solid fa-cart-shopping"></i> Ver Carrinho</button>
 </div>
 <div class="toast" id="toast"></div>
 
 <script src="js/app.js"></script>
-<script src="catalogo.js?v=7"></script>
 <script>
 var _loja, _cats, _prods;
 
 document.addEventListener('DOMContentLoaded', async function() {
   initTheme(); syncThemeIcons();
   
-  await initCatalogo();
-  _loja = getLoja(); _cats = getCategorias(); _prods = getProdutos();
-
-  console.log('Loja:', _loja);
-  console.log('Categorias:', _cats);
-  console.log('Produtos:', _prods);
+  // Carregar dados DIRETAMENTE da API (como o catalogo.html faz)
+  try {
+    var rL = await fetch(API_BASE + '/api/loja');
+    _loja = await rL.json();
+    var rC = await fetch(API_BASE + '/api/categorias');
+    _cats = await rC.json();
+    var rP = await fetch(API_BASE + '/api/produtos');
+    _prods = await rP.json();
+  } catch(e) {
+    _loja = {}; _cats = []; _prods = [];
+  }
 
   document.getElementById('hdrLogo').textContent = _loja.nome || 'Loja';
   document.title = _loja.nome || 'Loja';
@@ -173,15 +170,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('fabWa').style.display = 'none';
   }
 
-  var cli = getCliente();
-  if (!cli) {
-    document.getElementById('authStrip').style.display = 'flex';
-  }
-
   buildCats();
   renderDestaques();
   atualizarBtnCart();
-  initPTR();
 });
 
 function buildCats() {
@@ -197,7 +188,7 @@ function renderDestaques() {
   var g = document.getElementById('pgDest');
   var lista = _prods.slice(0, 8);
   if (!lista.length) { 
-    g.innerHTML = '<p class="empty-msg" style="grid-column:1/-1">Sem produtos ainda. Adiciona pelo admin!</p>'; 
+    g.innerHTML = '<p class="empty-msg" style="grid-column:1/-1">Sem produtos ainda.</p>'; 
     return; 
   }
   g.innerHTML = lista.map(function(p) { return cardHtml(p); }).join('');
@@ -206,7 +197,7 @@ function renderDestaques() {
 function cardHtml(p) {
   var cat = _cats.find(function(c) { return c.id === p.categoria; });
   var pct = p.preco_orig > 0 ? Math.round((1-p.preco/p.preco_orig)*100) : 0;
-  var imgH = p.imagem ? '<img src="' + p.imagem + '" alt="' + p.nome + '" loading="lazy" onerror="this.parentElement.innerHTML=\\'<i class=fa-solid fa-image style=font-size:3rem></i>\\'">' : '<i class="fa-solid fa-image" style="font-size:3rem;color:var(--muted2)"></i>';
+  var imgH = p.imagem ? '<img src="' + p.imagem + '" alt="' + p.nome + '" loading="lazy" onerror="this.innerHTML=\\'<i class=fa-solid fa-image style=font-size:3rem></i>\\'">' : '<i class="fa-solid fa-image" style="font-size:3rem;color:var(--muted2)"></i>';
   
   return '<a href="produto.html?id=' + p.id + '" class="pcard">' +
     '<div class="pcard-img">' + imgH + '</div>' +
@@ -215,7 +206,7 @@ function cardHtml(p) {
       '<div class="pcard-cat">' + (cat ? (cat.label||cat.nome) : '') + '</div>' +
       '<div class="pcard-nome">' + p.nome + '</div>' +
       '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">' +
-        '<span class="pcard-preco">' + (p.preco>0 ? kz(p.preco, _loja.simbolo_moeda) : 'Orçamento') + '</span>' +
+        '<span class="pcard-preco">' + (p.preco>0 ? kz(p.preco, _loja.simbolo_moeda) : 'Orcamento') + '</span>' +
         (p.preco_orig>0 ? '<span class="pcard-preco-orig">' + kz(p.preco_orig, _loja.simbolo_moeda) + '</span>' : '') +
       '</div>' +
     '</div>' +
@@ -237,22 +228,6 @@ function atualizarBtnCart() {
   var btn = document.getElementById('btnCart');
   if (q > 0) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Ver Carrinho <span class="cart-ct">' + q + '</span>'; }
   else { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Ver Carrinho'; }
-}
-
-function initPTR() {
-  var sy = 0, act = false;
-  document.addEventListener('touchstart', function(e) { if (window.scrollY === 0) sy = e.touches[0].clientY; }, { passive: true });
-  document.addEventListener('touchmove', function(e) {
-    if (window.scrollY > 0 || act) return;
-    if (e.touches[0].clientY - sy > 55) { act = true; document.getElementById('ptr').classList.add('show'); }
-  }, { passive: true });
-  document.addEventListener('touchend', async function() {
-    if (!act) return; act = false;
-    await refreshCatalogo();
-    _loja = getLoja(); _cats = getCategorias(); _prods = getProdutos();
-    buildCats(); renderDestaques(); atualizarBtnCart();
-    document.getElementById('ptr').classList.remove('show');
-  }, { passive: true });
 }
 </script>
 </body>
