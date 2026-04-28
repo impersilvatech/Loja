@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Rastrear Encomenda</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;
+  --pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;
+  --red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--muted2:#4a4a6a;
+  --ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;
+  --grad:linear-gradient(135deg,#ff6b9d,#b14ae8);--r:14px;--r2:18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--fb);background:var(--bg);color:var(--white);
+  min-height:100vh;padding-bottom:20px;
+}
+
+/* Header */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  background:rgba(13,13,26,.97);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;
+  background:none;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;cursor:pointer;color:var(--white);text-decoration:none;
+  transition:all .2s;
+}
+.hdr-back:hover{border-color:var(--pink);color:var(--pink)}
+.hdr-title{
+  font-family:var(--ft);font-size:1.1rem;
+  background:var(--grad);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+  flex:1;text-align:center;
+}
+
+/* Container */
+.ctn{padding:16px;max-width:500px;margin:0 auto}
+
+/* Search Card */
+.search-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);padding:20px;margin-bottom:16px;
+}
+.search-card h2{
+  font-family:var(--ft);font-size:1rem;color:var(--pink);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.search-card p{
+  font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;
+}
+.search-wrap{
+  display:flex;gap:8px;
+}
+.search-input{
+  flex:1;padding:12px 14px;background:var(--bg2);
+  border:1.5px solid var(--border);border-radius:50px;
+  font-family:var(--fb);font-size:.88rem;color:var(--white);
+  outline:none;transition:border-color .2s;text-transform:uppercase;
+}
+.search-input:focus{border-color:var(--pink)}
+.search-input::placeholder{color:var(--muted2);text-transform:none}
+.search-btn{
+  width:46px;height:46px;border-radius:50%;
+  background:var(--grad);border:none;color:#fff;
+  font-size:1rem;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(255,107,157,.3);
+  transition:all .2s;flex-shrink:0;
+}
+.search-btn:hover{transform:scale(1.05)}
+.search-btn:active{transform:scale(.95)}
+
+/* Error Message */
+.error-msg{
+  text-align:center;padding:20px;color:var(--red);
+  font-size:.82rem;margin-top:8px;display:none;
+}
+.error-msg.show{display:block}
+.error-msg i{font-size:2rem;display:block;margin-bottom:10px;opacity:.6}
+
+/* Result Card */
+.result-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;display:none;
+  animation:fadeUp .4s ease both;
+}
+.result-card.show{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Result Header */
+.result-header{
+  background:var(--grad);padding:20px;text-align:center;
+}
+.result-ref{
+  font-family:var(--ft);font-size:1.6rem;color:#fff;
+  letter-spacing:1px;margin-bottom:4px;
+}
+.result-date{
+  font-size:.72rem;color:rgba(255,255,255,.7);
+}
+
+/* Timeline */
+.timeline{padding:20px}
+.timeline-title{
+  font-family:var(--ft);font-size:.85rem;color:var(--pink);
+  margin-bottom:16px;display:flex;align-items:center;gap:7px;
+}
+.timeline-steps{display:flex;flex-direction:column;gap:0}
+
+.timeline-step{
+  display:flex;gap:14px;position:relative;padding-bottom:24px;
+}
+.timeline-step:last-child{padding-bottom:0}
+
+.timeline-dot-col{
+  display:flex;flex-direction:column;align-items:center;
+  flex-shrink:0;width:28px;
+}
+.timeline-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;z-index:1;transition:all .3s;
+}
+.timeline-dot.done{background:var(--teal);color:#0d0d1a}
+.timeline-dot.current{
+  background:var(--grad);color:#fff;
+  box-shadow:0 0 0 6px rgba(255,107,157,.15);
+  animation:pulse-dot 2s infinite;
+}
+.timeline-dot.pending{background:var(--border);color:var(--muted2)}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 6px rgba(255,107,157,.15)}50%{box-shadow:0 0 0 14px rgba(255,107,157,.05)}}
+
+.timeline-line{
+  width:2px;flex:1;min-height:20px;
+  background:var(--border);margin:4px 0;
+}
+.timeline-line.done{background:var(--teal)}
+
+.timeline-content{flex:1;min-width:0;padding-top:2px}
+.timeline-step-title{
+  font-family:var(--ft);font-size:.82rem;margin-bottom:2px;
+}
+.timeline-step-title.done{color:var(--teal)}
+.timeline-step-title.current{color:var(--pink)}
+.timeline-step-title.pending{color:var(--muted2)}
+.timeline-step-desc{
+  font-size:.7rem;color:var(--muted);line-height:1.4;
+}
+
+/* Items Card */
+.items-card{
+  border-top:1px solid var(--border);padding:16px 20px;
+}
+.items-title{
+  font-family:var(--ft);font-size:.82rem;color:var(--pink);
+  margin-bottom:10px;display:flex;align-items:center;gap:7px;
+}
+.item-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(42,42,69,.3);
+  font-size:.8rem;
+}
+.item-row:last-child{border-bottom:none}
+.item-name{flex:1;color:var(--white)}
+.item-qty{color:var(--muted);margin:0 10px;font-size:.72rem}
+.item-price{font-family:var(--ft);color:var(--pink);font-size:.82rem}
+
+/* Summary */
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;border-top:1px solid var(--border);
+  font-size:.84rem;
+}
+.summary-label{color:var(--muted)}
+.summary-value{font-family:var(--ft);color:var(--pink);font-size:1.1rem}
+
+/* Status Badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:50px;
+  font-family:var(--ft);font-size:.72rem;
+}
+.status-badge.pendente{background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.3)}
+.status-badge.confirmada{background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.3)}
+.status-badge.pronta{background:rgba(177,74,232,.1);color:var(--purple);border:1px solid rgba(177,74,232,.3)}
+.status-badge.entregue{background:rgba(6,214,160,.08);color:var(--teal);border:1px solid rgba(6,214,160,.2)}
+.status-badge.cancelada{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)}
+
+/* WhatsApp Button */
+.wa-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;margin:0 20px 20px;
+  background:linear-gradient(135deg,#128c7e,#25d366);
+  border:none;border-radius:50px;font-family:var(--ft);
+  font-size:.9rem;color:#fff;cursor:pointer;
+  text-decoration:none;box-shadow:0 4px 14px rgba(37,211,102,.3);
+  transition:all .2s;
+}
+.wa-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+/* Loading */
+.loading{
+  text-align:center;padding:40px 20px;display:none;
+}
+.loading.show{display:block}
+.spin{
+  width:32px;height:32px;border:3px solid var(--border);
+  border-top-color:var(--pink);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-size:.82rem;color:var(--muted)}
+
+/* Empty State */
+.empty-state{
+  text-align:center;padding:50px 20px;display:none;
+}
+.empty-state.show{display:block}
+.empty-state i{font-size:4rem;opacity:.1;display:block;margin-bottom:16px;color:var(--pink)}
+.empty-state h3{font-family:var(--ft);font-size:1.1rem;color:var(--muted);margin-bottom:6px}
+.empty-state p{font-size:.82rem;color:var(--muted2)}
+
+/* Delivery Info */
+.delivery-info{
+  background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.15);
+  border-radius:var(--r);padding:10px 14px;margin:12px 20px;
+  font-size:.74rem;color:var(--teal);display:flex;align-items:center;gap:8px;
+}
+.delivery-info i{font-size:1rem}
+
+/* Nav */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  padding:6px 10px 8px;display:flex;gap:8px;align-items:center;
+  background:rgba(13,13,26,.97);border-top:1px solid var(--border);
+}
+.btn-home-nav{
+  width:38px;height:38px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--white);text-decoration:none;font-size:.9rem;
+}
+.btn-cat-nav{
+  flex:1;height:38px;border:none;
+  background:var(--grad);border-radius:50px;
+  font-family:var(--ft);font-size:.76rem;color:#fff;
+  cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:7px;
+  box-shadow:0 4px 14px rgba(255,107,157,.3);
+  text-decoration:none;
+}
+
+/* Auto-refresh info */
+.auto-refresh{
+  text-align:center;font-size:.64rem;color:var(--muted2);
+  padding:8px;display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.auto-refresh i{animation:spin 3s linear infinite;font-size:.55rem}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="index.html" class="hdr-back"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="hdr-title">Rastrear Encomenda</div>
+  <div style="width:36px"></div>
+</header>
+
+<div class="ctn">
+  <!-- Search Card -->
+  <div class="search-card">
+    <h2><i class="fa-solid fa-magnifying-glass"></i> Acompanhe o seu pedido</h2>
+    <p>Introduza a referência que recebeu após finalizar o pedido (ex: <strong>ENC-1234567890</strong>).</p>
+    <div class="search-wrap">
+      <input class="search-input" type="text" id="refInput" placeholder="ENC-XXXXXXXXXXXXXXX" onkeydown="if(event.key==='Enter')rastrear()"/>
+      <button class="search-btn" onclick="rastrear()"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+    <div class="error-msg" id="errorMsg">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="errorText"></span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spin"></div>
+    <p>A procurar encomenda...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" id="emptyState">
+    <i class="fa-solid fa-box-open"></i>
+    <h3>Pronto para rastrear!</h3>
+    <p>Insira a referência acima para ver o estado da sua encomenda.</p>
+  </div>
+
+  <!-- Result Card -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="result-ref" id="resultRef">—</div>
+      <div class="result-date" id="resultDate">—</div>
+      <div style="margin-top:10px">
+        <span class="status-badge" id="resultStatus">—</span>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+      <div class="timeline-title"><i class="fa-solid fa-timeline"></i> Progresso</div>
+      <div class="timeline-steps" id="timelineSteps"></div>
+    </div>
+
+    <!-- Delivery Info -->
+    <div class="delivery-info" id="deliveryInfo" style="display:none">
+      <i class="fa-solid fa-truck-fast"></i>
+      <span id="deliveryText"></span>
+    </div>
+
+    <!-- Items -->
+    <div class="items-card">
+      <div class="items-title"><i class="fa-solid fa-receipt"></i> Itens da Encomenda</div>
+      <div id="itemsList"></div>
+    </div>
+
+    <!-- Total -->
+    <div class="summary-row">
+      <span class="summary-label">Total</span>
+      <span class="summary-value" id="resultTotal">—</span>
+    </div>
+
+    <!-- WhatsApp -->
+    <a href="#" class="wa-btn" id="waBtn" target="_blank" rel="noopener">
+      <i class="fa-brands fa-whatsapp" style="font-size:1.3rem"></i>
+      Falar com a loja
+    </a>
+
+    <div class="auto-refresh">
+      <i class="fa-solid fa-rotate"></i>
+      Actualização automática a cada 30 segundos
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
+  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
+</div>
+
+<script>
+var API = 'https://impersilva-d1work.3miliosilva.workers.dev';
+var loja = {};
+var refreshInterval = null;
+
+function kz(v,s){if(v==null)return'—';return(s||'Kz')+' '+Number(v).toLocaleString('pt');}
+function fmtData(d){if(!d)return'—';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'long',year:'numeric'});}
+function fmtDataHora(d){if(!d)return'—';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+// Estados e sua ordem
+var ESTADOS_ORDEM = ['pendente','confirmada','pronta','entregue'];
+var ESTADOS_LABEL = {
+  pendente:'Pedido Recebido',
+  confirmada:'Confirmado',
+  pronta:'Pronto / Em Preparação',
+  entregue:'Entregue',
+  cancelada:'Cancelado'
+};
+var ESTADOS_DESC = {
+  pendente:'Recebemos o seu pedido e vamos analisá-lo.',
+  confirmada:'O seu pedido foi confirmado e está na fila de produção.',
+  pronta:'O seu pedido está pronto! Aguardamos a entrega ou levantamento.',
+  entregue:'Pedido entregue com sucesso. Obrigado pela preferência!',
+  cancelada:'Este pedido foi cancelado. Entre em contacto para mais informações.'
+};
+var ESTADOS_ICON = {
+  pendente:'fa-solid fa-inbox',
+  confirmada:'fa-solid fa-check',
+  pronta:'fa-solid fa-box',
+  entregue:'fa-solid fa-circle-check',
+  cancelada:'fa-solid fa-circle-xmark'
+};
+
+async function carregarLoja(){
+  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+}
+
+function getParam(n){return new URLSearchParams(window.location.search).get(n);}
+
+async function rastrear(refInput){
+  var ref = refInput || document.getElementById('refInput').value.trim().toUpperCase();
+  
+  // Esconder todos
+  document.getElementById('errorMsg').classList.remove('show');
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('emptyState').classList.remove('show');
+  document.getElementById('resultCard').classList.remove('show');
+  
+  if(!ref){
+    document.getElementById('errorText').textContent = 'Introduza uma referência.';
+    document.getElementById('errorMsg').classList.add('show');
+    return;
+  }
+  
+  // Validar formato
+  if(!/^ENC-\d{8,}$/.test(ref)){
+    document.getElementById('errorText').textContent = 'Formato inválido. Ex: ENC-1234567890';
+    document.getElementById('errorMsg').classList.add('show');
+    return;
+  }
+  
+  // Loading
+  document.getElementById('loading').classList.add('show');
+  
+  try{
+    var r = await fetch(API+'/api/encomendas/'+ref);
+    var enc = await r.json();
+    
+    document.getElementById('loading').classList.remove('show');
+    
+    if(enc.erro){
+      document.getElementById('errorText').textContent = 'Encomenda não encontrada. Verifique a referência.';
+      document.getElementById('errorMsg').classList.add('show');
+      return;
+    }
+    
+    mostrarResultado(enc);
+    
+    // Auto-refresh se não estiver entregue/cancelada
+    if(refreshInterval)clearInterval(refreshInterval);
+    if(enc.estado !== 'entregue' && enc.estado !== 'cancelada'){
+      refreshInterval = setInterval(function(){
+        fetch(API+'/api/encomendas/'+ref).then(function(r2){return r2.json();}).then(function(enc2){
+          if(!enc2.erro)mostrarResultado(enc2,true);
+        }).catch(function(){});
+      }, 30000);
+    }
+    
+  }catch(e){
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('errorText').textContent = 'Erro de ligação. Tente novamente.';
+    document.getElementById('errorMsg').classList.add('show');
+  }
+}
+
+function mostrarResultado(enc, silent){
+  var resultCard = document.getElementById('resultCard');
+  
+  // Smooth update
+  if(!silent){
+    resultCard.classList.remove('show');
+    setTimeout(function(){resultCard.classList.add('show');},50);
+  }
+  
+  document.getElementById('resultRef').textContent = enc.ref;
+  document.getElementById('resultDate').textContent = '📅 '+fmtData(enc.criado_em);
+  
+  var statusBadge = document.getElementById('resultStatus');
+  statusBadge.textContent = ESTADOS_LABEL[enc.estado] || enc.estado;
+  statusBadge.className = 'status-badge '+(enc.estado||'pendente');
+  
+  // Timeline
+  var timelineHtml = '';
+  if(enc.estado === 'cancelada'){
+    // Caso especial: cancelada
+    var idx = ESTADOS_ORDEM.indexOf('pendente');
+    ESTADOS_ORDEM.forEach(function(est,i){
+      var cls = i <= idx ? 'done' : 'pending';
+      // Mostrar que foi cancelado
+      if(i === idx+1){
+        timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,'cancelled',enc);
+      }else{
+        timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,cls,enc);
+      }
+    });
+  }else{
+    var currentIdx = ESTADOS_ORDEM.indexOf(enc.estado);
+    if(currentIdx < 0) currentIdx = 0;
+    
+    ESTADOS_ORDEM.forEach(function(est,i){
+      var cls = i < currentIdx ? 'done' : (i === currentIdx ? 'current' : 'pending');
+      timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,cls,enc);
+    });
+  }
+  document.getElementById('timelineSteps').innerHTML = timelineHtml;
+  
+  // Delivery Info
+  var deliveryInfo = document.getElementById('deliveryInfo');
+  if(enc.tipo_entrega === 'entrega' && enc.morada_entrega){
+    deliveryInfo.style.display = 'flex';
+    document.getElementById('deliveryText').textContent = 'Entrega: '+enc.morada_entrega+(enc.cidade_entrega?', '+enc.cidade_entrega:'')+' | Data prevista: '+fmtData(enc.data_entrega);
+  }else if(enc.tipo_entrega === 'levantamento'){
+    deliveryInfo.style.display = 'flex';
+    document.getElementById('deliveryText').textContent = 'Levantamento na loja. Será notificado quando estiver pronto.';
+  }else{
+    deliveryInfo.style.display = 'none';
+  }
+  
+  // Itens
+  var itensHtml = '';
+  if(enc.itens && enc.itens.length){
+    enc.itens.forEach(function(item){
+      itensHtml += '<div class="item-row"><span class="item-name">'+item.nome_produto+'</span><span class="item-qty">×'+item.quantidade+'</span><span class="item-price">'+kz((item.preco_unit||0)*item.quantidade)+'</span></div>';
+    });
+  }else{
+    itensHtml = '<p style="font-size:.76rem;color:var(--muted);padding:8px 0">Detalhes não disponíveis.</p>';
+  }
+  document.getElementById('itemsList').innerHTML = itensHtml;
+  
+  // Total
+  document.getElementById('resultTotal').textContent = kz(enc.total);
+  
+  // WhatsApp
+  var waNum = (loja.whatsapp||'').replace(/\D/g,'');
+  var waBtn = document.getElementById('waBtn');
+  if(waNum){
+    waBtn.style.display = 'flex';
+    waBtn.href = 'https://wa.me/'+waNum+'?text='+encodeURIComponent('Olá! Gostaria de saber mais sobre a minha encomenda '+enc.ref+'.');
+  }else{
+    waBtn.style.display = 'none';
+  }
+}
+
+function construirStep(estado, index, total, cls, enc){
+  var icon = '';
+  if(cls === 'done') icon = 'fa-solid fa-check';
+  else if(cls === 'current') icon = 'fa-solid fa-circle';
+  else if(cls === 'cancelled') icon = 'fa-solid fa-xmark';
+  else icon = 'fa-regular fa-circle';
+  
+  var title = ESTADOS_LABEL[estado] || estado;
+  var desc = ESTADOS_DESC[estado] || '';
+  
+  if(cls === 'cancelled'){
+    title = 'Cancelado';
+    desc = ESTADOS_DESC['cancelada'];
+    return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot pending" style="background:var(--red);color:#fff"><i class="fa-solid fa-xmark"></i></div>'+(index<total-1?'<div class="timeline-line"></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title pending" style="color:var(--red)">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
+  }
+  
+  return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot '+cls+'"><i class="'+icon+'"></i></div>'+(index<total-1?'<div class="timeline-line'+(cls==='done'?' done':'')+'"></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title '+cls+'">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
+}
+
+// Iniciar
+carregarLoja();
+
+// Verificar se veio referência na URL
+var refParam = getParam('ref');
+if(refParam){
+  document.getElementById('refInput').value = refParam;
+  rastrear(refParam);
+}else{
+  document.getElementById('emptyState').classList.add('show');
+}
+</script>
+</body>
+</html>
