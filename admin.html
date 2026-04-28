@@ -917,6 +917,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <i class="fa-solid fa-users"></i>
         <span class="sidebar-item-label">Clientes</span>
       </button>
+      <button class="sidebar-item" data-panel="reviews" onclick="navigate('reviews')">
+        <i class="fa-solid fa-star"></i>
+        <span class="sidebar-item-label">Avaliações</span>
+        <span class="sidebar-badge" id="sidebarReviewsBadge">0</span>
+      </button>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
@@ -1114,6 +1119,31 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             AVALIAÇÕES
+             ============================================ -->
+        <div class="panel" id="panel-reviews">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-star" style="color:var(--yellow)"></i> Avaliações</div>
+          </div>
+          <div class="search-bar">
+            <select class="search-select" id="reviewsFilter" onchange="filterReviews()">
+              <option value="">Todas</option>
+              <option value="1">Aprovadas</option>
+              <option value="0">Pendentes</option>
+            </select>
+          </div>
+          <div class="section-card" style="padding:0;overflow:hidden">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Produto</th><th>Cliente</th><th>Estrelas</th><th>Comentário</th><th>Data</th><th>Estado</th><th>Acções</th></tr></thead>
+                <tbody id="reviewsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="reviewsCount"></p>
+        </div>
+
+        <!-- ============================================
              CONFIGURAÇÕES
              ============================================ -->
         <div class="panel" id="panel-settings">
@@ -1147,8 +1177,12 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <button class="mobile-nav-btn" data-panel="categories" onclick="navigate('categories')">
       <i class="fa-solid fa-tags"></i><span>Cats.</span>
     </button>
-    <button class="mobile-nav-btn" data-panel="clients" onclick="navigate('clients')">
-      <i class="fa-solid fa-users"></i><span>Clientes</span>
+    <button class="mobile-nav-btn" data-panel="reviews" onclick="navigate('reviews')">
+      <i class="fa-solid fa-star"></i><span>Aval.</span>
+      <span class="mobile-nav-badge" id="mobileReviewsBadge">0</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="openDrawer()">
+      <i class="fa-solid fa-ellipsis-vertical"></i><span>Menu</span>
     </button>
   </div>
 </div>
@@ -1469,7 +1503,9 @@ let state = {
   topProductsChartInstance: null,
   refreshInterval: null,
   productImages: [], // URLs das imagens do produto sendo editado
-  uploadingCount: 0
+  uploadingCount: 0,
+  avaliacoes: [],
+  filteredReviews: []
 };
 
 /* ============================================================
@@ -1559,7 +1595,7 @@ async function initApp(){
   $('topbarLoja').textContent=state.loja.nome||'Sem nome';
   $('drawerLojaName').textContent=state.loja.nome||'—';
   
-  await Promise.all([loadCategorias(),loadProdutos(),loadEncomendas()]);
+  await Promise.all([loadCategorias(),loadProdutos(),loadEncomendas(),loadReviews()]);
   
   state.encomendas.forEach(e=>{
     if((e.pagamento_estado==='pago'||e.estado==='entregue')&&!localStorage.getItem('pgdt_'+e.ref)){
@@ -1608,6 +1644,7 @@ function navigate(panel){
   if(panel==='products')renderProducts();
   if(panel==='categories')renderCategories();
   if(panel==='clients')renderClients();
+  if(panel==='reviews')renderReviews();
   if(panel==='settings')renderSettingsForm();
 }
 
@@ -2563,6 +2600,90 @@ async function changeToken(){
   if(t1!==t2){toast('Tokens não coincidem','error');return;}
   if(!confirm('Alterar o token irá desligar a sessão. Confirmas?'))return;
   try{await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:t1})});toast('Token alterado!','success');setTimeout(logout,2000);}catch(e){toast('Erro: '+e.message,'error');}
+}
+
+/* ============================================================
+   AVALIAÇÕES
+   ============================================================ */
+async function loadReviews() {
+  try {
+    state.avaliacoes = await api('/api/admin/avaliacoes');
+    state.filteredReviews = [...state.avaliacoes];
+    const pending = state.avaliacoes.filter(a => a.aprovada === 0).length;
+    const sb = $('sidebarReviewsBadge'), mb = $('mobileReviewsBadge');
+    if (pending > 0) {
+      sb.textContent = pending; sb.classList.add('visible');
+      mb.textContent = pending; mb.classList.add('visible');
+    } else {
+      sb.classList.remove('visible');
+      mb.classList.remove('visible');
+    }
+  } catch(e) { state.avaliacoes = []; state.filteredReviews = []; }
+}
+
+function filterReviews() {
+  const f = $('reviewsFilter').value;
+  state.filteredReviews = f === ''
+    ? [...state.avaliacoes]
+    : state.avaliacoes.filter(a => a.aprovada === parseInt(f));
+  renderReviews();
+}
+
+function renderReviews() {
+  const tbody = $('reviewsTableBody');
+  const reviews = state.filteredReviews || [];
+  $('reviewsCount').textContent = reviews.length + ' avalia' + (reviews.length !== 1 ? 'ções' : 'ção');
+
+  if (!reviews.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="7"><div class="empty-state"><i class="fa-solid fa-star"></i><h3>Sem avaliações</h3></div></td></tr>';
+    return;
+  }
+
+  const prodMap = {};
+  state.produtos.forEach(p => { prodMap[p.id] = p.nome; });
+
+  tbody.innerHTML = reviews.map(a => {
+    let estrelasHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      estrelasHtml += i <= a.estrelas
+        ? '<i class="fa-solid fa-star" style="color:var(--yellow);font-size:.55rem"></i>'
+        : '<i class="fa-regular fa-star" style="color:var(--muted2);font-size:.55rem"></i>';
+    }
+    return '<tr>' +
+      '<td><span style="font-size:.8rem;font-weight:600">' + esc(prodMap[a.produto_id] || 'Produto #' + a.produto_id) + '</span></td>' +
+      '<td><div class="table-name">' + esc(a.cliente_nome) + '</div><div class="table-sub">' + esc(a.cliente_email || '') + '</div></td>' +
+      '<td><div style="display:flex;gap:1px">' + estrelasHtml + '</div></td>' +
+      '<td><span style="font-size:.76rem;color:var(--muted);font-style:italic">' + (a.comentario ? '"' + esc(a.comentario.slice(0, 80)) + (a.comentario.length > 80 ? '...' : '') + '"' : '—') + '</span></td>' +
+      '<td style="font-size:.7rem;color:var(--muted)">' + fmtDate(a.criado_em) + '</td>' +
+      '<td><span class="badge ' + (a.aprovada ? 'badge-active' : 'badge-pending') + '">' + (a.aprovada ? 'Aprovada' : 'Pendente') + '</span></td>' +
+      '<td><div style="display:flex;gap:4px">' +
+        (!a.aprovada ? '<button class="btn btn-success btn-sm btn-icon" onclick="approveReview(' + a.id + ',1)" title="Aprovar"><i class="fa-solid fa-check"></i></button>' : '<button class="btn btn-outline btn-sm btn-icon" onclick="approveReview(' + a.id + ',0)" title="Rejeitar"><i class="fa-solid fa-xmark"></i></button>') +
+        '<button class="btn btn-danger btn-sm btn-icon" onclick="deleteReview(' + a.id + ')"><i class="fa-solid fa-trash"></i></button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function approveReview(id, status) {
+  try {
+    await api('/api/admin/avaliacoes/' + id, { method: 'PUT', body: JSON.stringify({ aprovada: status }) });
+    const idx = state.avaliacoes.findIndex(a => a.id === id);
+    if (idx >= 0) state.avaliacoes[idx].aprovada = status;
+    toast(status ? 'Avaliação aprovada!' : 'Avaliação rejeitada');
+    filterReviews();
+    loadReviews();
+  } catch(e) { toast('Erro ao actualizar', 'error'); }
+}
+
+async function deleteReview(id) {
+  if (!confirm('Apagar esta avaliação?')) return;
+  try {
+    await api('/api/admin/avaliacoes/' + id, { method: 'DELETE' });
+    state.avaliacoes = state.avaliacoes.filter(a => a.id !== id);
+    toast('Avaliação removida');
+    filterReviews();
+    loadReviews();
+  } catch(e) { toast('Erro ao remover', 'error'); }
 }
 
 /* ============================================================
