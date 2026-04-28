@@ -1859,6 +1859,7 @@ async function updateOrderStatus(ref,estado){
     if(idx>=0){state.encomendas[idx].estado=estado;if(pgEst){state.encomendas[idx].pagamento_estado='pago';if(!localStorage.getItem('pgdt_'+ref))localStorage.setItem('pgdt_'+ref,new Date().toISOString());}}
     state.filteredOrders=state.encomendas.filter(e=>{const s=$('ordersStatusFilter').value;return !s||e.estado===s;});
     toast('Estado actualizado: '+estadoLabel(estado));updateDashboardStats();renderOrders();
+    if(['confirmada','pronta','entregue','cancelada'].includes(estado))enviarNotificacao(ref,estado);
   }catch(e){toast('Erro ao actualizar','error');}
 }
 
@@ -1871,6 +1872,46 @@ async function togglePayment(ref,pagar){
     if(pe==='pago'&&!localStorage.getItem('pgdt_'+ref))localStorage.setItem('pgdt_'+ref,new Date().toISOString());
     toast(pagar?'Marcado como pago!':'Pagamento desmarcado');updateDashboardStats();renderOrders();
   }catch(e){toast('Erro ao actualizar','error');}
+}
+
+async function enviarNotificacao(ref, estado) {
+  try {
+    const result = await api('/api/admin/notificar/' + ref, {
+      method: 'POST',
+      body: JSON.stringify({ estado })
+    });
+
+    if (result.whatsapp_link) {
+      var w = 450;
+      var h = 600;
+      var left = (screen.width - w) / 2;
+      var top = (screen.height - h) / 2;
+
+      var popup = window.open(
+        result.whatsapp_link,
+        'whatsapp_notificacao',
+        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes'
+      );
+
+      if (popup) {
+        toast('<i class="fa-brands fa-whatsapp"></i> WhatsApp aberto! Clique em "Enviar" e depois feche a janela.', 'success');
+
+        var checkPopup = setInterval(function() {
+          if (popup.closed) {
+            clearInterval(checkPopup);
+            toast('<i class="fa-solid fa-circle-check"></i> Notificação concluída!', 'success');
+          }
+        }, 1000);
+      } else {
+        window.open(result.whatsapp_link, '_blank');
+        toast('<i class="fa-brands fa-whatsapp"></i> WhatsApp aberto! Clique em "Enviar" para notificar ' + (result.nome_cliente || 'cliente'), 'success');
+      }
+    } else if (result.erro) {
+      toast('<i class="fa-solid fa-triangle-exclamation"></i> ' + result.mensagem, 'info');
+    }
+  } catch (e) {
+    console.warn('Erro ao notificar:', e);
+  }
 }
 
 function exportOrdersCSV(){

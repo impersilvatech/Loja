@@ -34,6 +34,28 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .msg{font-size:.78rem;text-align:center;margin-top:10px;min-height:18px}
 .msg.err{color:var(--red)}.msg.ok{color:var(--teal)}
 
+/* Rastreio Card */
+.rastreio-card{
+  background:var(--grad);color:#fff;border:none;
+  border-radius:18px;padding:20px;margin-bottom:14px;
+}
+.rastreio-card h3{
+  font-family:var(--ft);font-size:1rem;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.rastreio-card p{
+  font-size:.76rem;opacity:.85;margin-bottom:12px;line-height:1.4;
+}
+.rastreio-card .fi{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:#fff;margin-bottom:8px;
+}
+.rastreio-card .fi::placeholder{color:rgba(255,255,255,.5)}
+.rastreio-card .btn-sub{
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+  box-shadow:none;
+}
+
 /* Perfil */
 .perfil-card{background:var(--grad);border-radius:20px;padding:0;margin-bottom:14px;position:relative;overflow:hidden}
 .perfil-top{position:relative;padding:40px 20px 30px;text-align:center;overflow:hidden}
@@ -80,12 +102,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </header>
 
 <div class="ctn">
-  <div class="card" style="margin-bottom:12px">
-    <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px"><i class="fa-solid fa-magnifying-glass"></i> Rastrear Encomenda</div>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Introduz a referência para ver o estado (ex: ENC-1776543210).</p>
-    <div class="fg"><input class="fi" type="text" id="rastrearRef" placeholder="ENC-XXXXXXXXXXXXXXX" style="text-transform:uppercase"></div>
-    <button class="btn-sub" onclick="rastrear()" style="margin-top:8px"><i class="fa-solid fa-magnifying-glass"></i> Ver Estado</button>
-    <div id="rastrearResult" style="margin-top:10px"></div>
+  <!-- RASTREIO RÁPIDO (sempre visível) -->
+  <div class="rastreio-card">
+    <h3><i class="fa-solid fa-magnifying-glass"></i> Rastrear Encomenda</h3>
+    <p>Acompanhe o estado do seu pedido em tempo real. Insira a referência abaixo.</p>
+    <input class="fi" type="text" id="rastrearRef" placeholder="ENC-XXXXXXXXXXXXXXX" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')irRastrear()"/>
+    <button class="btn-sub" onclick="irRastrear()"><i class="fa-solid fa-magnifying-glass"></i> Ver Estado da Encomenda</button>
+    <div id="rastrearResult" style="margin-top:8px;font-size:.78rem"></div>
   </div>
 
   <div id="authBox">
@@ -112,6 +135,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <div id="perfilBox" style="display:none">
     <div class="perfil-card perfil-anim" id="perfilCard"></div>
     <div class="menu">
+      <a href="rastrear.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-magnifying-glass"></i></div><div class="mi-txt"><strong>Rastrear Encomenda</strong><span>Acompanhe o seu pedido</span></div></a>
       <a href="catalogo.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-store"></i></div><div class="mi-txt"><strong>Ver Catálogo</strong><span>Explorar produtos</span></div></a>
       <a href="carrinho.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-cart-shopping"></i></div><div class="mi-txt"><strong>Meu Carrinho</strong><span>Itens no carrinho</span></div></a>
       <a href="sobre.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-circle-info"></i></div><div class="mi-txt"><strong>Sobre a Loja</strong><span>Contactos e informações</span></div></a>
@@ -141,7 +165,13 @@ function validarEmail(e){ return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function getCliente(){ try{return JSON.parse(localStorage.getItem('cf_cliente')||'null');}catch(e){return null;} }
 function salvarTel(t){ if(t) localStorage.setItem('cf_cliente_tel', t); }
 
-// Ícones Font Awesome para avatar
+function irRastrear(){
+  var ref = document.getElementById('rastrearRef').value.trim().toUpperCase();
+  if(!ref){ toast('Insira uma referência','err'); return; }
+  if(!/^ENC-\d{8,}$/.test(ref)){ toast('Formato inválido: ENC-XXXXXXXXXXXXXXX','err'); return; }
+  window.location.href = 'rastrear.html?ref='+encodeURIComponent(ref);
+}
+
 var avatares = [
   'fa-solid fa-crown','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-gem',
   'fa-solid fa-bolt','fa-solid fa-fire','fa-solid fa-sun','fa-solid fa-moon',
@@ -255,20 +285,6 @@ async function carregarEncs(){
 function verEnc(ref){ window.location.href = 'rastrear.html?ref='+ref; }
 
 function logout(){ localStorage.removeItem('cf_token'); localStorage.removeItem('cf_cliente'); localStorage.removeItem('cf_cliente_tel'); localStorage.removeItem('cf_avatar'); location.reload(); }
-
-async function rastrear(){
-  var ref=document.getElementById('rastrearRef').value.trim().toUpperCase();
-  var res=document.getElementById('rastrearResult');
-  if(!ref){res.innerHTML='<p style="color:var(--red);font-size:.78rem;text-align:center">Introduz uma referência.</p>';return;}
-  if(!/^ENC-\d{10,}$/.test(ref)){res.innerHTML='<p style="color:var(--red);font-size:.78rem;text-align:center;margin-top:8px">Referência inválida. Formato: ENC-XXXXXXXXXXXXXXX</p>';return;}
-  res.innerHTML='<div class="spin" style="width:20px;height:20px;border-width:2px;margin:10px auto"></div>';
-  try{
-    var r=await fetch(API+'/api/encomendas/'+ref); var d=await r.json();
-    if(d.erro) throw new Error(d.erro);
-    var estados={pendente:'⏳ Pendente',confirmada:'✓ Confirmada',pronta:'📦 Pronta',entregue:'✅ Entregue',cancelada:'✕ Cancelada'};
-    res.innerHTML='<div class="card" style="margin-top:8px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-family:var(--ft);font-size:.88rem">'+d.ref+'</span><span style="font-family:var(--ft);font-size:.68rem;color:'+(d.estado==='entregue'?'var(--teal)':'var(--yellow)')+'">'+(estados[d.estado]||d.estado)+'</span></div><div style="font-size:.78rem;color:var(--muted)">Total: <strong style="color:var(--pink)">'+kz(d.total)+'</strong></div></div>';
-  }catch(e){res.innerHTML='<p style="color:var(--red);font-size:.78rem;text-align:center;margin-top:8px">Encomenda não encontrada.</p>';}
-}
 
 var cli=getCliente(); if(cli) mostrarPerfil(cli);
 </script>

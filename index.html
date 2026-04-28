@@ -48,7 +48,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .card-nome{font-family:var(--ft);font-size:.88rem;line-height:1.25;margin-bottom:4px}
 .card-preco{font-family:var(--ft);font-size:.9rem;color:var(--pink)}
 .card-preco-orig{font-size:.68rem;color:var(--muted);text-decoration:line-through;margin-left:4px}
+.tag-destaque{padding:2px 8px;font-family:var(--ft);font-size:.5rem;border-radius:6px;background:var(--grad);color:#fff}
 .tag-promo{padding:2px 8px;font-family:var(--ft);font-size:.5rem;border-radius:6px;background:#ff4757;color:#fff}
+.tag-novo{padding:2px 8px;font-family:var(--ft);font-size:.5rem;border-radius:6px;background:var(--teal);color:#0d0d1a}
 .wish-btn{width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;color:#fff}
 .wish-btn.active{background:rgba(255,107,157,.3);border-color:rgba(255,107,157,.5);color:var(--pink)}
 .btn-add{position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
@@ -56,9 +58,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 [data-theme="light"] .nav{background:rgba(255,245,248,.97)}
 .btn-home-nav{width:38px;height:38px;background:var(--bg2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--white);text-decoration:none;font-size:.9rem;flex-shrink:0}
 [data-theme="light"] .btn-home-nav{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
-.nav-links{display:flex;gap:4px;align-items:center}
-.nl{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 10px;color:var(--muted);font-size:.52rem;text-decoration:none;transition:all .15s}
-.nl i{font-size:1.1rem}.nl:hover,.nl.on{color:var(--pink)}
+.nav-links{display:flex;gap:2px;align-items:center}
+.nl{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 7px;color:var(--muted);font-size:.48rem;text-decoration:none;transition:all .15s}
+.nl i{font-size:1rem}.nl:hover,.nl.on{color:var(--pink)}
 .btn-cart-nav{flex:1;height:38px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
 .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite;margin:28px auto}
 @keyframes spin-anim{to{transform:rotate(360deg)}}
@@ -67,7 +69,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast.ok{border-color:var(--pink);color:var(--pink)}
 .toast.err{border-color:#ff4757;color:#ff4757}
-.fab-wa{position:fixed;bottom:80px;right:14px;width:50px;height:50px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 16px rgba(37,211,102,.4);z-index:140;text-decoration:none}
 .auth-strip{margin:0 12px 12px;padding:13px 14px;border-radius:14px;border:1px solid var(--border);background:var(--card);display:none;align-items:center;gap:12px}
 .as-ico i{font-size:1.5rem;color:var(--pink)}.as-txt{flex:1}.as-txt h4{font-family:var(--ft);font-size:.9rem;margin-bottom:1px}.as-txt p{font-size:.72rem;color:var(--muted)}
 .as-btn{padding:8px 16px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.72rem;color:#fff;cursor:pointer;white-space:nowrap;text-decoration:none}
@@ -130,14 +131,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <div class="be-txt"><h4>Entrega ao domicílio</h4><p id="beSub">Recebe as tuas encomendas em casa.</p></div>
 </div>
 
-<a href="#" class="fab-wa" id="fabWa" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
-
 <div class="nav">
   <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
   <div class="nav-links">
     <a href="catalogo.html" class="nl"><i class="fa-solid fa-store"></i><span>Catálogo</span></a>
-    <a href="conta.html" class="nl"><i class="fa-solid fa-user"></i><span>Conta</span></a>
+    <a href="rastrear.html" class="nl"><i class="fa-solid fa-magnifying-glass"></i><span>Rastrear</span></a>
     <a href="sobre.html" class="nl"><i class="fa-solid fa-circle-info"></i><span>Sobre</span></a>
+    <a href="conta.html" class="nl"><i class="fa-solid fa-user"></i><span>Conta</span></a>
   </div>
   <a href="carrinho.html" class="btn-cart-nav" id="btnCart"><i class="fa-solid fa-cart-shopping"></i> Carrinho</a>
 </div>
@@ -169,23 +169,37 @@ async function carregar(){
   document.getElementById('hdrLogo').textContent=loja.nome||'Loja';document.title=loja.nome||'Loja';
   document.getElementById('heroTitulo').innerHTML='Bem-vindo à<br><span style="font-style:italic">'+(loja.nome||'Loja')+'</span>';
   if(loja.slogan)document.getElementById('heroSub').textContent=loja.slogan;
-  if(loja.whatsapp)document.getElementById('fabWa').href='https://wa.me/'+loja.whatsapp.replace(/\D/g,'')+'?text=Olá!';else document.getElementById('fabWa').style.display='none';
   if(!getCliente())document.getElementById('authStrip').style.display='flex';
-  if(loja.entrega_ativa){var b=document.getElementById('bannerEntrega');b.style.display='flex';if(loja.entrega_gratis>0)document.getElementById('beSub').textContent='Grátis a partir de '+kz(loja.entrega_gratis)+'.';else if(loja.entrega_prazo)document.getElementById('beSub').textContent='Prazo: '+loja.entrega_prazo;}
+  if(loja.entrega_ativa){var b=document.getElementById('bannerEntrega');b.style.display='flex';if(loja.entrega_gratis_a>0)document.getElementById('beSub').textContent='Grátis a partir de '+kz(loja.entrega_gratis_a)+'.';else if(loja.entrega_prazo)document.getElementById('beSub').textContent='Prazo: '+loja.entrega_prazo;}
   buildCats();renderDestaques();renderNovos();atualizarBtnCart();initPTR();
 }
 
 function buildCats(){var row=document.getElementById('catsRow');if(!cats.length){row.innerHTML='';return;}row.innerHTML=cats.map(function(c){return'<a href="catalogo.html?cat='+c.slug+'" class="cat">'+c.nome+'</a>';}).join('');}
-function renderDestaques(){var g=document.getElementById('pgDest');var lista=prods.slice(0,8);if(!lista.length){g.innerHTML='<p class="empty-msg" style="grid-column:1/-1">Sem produtos ainda.</p>';return;}g.innerHTML=lista.map(function(p){return cardHtml(p);}).join('');}
+
+function renderDestaques(){
+  var g=document.getElementById('pgDest');
+  var destaques=prods.filter(function(p){return p.destaque==1||p.destaque===true;});
+  if(!destaques.length){g.innerHTML='<p class="empty-msg" style="grid-column:1/-1">Sem produtos em destaque.</p>';return;}
+  g.innerHTML=destaques.slice(0,8).map(function(p){return cardHtml(p);}).join('');
+}
+
 function renderNovos(){var nov=prods.filter(function(p){return p.etiqueta==='novo';});if(!nov.length)return;document.getElementById('secNovos').style.display='flex';document.getElementById('pgNovos').innerHTML=nov.slice(0,6).map(function(p){return cardHtml(p);}).join('');}
 
 function cardHtml(p){
   var cat=cats.find(function(c){return c.id===p.categoria_id;});
   var preco=p.preco_base||p.preco||0,precoOrig=p.preco_original||p.preco_orig||0;
   var pct=precoOrig>preco?Math.round((1-preco/precoOrig)*100):0;
+  var isNew=p.etiqueta==='novo'||(p.criado_em&&(Date.now()-new Date(p.criado_em).getTime())<7*24*60*60*1000);
   var img=p.imagem_url?'<img src="'+p.imagem_url+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'<i class=fa-solid fa-image style=font-size:3rem;color:var(--muted)></i>\'">':'<i class="fa-solid fa-image" style="font-size:3rem;color:var(--muted)"></i>';
   var wished=getWishlist().indexOf(String(p.id))>=0;
-  return'<a href="produto.html?id='+p.id+'" class="card"><div class="card-img">'+img+'</div><div style="position:absolute;top:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:flex-start;z-index:1">'+(pct>0?'<span class="tag-promo">-'+pct+'%</span>':'<span></span>')+'<button class="wish-btn'+(wished?' active':'')+'" onclick="event.preventDefault();event.stopPropagation();toggleWish('+p.id+',this)">'+(wished?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>')+'</button></div><div class="card-body"><div class="card-cat">'+(cat?(cat.nome||cat.label):'')+'</div><div class="card-nome">'+p.nome+'</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="card-preco">'+(preco>0?kz(preco):'Orçamento')+'</span>'+(pct>0?'<span class="card-preco-orig">'+kz(precoOrig)+'</span>':'')+'</div></div>'+(p.disponivel!==0&&preco>0?'<button class="btn-add" onclick="event.preventDefault();event.stopPropagation();addCart('+p.id+')"><i class="fa-solid fa-plus"></i></button>':'')+'</a>';
+
+  // Construir tag (prioridade: Destaque > Promoção > Novo)
+  var tagHtml='';
+  if(p.destaque)tagHtml='<span class="tag-destaque">Destaque</span>';
+  else if(pct>0)tagHtml='<span class="tag-promo">-'+pct+'%</span>';
+  else if(isNew)tagHtml='<span class="tag-novo">Novo</span>';
+
+  return'<a href="produto.html?id='+p.id+'" class="card"><div class="card-img">'+img+'</div><div style="position:absolute;top:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:flex-start;z-index:1">'+tagHtml+'<button class="wish-btn'+(wished?' active':'')+'" onclick="event.preventDefault();event.stopPropagation();toggleWish('+p.id+',this)">'+(wished?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>')+'</button></div><div class="card-body"><div class="card-cat">'+(cat?(cat.nome||cat.label):'')+'</div><div class="card-nome">'+p.nome+'</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="card-preco">'+(preco>0?kz(preco):'Orçamento')+'</span>'+(pct>0?'<span class="card-preco-orig">'+kz(precoOrig)+'</span>':'')+'</div></div>'+(p.disponivel!==0&&preco>0?'<button class="btn-add" onclick="event.preventDefault();event.stopPropagation();addCart('+p.id+')"><i class="fa-solid fa-plus"></i></button>':'')+'</a>';
 }
 
 function addCart(id){
