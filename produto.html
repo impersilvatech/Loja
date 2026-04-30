@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#0d0d1a"/>
 <title>Produto</title>
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="/Loja/manifest.json"/>
+<link rel="icon" href="/Loja/favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
@@ -65,8 +65,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 @keyframes spin-anim{to{transform:rotate(360deg)}}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--pink);border-radius:16px;padding:10px 18px;font-size:.82rem;font-weight:700;color:var(--pink);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s ease;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}.toast.err{border-color:var(--red);color:var(--red)}
-
-/* Avaliações */
 .avaliacoes{padding:0 16px;margin-bottom:20px}
 .aval-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .aval-titulo{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;display:flex;align-items:center;gap:6px}
@@ -81,8 +79,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .aval-estrelas i.vazia{color:var(--border)}
 .aval-comentario{font-size:.78rem;color:var(--muted);line-height:1.5;font-style:italic}
 .aval-vazia{text-align:center;padding:20px;color:var(--muted);font-size:.78rem}
-
-/* Formulário de avaliação */
 .aval-form{border-top:1px solid var(--border);margin-top:14px;padding-top:14px}
 .aval-form-titulo{font-family:var(--ft);font-size:.76rem;color:var(--pink);margin-bottom:8px}
 .aval-stars-input{display:flex;gap:4px;margin-bottom:8px}
@@ -94,10 +90,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .aval-form .btn-enviar{width:100%;padding:10px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.8rem;color:#fff;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(255,107,157,.3)}
 .aval-form .btn-enviar:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
 .aval-msg{font-size:.7rem;text-align:center;margin-top:6px;min-height:16px}
-.aval-msg.ok{color:var(--teal)}
-.aval-msg.err{color:var(--red)}
-
-/* Produtos Relacionados */
+.aval-msg.ok{color:var(--teal)}.aval-msg.err{color:var(--red)}
 .relacionados{padding:0 16px;margin-bottom:20px}
 .relacionados-titulo{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .relacionados-scroll{display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:4px}
@@ -109,8 +102,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .relacionado-body{padding:8px 10px 10px}
 .relacionado-nome{font-family:var(--ft);font-size:.72rem;line-height:1.2;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .relacionado-preco{font-family:var(--ft);font-size:.76rem;color:var(--pink)}
-
-/* Upload de imagem de referência */
 .ref-upload{border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;margin-top:4px}
 .ref-upload:hover{border-color:var(--pink)}
 .ref-upload-preview{max-width:100%;max-height:120px;border-radius:8px;margin-top:6px;display:none}
@@ -133,7 +124,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </div>
 
 <div class="nav">
-  <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
+  <a href="/Loja/index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
   <button class="btn-rm-nav" id="btnRm" onclick="removerDoCarrinho()"><i class="fa-solid fa-trash-can"></i></button>
   <button class="btn-add-nav" id="btnAdd" disabled style="opacity:0.4"><i class="fa-solid fa-cart-shopping"></i> Adicionar ao Carrinho</button>
 </div>
@@ -163,12 +154,10 @@ function atualizarBtnEnviar(){
   if(btn){btn.disabled=!nome||estrelasSelecionadas===0;}
 }
 
-// Upload de imagem via Worker
 async function mostrarRefImg(input){
   var file=input.files[0];
   if(!file)return;
   if(file.size>5*1024*1024){toast('Imagem demasiado grande (máx 5MB)','err');return;}
-  
   var reader=new FileReader();
   reader.onload=async function(e){
     var base64=e.target.result;
@@ -177,38 +166,21 @@ async function mostrarRefImg(input){
     document.getElementById('refImgIcon').style.display='none';
     document.getElementById('refImgText').textContent='A enviar...';
     document.getElementById('refImgText').style.color='var(--yellow)';
-    
     try{
-      var r=await fetch(API+'/api/upload',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({image:base64,name:file.name})
-      });
+      var r=await fetch(API+'/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64,name:file.name})});
       var d=await r.json();
-      
-      if(d.url){
-        refImgData=d.url;
-        document.getElementById('refImgText').textContent='Imagem enviada! ✓';
-        document.getElementById('refImgText').style.color='var(--teal)';
-      }else{
-        refImgData=base64;
-        document.getElementById('refImgText').textContent='Imagem carregada (local)';
-        document.getElementById('refImgText').style.color='var(--teal)';
-      }
-    }catch(err){
-      refImgData=base64;
-      document.getElementById('refImgText').textContent='Imagem carregada (local)';
-      document.getElementById('refImgText').style.color='var(--teal)';
-    }
+      if(d.url){refImgData=d.url;document.getElementById('refImgText').textContent='Imagem enviada! ✓';document.getElementById('refImgText').style.color='var(--teal)';}
+      else{refImgData=base64;document.getElementById('refImgText').textContent='Imagem carregada (local)';document.getElementById('refImgText').style.color='var(--teal)';}
+    }catch(err){refImgData=base64;document.getElementById('refImgText').textContent='Imagem carregada (local)';document.getElementById('refImgText').style.color='var(--teal)';}
   };
   reader.readAsDataURL(file);
 }
 
 async function carregar(){
-  var id=getParam('id');if(!id){window.location.href='catalogo.html';return;}
+  var id=getParam('id');if(!id){window.location.href='/Loja/catalogo.html';return;}
   try{
     var rP=await fetch(API+'/api/produtos/'+id);produto=await rP.json();
-    if(produto.erro){window.location.href='catalogo.html';return;}
+    if(produto.erro){window.location.href='/Loja/catalogo.html';return;}
     var rL=await fetch(API+'/api/loja');loja=await rL.json();
     var rTodos=await fetch(API+'/api/produtos');todosProdutos=await rTodos.json();
   }catch(e){document.getElementById('conteudo').innerHTML='<p style="text-align:center;padding:40px;color:var(--muted)">Erro ao carregar.</p>';return;}
@@ -221,7 +193,12 @@ async function carregar(){
 
   imagens=[];
   if(produto.imagem_url)imagens.push(produto.imagem_url);
-  try{var extras=JSON.parse(produto.imagens_extra||'[]');imagens=imagens.concat(extras);}catch(e){}
+  try{
+    var extras=Array.isArray(produto.imagens_extra)
+      ? produto.imagens_extra
+      : JSON.parse(produto.imagens_extra||'[]');
+    imagens=imagens.concat(extras);
+  }catch(e){}
 
   var pct=produto.preco_original>produto.preco_base?Math.round((1-produto.preco_base/produto.preco_original)*100):0;
   var isNew=produto.etiqueta==='novo'||(produto.criado_em&&(Date.now()-new Date(produto.criado_em).getTime())<7*24*60*60*1000);
@@ -288,10 +265,7 @@ function mudarQty(d){
   document.getElementById('qtyVal').textContent=qty;
   document.getElementById('totalQty').textContent=qty>0?kz((produto.preco_base||0)*qty):'Kz 0';
   var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});
-  if(idx>=0){
-    if(qty===0){cart.splice(idx,1);salvarCarrinho(cart);}
-    else{cart[idx].quantidade=qty;salvarCarrinho(cart);}
-  }
+  if(idx>=0){if(qty===0){cart.splice(idx,1);salvarCarrinho(cart);}else{cart[idx].quantidade=qty;salvarCarrinho(cart);}}
   atualizarBtnAdd();
 }
 
@@ -299,128 +273,61 @@ function atualizarBtnAdd(){
   if(!produto||produto.preco_base<=0)return;
   var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});
   var btn=document.getElementById('btnAdd'),btnRm=document.getElementById('btnRm');
-  if(idx>=0){
-    btn.innerHTML='<i class="fa-solid fa-cart-shopping"></i> Ver Carrinho';btn.classList.add('cart');
-    btn.disabled=false;btn.style.opacity='1';
-    btn.onclick=function(){window.location.href='carrinho.html';};btnRm.classList.add('show');
-  }else{
-    btn.innerHTML='<i class="fa-solid fa-cart-shopping"></i> Adicionar ao Carrinho';btn.classList.remove('cart');
-    btn.disabled=qty===0;btn.style.opacity=qty===0?'0.4':'1';
-    btn.onclick=addCarrinho;btnRm.classList.remove('show');
-  }
+  if(idx>=0){btn.innerHTML='<i class="fa-solid fa-cart-shopping"></i> Ver Carrinho';btn.classList.add('cart');btn.disabled=false;btn.style.opacity='1';btn.onclick=function(){window.location.href='/Loja/carrinho.html';};btnRm.classList.add('show');}
+  else{btn.innerHTML='<i class="fa-solid fa-cart-shopping"></i> Adicionar ao Carrinho';btn.classList.remove('cart');btn.disabled=qty===0;btn.style.opacity=qty===0?'0.4':'1';btn.onclick=addCarrinho;btnRm.classList.remove('show');}
 }
 
 function addCarrinho(){
   if(!produto||produto.preco_base===0||qty===0)return;
   var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});
-  
   var nota=document.getElementById('notaInput').value.trim();
-  if(refImgData){
-    if(refImgData.startsWith('http')){
-      nota+='\n📷 Imagem de referência: '+refImgData;
-    }else{
-      nota+='\n📷 Imagem de referência enviada pelo cliente';
-    }
-    localStorage.setItem('cf_ref_img',refImgData);
-  }
-  
-  if(idx>=0){
-    cart[idx].quantidade=qty;cart[idx].nota=nota;salvarCarrinho(cart);toast('Quantidade atualizada!');
-  }else{
-    cart.push({chave:''+produto.id+'-'+Date.now(),produto_id:produto.id,nome:produto.nome,preco:produto.preco_base,quantidade:qty,imagem:produto.imagem_url||'',nota:nota});
-    salvarCarrinho(cart);toast(produto.nome+' adicionado!');
-  }
+  if(refImgData){if(refImgData.startsWith('http')){nota+='\n📷 Imagem de referência: '+refImgData;}else{nota+='\n📷 Imagem de referência enviada pelo cliente';}localStorage.setItem('cf_ref_img',refImgData);}
+  if(idx>=0){cart[idx].quantidade=qty;cart[idx].nota=nota;salvarCarrinho(cart);toast('Quantidade atualizada!');}
+  else{cart.push({chave:''+produto.id+'-'+Date.now(),produto_id:produto.id,nome:produto.nome,preco:produto.preco_base,quantidade:qty,imagem:produto.imagem_url||'',nota:nota});salvarCarrinho(cart);toast(produto.nome+' adicionado!');}
   atualizarBtnAdd();
 }
 
-function removerDoCarrinho(){
-  var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});
-  if(idx>=0){cart.splice(idx,1);salvarCarrinho(cart);toast('Removido do carrinho','err');}
-  qty=0;document.getElementById('qtyVal').textContent='0';document.getElementById('totalQty').textContent='Kz 0';atualizarBtnAdd();
-}
-
+function removerDoCarrinho(){var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});if(idx>=0){cart.splice(idx,1);salvarCarrinho(cart);toast('Removido do carrinho','err');}qty=0;document.getElementById('qtyVal').textContent='0';document.getElementById('totalQty').textContent='Kz 0';atualizarBtnAdd();}
 function toggleWish(){var wl=getWishlist();var idx=wl.indexOf(String(produto.id));if(idx>=0){wl.splice(idx,1);}else{wl.push(String(produto.id));}localStorage.setItem('cf_wl',JSON.stringify(wl));atualizarWishBtn();}
 function partilhar(){if(navigator.share){navigator.share({title:produto.nome,text:produto.descricao||'',url:window.location.href});}else{navigator.clipboard.writeText(window.location.href);toast('Link copiado!');}}
-
-// ============================================
-// AVALIAÇÕES
-// ============================================
 
 async function carregarAvaliacoes(){
   var container=document.getElementById('avaliacoesContainer');
   try{
     var r=await fetch(API+'/api/avaliacoes/'+produto.id);
     var avals=await r.json();
-    
     var total=avals.length;
     var media=total>0?(avals.reduce(function(s,a){return s+a.estrelas;},0)/total).toFixed(1):'0.0';
-    
     var estrelasHtml='';
-    for(var i=1;i<=5;i++){
-      estrelasHtml+=i<=Math.round(media)?'<i class="fa-solid fa-star"></i>':'<i class="fa-regular fa-star"></i>';
-    }
-    
+    for(var i=1;i<=5;i++){estrelasHtml+=i<=Math.round(media)?'<i class="fa-solid fa-star"></i>':'<i class="fa-regular fa-star"></i>';}
     var listaHtml='';
-    if(total===0){
-      listaHtml='<div class="aval-vazia"><i class="fa-regular fa-message"></i> Sem avaliações ainda. Seja o primeiro!</div>';
-    }else{
-      avals.forEach(function(a){
-        var ests='';
-        for(var i=1;i<=5;i++){
-          ests+=i<=a.estrelas?'<i class="fa-solid fa-star"></i>':'<i class="fa-regular fa-star vazia"></i>';
-        }
-        listaHtml+='<div class="aval-card"><div class="aval-top"><span class="aval-nome">'+a.cliente_nome+'</span><span class="aval-data">'+new Date(a.criado_em).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric'})+'</span></div><div class="aval-estrelas">'+ests+'</div>'+(a.comentario?'<div class="aval-comentario">'+a.comentario+'</div>':'')+'</div>';
-      });
-    }
-    
+    if(total===0){listaHtml='<div class="aval-vazia"><i class="fa-regular fa-message"></i> Sem avaliações ainda. Seja o primeiro!</div>';}
+    else{avals.forEach(function(a){var ests='';for(var i=1;i<=5;i++){ests+=i<=a.estrelas?'<i class="fa-solid fa-star"></i>':'<i class="fa-regular fa-star vazia"></i>';}listaHtml+='<div class="aval-card"><div class="aval-top"><span class="aval-nome">'+a.cliente_nome+'</span><span class="aval-data">'+new Date(a.criado_em).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric'})+'</span></div><div class="aval-estrelas">'+ests+'</div>'+(a.comentario?'<div class="aval-comentario">'+a.comentario+'</div>':'')+'</div>';});}
     var formHtml='<div class="aval-form"><div class="aval-form-titulo">Deixe a sua avaliação</div><div class="aval-stars-input" id="avalStars">';
-    for(var i=1;i<=5;i++){
-      formHtml+='<i class="fa-solid fa-star" data-star="'+i+'" onclick="setEstrelas('+i+')"></i>';
-    }
+    for(var i=1;i<=5;i++){formHtml+='<i class="fa-solid fa-star" data-star="'+i+'" onclick="setEstrelas('+i+')"></i>';}
     formHtml+='</div><input type="text" id="avalNome" placeholder="O seu nome" maxlength="50" oninput="atualizarBtnEnviar()"/><textarea id="avalComentario" placeholder="Comentário (opcional)" rows="2" maxlength="500"></textarea><button class="btn-enviar" id="btnEnviarAval" onclick="enviarAvaliacao()" disabled>Enviar Avaliação</button><div class="aval-msg" id="avalMsg"></div></div>';
-    
     container.innerHTML='<div class="aval-header"><div class="aval-titulo"><i class="fa-solid fa-star" style="color:var(--yellow)"></i> Avaliações ('+total+')</div><div class="aval-media">'+estrelasHtml+' '+media+'</div></div>'+listaHtml+formHtml;
-    
-  }catch(e){
-    container.innerHTML='<div class="aval-vazia">Erro ao carregar avaliações.</div>';
-  }
+  }catch(e){container.innerHTML='<div class="aval-vazia">Erro ao carregar avaliações.</div>';}
 }
 
-function setEstrelas(n){
-  estrelasSelecionadas=n;
-  document.querySelectorAll('#avalStars i').forEach(function(el,i){el.classList.toggle('ativa',i<n);});
-  atualizarBtnEnviar();
-}
+function setEstrelas(n){estrelasSelecionadas=n;document.querySelectorAll('#avalStars i').forEach(function(el,i){el.classList.toggle('ativa',i<n);});atualizarBtnEnviar();}
 
 async function enviarAvaliacao(){
   var nome=document.getElementById('avalNome').value.trim();
   var comentario=document.getElementById('avalComentario').value.trim();
   var msg=document.getElementById('avalMsg');
-  
   if(!nome){msg.textContent='Por favor, insira o seu nome.';msg.className='aval-msg err';return;}
   if(estrelasSelecionadas===0){msg.textContent='Por favor, selecione as estrelas.';msg.className='aval-msg err';return;}
-  
-  var btn=document.getElementById('btnEnviarAval');
-  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> A enviar...';
-  
+  var btn=document.getElementById('btnEnviarAval');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> A enviar...';
   try{
     var r=await fetch(API+'/api/avaliacoes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto_id:produto.id,cliente_nome:nome,estrelas:estrelasSelecionadas,comentario:comentario})});
-    var d=await r.json();
-    if(d.erro)throw new Error(d.erro);
-    msg.textContent=d.mensagem||'Avaliação enviada!';msg.className='aval-msg ok';
-    btn.innerHTML='Enviar Avaliação';btn.disabled=true;
-    document.getElementById('avalNome').value='';document.getElementById('avalComentario').value='';
-    estrelasSelecionadas=0;document.querySelectorAll('#avalStars i').forEach(function(el){el.classList.remove('ativa');});
+    var d=await r.json();if(d.erro)throw new Error(d.erro);
+    msg.textContent=d.mensagem||'Avaliação enviada!';msg.className='aval-msg ok';btn.innerHTML='Enviar Avaliação';btn.disabled=true;
+    document.getElementById('avalNome').value='';document.getElementById('avalComentario').value='';estrelasSelecionadas=0;
+    document.querySelectorAll('#avalStars i').forEach(function(el){el.classList.remove('ativa');});
     setTimeout(carregarAvaliacoes,2000);
-  }catch(e){
-    msg.textContent=e.message||'Erro ao enviar.';msg.className='aval-msg err';
-    btn.disabled=false;btn.innerHTML='Enviar Avaliação';
-  }
+  }catch(e){msg.textContent=e.message||'Erro ao enviar.';msg.className='aval-msg err';btn.disabled=false;btn.innerHTML='Enviar Avaliação';}
 }
-
-// ============================================
-// PRODUTOS RELACIONADOS
-// ============================================
 
 function carregarRelacionados(){
   var container=document.getElementById('relacionadosContainer');
@@ -428,20 +335,17 @@ function carregarRelacionados(){
   if(relacionados.length===0){relacionados=todosProdutos.filter(function(p){return p.id!==produto.id;}).slice(0,6);}
   relacionados=relacionados.slice(0,8);
   if(relacionados.length===0){container.innerHTML='';return;}
-  
   var cardsHtml=relacionados.map(function(p){
     var img=p.imagem_url?'<img src="'+p.imagem_url+'" alt="" loading="lazy" onerror="this.innerHTML=\'<i class=fa-solid fa-image style=font-size:1.5rem;color:var(--muted)></i>\'">':'<i class="fa-solid fa-image" style="font-size:1.5rem;color:var(--muted)"></i>';
     var preco=p.preco_base>0?kz(p.preco_base):'Orçamento';
-    return '<a href="produto.html?id='+p.id+'" class="relacionado-card"><div class="relacionado-img">'+img+'</div><div class="relacionado-body"><div class="relacionado-nome">'+p.nome+'</div><div class="relacionado-preco">'+preco+'</div></div></a>';
+    return '<a href="/Loja/produto.html?id='+p.id+'" class="relacionado-card"><div class="relacionado-img">'+img+'</div><div class="relacionado-body"><div class="relacionado-nome">'+p.nome+'</div><div class="relacionado-preco">'+preco+'</div></div></a>';
   }).join('');
-  
   container.innerHTML='<div class="relacionados-titulo"><i class="fa-solid fa-link"></i> Também Pode Gostar</div><div class="relacionados-scroll" id="relacionadosScroll">'+cardsHtml+'</div>';
   iniciarAutoScroll();
 }
 
 function iniciarAutoScroll(){
-  var scroll=document.getElementById('relacionadosScroll');
-  if(!scroll)return;
+  var scroll=document.getElementById('relacionadosScroll');if(!scroll)return;
   var scrollAmount=0,maxScroll=scroll.scrollWidth-scroll.clientWidth,direction=1,paused=false;
   scroll.addEventListener('mouseenter',function(){paused=true;});scroll.addEventListener('mouseleave',function(){paused=false;});
   scroll.addEventListener('touchstart',function(){paused=true;});scroll.addEventListener('touchend',function(){paused=false;});
