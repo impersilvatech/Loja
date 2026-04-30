@@ -2489,7 +2489,11 @@ async function loadProductForEdit(id){
     // Carregar imagens
     state.productImages=[];
     if(p.imagem_url)state.productImages.push(p.imagem_url);
-    try{const extras=JSON.parse(p.imagens_extra||'[]');state.productImages=state.productImages.concat(extras);}catch(e){}
+    try{
+      var extrasRaw=p.imagens_extra;
+      var extras=Array.isArray(extrasRaw)?extrasRaw:JSON.parse(extrasRaw||'[]');
+      state.productImages=state.productImages.concat(extras);
+    }catch(e){}
     renderProductImages();
     updateImageUrlsField();
     
