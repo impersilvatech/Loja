@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Pedido Confirmado!</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding:20px 0 60px}
+.confetti-wrap{position:fixed;top:0;left:0;right:0;pointer-events:none;z-index:0;height:100vh;overflow:hidden}
+.cdot{position:absolute;top:-12px;border-radius:50%;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.main{width:100%;max-width:460px;padding:24px 16px 40px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;margin:0 auto;text-align:center}
+.check-circle{width:90px;height:90px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:20px auto 18px;box-shadow:0 0 0 12px rgba(255,107,157,.15),0 0 0 24px rgba(255,107,157,.07);animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;color:#fff}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+h1{font-family:var(--ft);font-size:1.6rem;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.88rem;margin-bottom:24px;line-height:1.5}
+.sub strong{color:var(--white)}
+.ref-box{width:100%;text-align:center;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:18px;margin-bottom:12px}
+.ref-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.ref-val{font-family:var(--ft);font-size:1.7rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+.ref-copy{margin-top:8px;background:none;border:1px solid var(--border);border-radius:50px;padding:5px 14px;font-size:.68rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.ref-copy:hover{border-color:var(--pink);color:var(--pink)}
+.info-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;text-align:left}
+.info-l{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.84rem}
+.info-l:last-child{border-bottom:none}
+.info-l span:first-child{color:var(--muted)}
+.info-l strong{font-family:var(--ft)}
+.passos{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.passo{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:14px;text-align:left}
+.passo-n{width:30px;height:30px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:.85rem;color:#fff;flex-shrink:0}
+.passo-txt strong{display:block;font-size:.84rem;margin-bottom:1px}
+.passo-txt span{font-size:.72rem;color:var(--muted)}
+.btn-wa{width:100%;padding:15px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.3);display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;margin-bottom:10px;transition:all .2s}
+.btn-wa:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-rastrear{width:100%;padding:14px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.9rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,157,.3);display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:10px;transition:all .2s}
+.btn-rastrear:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-cat{width:100%;padding:13px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.88rem;color:var(--muted);cursor:pointer;text-decoration:none;display:block;text-align:center;transition:all .2s}
+.btn-cat:hover{border-color:var(--pink);color:var(--pink)}
+</style>
+</head>
+<body>
+<div class="confetti-wrap" id="confetti"></div>
+<div class="main">
+  <div class="check-circle"><i class="fa-solid fa-check"></i></div>
+  <h1>Pedido Confirmado!</h1>
+  <p class="sub" id="subTxt">Obrigado pelo seu pedido.<br>Entraremos em contacto em breve.</p>
+
+  <div class="ref-box">
+    <div class="ref-lbl">Referência do pedido</div>
+    <div class="ref-val" id="refVal">—</div>
+    <button class="ref-copy" onclick="copiarRef()"><i class="fa-regular fa-copy"></i> Copiar referência</button>
+  </div>
+
+  <div class="info-card">
+    <div class="info-l"><span>Total</span><strong id="totalVal" style="color:var(--pink)">—</strong></div>
+    <div class="info-l"><span>Estado</span><strong style="color:var(--teal)"><i class="fa-solid fa-circle-check"></i> Recebido</strong></div>
+    <div class="info-l"><span>Pagamento</span><strong style="color:var(--yellow)"><i class="fa-regular fa-clock"></i> Pendente</strong></div>
+  </div>
+
+  <div class="passos">
+    <div class="passo">
+      <div class="passo-n">1</div>
+      <div class="passo-txt"><strong>Acerte o pagamento</strong><span>Combine os detalhes com a loja pelo WhatsApp.</span></div>
+    </div>
+    <div class="passo">
+      <div class="passo-n">2</div>
+      <div class="passo-txt"><strong>Acompanhe o pedido</strong><span>Use a referência para rastrear o estado da sua encomenda.</span></div>
+    </div>
+    <div class="passo">
+      <div class="passo-n">3</div>
+      <div class="passo-txt"><strong>Entrega ou levantamento</strong><span>Será notificado quando estiver pronto.</span></div>
+    </div>
+  </div>
+
+  <a href="#" class="btn-rastrear" id="btnRastrear">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    Rastrear a minha encomenda
+  </a>
+
+  <a href="#" class="btn-wa" id="btnWa" target="_blank" rel="noopener">
+    <i class="fa-brands fa-whatsapp" style="font-size:1.4rem"></i>
+    Falar com a loja pelo WhatsApp
+  </a>
+
+  <a href="catalogo.html" class="btn-cat"><i class="fa-solid fa-store"></i> Continuar a comprar</a>
+</div>
+
+<script>
+var API='https://impersilva-d1work.3miliosilva.workers.dev';
+
+function kz(v,s){if(v==null)return'—';return(s||'Kz')+' '+Number(v).toLocaleString('pt');}
+
+async function carregar(){
+  var ref=localStorage.getItem('ist_ref')||'—';
+  var total=localStorage.getItem('ist_total')||'0';
+  var nome=localStorage.getItem('ist_nome')||'';
+
+  document.getElementById('refVal').textContent=ref;
+  document.getElementById('totalVal').textContent=kz(Number(total));
+  
+  // Link de rastreio
+  document.getElementById('btnRastrear').href='rastrear.html?ref='+encodeURIComponent(ref);
+
+  if(nome){
+    document.getElementById('subTxt').innerHTML='Obrigado, <strong>'+nome.split(' ')[0]+'</strong>!<br>Entraremos em contacto em breve.';
+  }
+
+  try{
+    var r=await fetch(API+'/api/loja');var loja=await r.json();
+    var waNum=(loja.whatsapp||'').replace(/\D/g,'');
+    if(waNum){
+      var msg=encodeURIComponent('Olá! Acabei de fazer um pedido.\n\nReferência: '+ref+'\nTotal: '+kz(Number(total))+'\n\nGostaria de acertar o pagamento. Obrigado!');
+      document.getElementById('btnWa').href='https://wa.me/'+waNum+'?text='+msg;
+    }else{document.getElementById('btnWa').style.display='none';}
+  }catch(e){}
+
+  ['ist_ref','ist_total','ist_nome','ist_wa'].forEach(function(k){localStorage.removeItem(k);});
+  lancarConfetti();
+}
+
+function lancarConfetti(){
+  var cont=document.getElementById('confetti');
+  var cores=['#ff6b9d','#b14ae8','#ffd166','#06d6a0','#ff9f43','#ff4757'];
+  for(var i=0;i<80;i++){
+    var d=document.createElement('div');d.className='cdot';
+    var size=Math.random()*10+5;
+    d.style.cssText='left:'+(Math.random()*100)+'%;width:'+size+'px;height:'+size+'px;background:'+cores[Math.floor(Math.random()*cores.length)]+';animation-duration:'+(Math.random()*2+2)+'s;animation-delay:'+(Math.random()*2)+'s';
+    cont.appendChild(d);
+  }
+}
+
+function copiarRef(){
+  var ref=document.getElementById('refVal').textContent;
+  navigator.clipboard.writeText(ref).then(function(){
+    var btn=document.querySelector('.ref-copy');
+    btn.innerHTML='<i class="fa-solid fa-check"></i> Copiado!';
+    btn.style.color='var(--teal)';btn.style.borderColor='var(--teal)';
+    setTimeout(function(){btn.innerHTML='<i class="fa-regular fa-copy"></i> Copiar referência';btn.style.color='';btn.style.borderColor='';},2500);
+  });
+}
+
+carregar();
+</script>
+</body>
+</html>
