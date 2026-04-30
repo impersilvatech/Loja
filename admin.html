@@ -3104,7 +3104,7 @@ async function deleteCoupon(id, codigo) {
 /* ============================================================
    LIMPEZA DE IMAGENS
    ============================================================ */
-let cleanupData = { orfas: [] };
+let cleanupData = { imagens: [], emUso: [], orfas: [] };
 
 async function loadCleanup() {
   const result = $('cleanupResult');
@@ -3114,66 +3114,63 @@ async function loadCleanup() {
   if (btnTodas) btnTodas.style.display = 'none';
 
   try {
-    const data = await api('/api/admin/imagens/orfas');
-    cleanupData = data || { orfas: [] };
-    const orfas = cleanupData.orfas || [];
+    const data = await api('/api/admin/imagens/lista');
+    cleanupData = data;
+    const orfas = data.orfas || [];
+
+    if ($('cleanupTotal')) $('cleanupTotal').textContent = data.total || '0';
+    if ($('cleanupEmUso')) $('cleanupEmUso').textContent = (data.emUso || []).length || '0';
+    if ($('cleanupOrfas')) $('cleanupOrfas').textContent = orfas.length || '0';
 
     if (!orfas.length) {
-      result.innerHTML = '<div class="info-box success"><i class="fa-solid fa-circle-check"></i> Sem imagens órfãs encontradas. O repositório está limpo!</div>';
+      result.innerHTML = '<div class="info-box success"><i class="fa-solid fa-circle-check"></i> Nenhuma imagem órfã encontrada! O repositório está limpo.</div>';
       return;
     }
 
     if (btnTodas) btnTodas.style.display = 'inline-flex';
 
     result.innerHTML =
-      '<div class="info-box warning"><i class="fa-solid fa-triangle-exclamation"></i> Encontradas <strong>' + orfas.length + '</strong> imagem(ns) não utilizadas por nenhum produto.</div>' +
       '<div class="section-card" style="padding:0;overflow:hidden"><div class="table-wrap"><table>' +
-      '<thead><tr><th>Pré-visualização</th><th>Ficheiro</th><th>Tamanho</th><th>Acção</th></tr></thead><tbody>' +
+      '<thead><tr><th>Imagem</th><th>Nome</th><th>Estado</th><th>Acção</th></tr></thead><tbody>' +
       orfas.map(function(img) {
-        const safeId = 'crow-' + img.sha.slice(0, 12);
-        return '<tr id="' + safeId + '">' +
-          '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.style.display=\'none\'"/></div></td>' +
-          '<td><div class="table-name" style="font-size:.72rem;word-break:break-all">' + esc(img.path) + '</div></td>' +
-          '<td><span style="font-size:.7rem;color:var(--muted)">' + (img.size ? (img.size / 1024).toFixed(1) + ' KB' : '—') + '</span></td>' +
-          '<td><button class="btn btn-danger btn-sm btn-icon" onclick="removerImagem(\'' + esc(img.path) + '\',\'' + esc(img.sha) + '\')" title="Remover"><i class="fa-solid fa-trash"></i></button></td>' +
+        return '<tr>' +
+          '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.style.display=\'none\'" style="width:100%;height:100%;object-fit:cover"/></div></td>' +
+          '<td><div class="table-name" style="font-size:.72rem;word-break:break-all">' + esc(img.nome) + '</div></td>' +
+          '<td><span class="badge badge-cancelled">Não Utilizada</span></td>' +
+          '<td><button class="btn btn-danger btn-sm" onclick="removerImagem(\'' + esc(img.path) + '\',\'' + esc(img.sha) + '\',\'' + esc(img.nome) + '\')"><i class="fa-solid fa-trash"></i> Remover</button></td>' +
           '</tr>';
       }).join('') +
       '</tbody></table></div></div>';
 
   } catch(e) {
-    result.innerHTML = '<div class="info-box danger"><i class="fa-solid fa-circle-xmark"></i> Erro ao verificar imagens: ' + esc(e.message) + '</div>';
+    result.innerHTML = '<div class="info-box danger"><i class="fa-solid fa-circle-xmark"></i> ' + esc(e.message) + '<br><small>Verifica se o GitHub está configurado e a pasta imagens/produtos existe no repositório.</small></div>';
   }
 }
 
-async function removerImagem(path, sha) {
-  if (!confirm('Remover a imagem "' + path + '"?\nEsta acção não pode ser revertida.')) return;
+async function removerImagem(path, sha, nome) {
+  if (!confirm('Remover "' + nome + '" do GitHub?\n\nEsta acção é irreversível!')) return;
   const btn = btnBusy(document.activeElement);
   try {
-    await api('/api/admin/imagens', { method: 'DELETE', body: JSON.stringify({ path, sha }) });
+    await api('/api/admin/imagens/remover', { method: 'DELETE', body: JSON.stringify({ path, sha }) });
     toast('Imagem removida!', 'success');
-    const row = document.getElementById('crow-' + sha.slice(0, 12));
-    if (row) row.remove();
-    // Se já não há linhas na tabela, recarregar estado vazio
-    const tbody = document.querySelector('#cleanupResult tbody');
-    if (tbody && !tbody.rows.length) loadCleanup();
+    loadCleanup();
   } catch(e) {
-    toast('Erro ao remover: ' + e.message, 'error');
+    toast('Erro: ' + e.message, 'error');
   }
   btnDone(btn);
 }
 
 async function removerTodasOrfas() {
   const total = (cleanupData.orfas || []).length;
-  if (!total) { toast('Sem imagens órfãs para remover', 'info'); return; }
-  if (!confirm('Remover TODAS as ' + total + ' imagens órfãs?\nEsta acção não pode ser revertida.')) return;
+  if (!total) { toast('Nenhuma imagem órfã para remover.', 'info'); return; }
+  if (!confirm('Remover TODAS as ' + total + ' imagens não utilizadas?\n\nEsta acção é irreversível!')) return;
   const btn = btnBusy($('btnRemoverTodas'));
   try {
-    await api('/api/admin/imagens/orfas', { method: 'DELETE' });
-    toast('Todas as imagens órfãs removidas!', 'success');
-    cleanupData = { orfas: [] };
+    const res = await api('/api/admin/imagens/remover-todas', { method: 'DELETE', body: JSON.stringify({ orfas: cleanupData.orfas }) });
+    toast('Removidas: ' + (res.removidas || 0) + ' | Erros: ' + (res.erros || 0), 'success');
     loadCleanup();
   } catch(e) {
-    toast('Erro ao remover: ' + e.message, 'error');
+    toast('Erro: ' + e.message, 'error');
   }
   btnDone(btn);
 }
