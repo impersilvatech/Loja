@@ -1228,16 +1228,49 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             <div class="page-title"><i class="fa-solid fa-broom" style="color:var(--orange)"></i> Limpeza de Imagens</div>
             <div class="page-actions">
               <button class="btn btn-outline btn-sm" onclick="loadCleanup()"><i class="fa-solid fa-rotate"></i> Verificar</button>
-              <button class="btn btn-danger btn-sm" id="btnRemoverTodas" onclick="removerTodasOrfas()" style="display:none"><i class="fa-solid fa-trash"></i> Remover todas as órfãs</button>
             </div>
           </div>
-          <div id="cleanupResult">
-            <div class="empty-state">
-              <i class="fa-solid fa-broom"></i>
-              <h3>Pronto para verificar</h3>
-              <p>Clica em "Verificar" para encontrar imagens não utilizadas por nenhum produto.</p>
+          
+          <div class="info-box warning">
+            <i class="fa-solid fa-triangle-exclamation"></i> Esta secção lista imagens que estão no GitHub mas não são usadas por nenhum produto. Remova apenas se tiver a certeza.
+          </div>
+          
+          <!-- Stats -->
+          <div class="stats-grid" style="margin-bottom:14px">
+            <div class="stat-card orange">
+              <div class="stat-icon orange"><i class="fa-solid fa-image"></i></div>
+              <div class="stat-value" id="cleanupTotal">—</div>
+              <div class="stat-label">Total no GitHub</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-icon teal"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-value" id="cleanupEmUso">—</div>
+              <div class="stat-label">Em Uso</div>
+            </div>
+            <div class="stat-card" style="border-color:var(--red)">
+              <div class="stat-icon" style="background:rgba(255,71,87,.1);color:var(--red)"><i class="fa-solid fa-trash-can"></i></div>
+              <div class="stat-value" id="cleanupOrfas" style="color:var(--red)">—</div>
+              <div class="stat-label">Não Utilizadas</div>
             </div>
           </div>
+          
+          <!-- Botão limpar todas -->
+          <div id="cleanupActions" style="display:none;margin-bottom:14px">
+            <button class="btn btn-danger" onclick="removerTodasOrfas()">
+              <i class="fa-solid fa-trash-can"></i> Remover Todas as Não Utilizadas
+            </button>
+          </div>
+          
+          <!-- Tabela -->
+          <div class="section-card" style="padding:0;overflow:hidden">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Imagem</th><th>Nome</th><th>Estado</th><th>Acções</th></tr></thead>
+                <tbody id="cleanupTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="cleanupInfo"></p>
         </div>
 
         <!-- ============================================
@@ -1685,13 +1718,7 @@ async function api(url, options={}){
   const headers={'Content-Type':'application/json'};
   if(state.token)headers['Authorization']='Bearer '+state.token;
   const res=await fetch(API+url,{...options,headers:{...headers,...(options.headers||{})}});
-  const ct=res.headers.get('content-type')||'';
-  if(!ct.includes('application/json')){
-    await res.text();
-    throw new Error('Endpoint não encontrado ou indisponível (HTTP '+res.status+')');
-  }
   const data=await res.json();
-  if(!res.ok)throw new Error(data.erro||data.message||'Erro HTTP '+res.status);
   if(data.erro)throw new Error(data.erro);
   return data;
 }
@@ -3107,51 +3134,55 @@ async function deleteCoupon(id, codigo) {
 let cleanupData = { imagens: [], emUso: [], orfas: [] };
 
 async function loadCleanup() {
-  const result = $('cleanupResult');
-  if (!result) return;
-  result.innerHTML = '<div class="spinner"></div>';
-  const btnTodas = $('btnRemoverTodas');
-  if (btnTodas) btnTodas.style.display = 'none';
-
+  const tbody = $('cleanupTableBody');
+  tbody.innerHTML = '<tr><td colspan="4"><div class="spinner"></div></td></tr>';
+  
   try {
     const data = await api('/api/admin/imagens/lista');
     cleanupData = data;
-    const orfas = data.orfas || [];
-
-    if ($('cleanupTotal')) $('cleanupTotal').textContent = data.total || '0';
-    if ($('cleanupEmUso')) $('cleanupEmUso').textContent = (data.emUso || []).length || '0';
-    if ($('cleanupOrfas')) $('cleanupOrfas').textContent = orfas.length || '0';
-
-    if (!orfas.length) {
-      result.innerHTML = '<div class="info-box success"><i class="fa-solid fa-circle-check"></i> Nenhuma imagem órfã encontrada! O repositório está limpo.</div>';
+    
+    $('cleanupTotal').textContent = data.total || '0';
+    $('cleanupEmUso').textContent = (data.emUso||[]).length || '0';
+    $('cleanupOrfas').textContent = (data.orfas||[]).length || '0';
+    $('cleanupInfo').textContent = 'Espaço estimado: ' + ((data.orfas||[]).length * 0.2).toFixed(1) + ' MB em imagens não utilizadas';
+    
+    if ((data.orfas||[]).length > 0) {
+      $('cleanupActions').style.display = 'block';
+    } else {
+      $('cleanupActions').style.display = 'none';
+    }
+    
+    if (!data.imagens || data.imagens.length === 0) {
+      tbody.innerHTML = '<tr class="table-empty"><td colspan="4"><div class="empty-state"><i class="fa-solid fa-image"></i><h3>Nenhuma imagem encontrada</h3><p>Verifica se o GitHub está configurado.</p></div></td></tr>';
       return;
     }
-
-    if (btnTodas) btnTodas.style.display = 'inline-flex';
-
-    result.innerHTML =
-      '<div class="section-card" style="padding:0;overflow:hidden"><div class="table-wrap"><table>' +
-      '<thead><tr><th>Imagem</th><th>Nome</th><th>Estado</th><th>Acção</th></tr></thead><tbody>' +
-      orfas.map(function(img) {
-        return '<tr>' +
-          '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.style.display=\'none\'" style="width:100%;height:100%;object-fit:cover"/></div></td>' +
-          '<td><div class="table-name" style="font-size:.72rem;word-break:break-all">' + esc(img.nome) + '</div></td>' +
-          '<td><span class="badge badge-cancelled">Não Utilizada</span></td>' +
-          '<td><button class="btn btn-danger btn-sm" onclick="removerImagem(\'' + esc(img.path) + '\',\'' + esc(img.sha) + '\',\'' + esc(img.nome) + '\')"><i class="fa-solid fa-trash"></i> Remover</button></td>' +
-          '</tr>';
-      }).join('') +
-      '</tbody></table></div></div>';
-
+    
+    // Mostrar primeiro as órfãs, depois as em uso
+    const ordenadas = [...(data.orfas||[]), ...(data.emUso||[])];
+    
+    tbody.innerHTML = ordenadas.map(img => {
+      return '<tr>' +
+        '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image></i>\'" style="width:100%;height:100%;object-fit:cover"></div></td>' +
+        '<td><div class="table-name" style="font-size:.75rem;word-break:break-all">' + esc(img.nome) + '</div></td>' +
+        '<td><span class="badge ' + (img.emUso ? 'badge-active' : 'badge-cancelled') + '">' + (img.emUso ? 'Em Uso' : 'Não Utilizada') + '</span></td>' +
+        '<td>' + (!img.emUso ? '<button class="btn btn-danger btn-sm" onclick="removerImagem(\'' + esc(img.path) + '\', \'' + esc(img.sha) + '\', \'' + esc(img.nome) + '\')"><i class="fa-solid fa-trash"></i> Remover</button>' : '<span style="font-size:.68rem;color:var(--muted)">—</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+    
   } catch(e) {
-    result.innerHTML = '<div class="info-box danger"><i class="fa-solid fa-circle-xmark"></i> ' + esc(e.message) + '<br><small>Verifica se o GitHub está configurado e a pasta imagens/produtos existe no repositório.</small></div>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--red)">Erro: ' + esc(e.message) + '</td></tr>';
   }
 }
 
 async function removerImagem(path, sha, nome) {
-  if (!confirm('Remover "' + nome + '" do GitHub?\n\nEsta acção é irreversível!')) return;
+  if (!confirm('Remover "' + nome + '" do GitHub?\n\nEsta ação é irreversível!')) return;
+  
   const btn = btnBusy(document.activeElement);
   try {
-    await api('/api/admin/imagens/remover', { method: 'DELETE', body: JSON.stringify({ path, sha }) });
+    await api('/api/admin/imagens/remover', {
+      method: 'DELETE',
+      body: JSON.stringify({ path, sha })
+    });
     toast('Imagem removida!', 'success');
     loadCleanup();
   } catch(e) {
@@ -3161,13 +3192,20 @@ async function removerImagem(path, sha, nome) {
 }
 
 async function removerTodasOrfas() {
-  const total = (cleanupData.orfas || []).length;
-  if (!total) { toast('Nenhuma imagem órfã para remover.', 'info'); return; }
-  if (!confirm('Remover TODAS as ' + total + ' imagens não utilizadas?\n\nEsta acção é irreversível!')) return;
-  const btn = btnBusy($('btnRemoverTodas'));
+  if (!cleanupData.orfas || cleanupData.orfas.length === 0) {
+    toast('Nenhuma imagem órfã para remover.', 'info');
+    return;
+  }
+  
+  if (!confirm('Remover TODAS as ' + cleanupData.orfas.length + ' imagens não utilizadas?\n\nEsta ação é irreversível!')) return;
+  
+  const btn = btnBusy(document.activeElement);
   try {
-    const res = await api('/api/admin/imagens/remover-todas', { method: 'DELETE', body: JSON.stringify({ orfas: cleanupData.orfas }) });
-    toast('Removidas: ' + (res.removidas || 0) + ' | Erros: ' + (res.erros || 0), 'success');
+    const result = await api('/api/admin/imagens/remover-todas', {
+      method: 'DELETE',
+      body: JSON.stringify({ orfas: cleanupData.orfas })
+    });
+    toast('Removidas: ' + result.removidas + ' | Erros: ' + result.erros, 'success');
     loadCleanup();
   } catch(e) {
     toast('Erro: ' + e.message, 'error');
