@@ -1,5 +1,5 @@
-// Service Worker — IMPERSILVATECH PWA
-const CACHE_NAME = 'impersilva-v3';
+// Service Worker — IMPERSILVATECH PWA (OTIMIZADO)
+const CACHE_NAME = 'impersilva-v4';
 const ASSETS = [
   '/Loja/',
   '/Loja/index.html',
@@ -11,11 +11,11 @@ const ASSETS = [
   '/Loja/conta.html',
   '/Loja/sobre.html',
   '/Loja/rastrear.html',
-  '/Loja/admin.html',
   '/Loja/manifest.json',
   '/Loja/favicon.svg'
 ];
 
+// Instalar
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -25,6 +25,7 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
+// Activar
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -37,31 +38,50 @@ self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
+// Fetch — Stale-While-Revalidate (rápido + atualizado)
 self.addEventListener('fetch', function(event) {
+  // API — não cachear
   if (event.request.url.includes('/api/') || event.request.url.includes('workers.dev')) {
     return;
   }
   
+  // CDNs — cache por 30 dias
+  if (event.request.url.includes('cdnjs.cloudflare.com') ||
+    event.request.url.includes('fonts.googleapis.com') ||
+    event.request.url.includes('fonts.gstatic.com') ||
+    event.request.url.includes('jsdelivr.net')) {
+    event.respondWith(
+      caches.match(event.request).then(function(cached) {
+        return cached || fetch(event.request).then(function(response) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, clone);
+          });
+          return response;
+        });
+      })
+    );
+    return;
+  }
+  
+  // HTML e assets locais — Cache First (instantâneo)
   event.respondWith(
     caches.match(event.request).then(function(cached) {
-      if (cached) return cached;
-      
-      return fetch(event.request).then(function(response) {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+      // Servir do cache imediatamente
+      var fetchPromise = fetch(event.request).then(function(response) {
+        if (response && response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, clone);
+          });
         }
-        
-        var clone = response.clone();
-        caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, clone);
-        });
-        
         return response;
       }).catch(function() {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/Loja/index.html');
-        }
+        return cached;
       });
+      
+      // Retornar cache primeiro, atualizar em background
+      return cached || fetchPromise;
     })
   );
 });
