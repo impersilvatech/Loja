@@ -2477,12 +2477,18 @@ async function saveProduct(){
   if($('productIsNew').checked) etiqueta='novo';
   else if(precoOrig>0&&precoOrig>preco) etiqueta='promocao';
   
-  // Imagens — nunca guardar base64
-  const mainImage=state.productImages.length>0&&!state.productImages[0].startsWith('data:')?state.productImages[0]:null;
-  const extraImages=state.productImages.length>1
-    ?JSON.stringify(state.productImages.slice(1).filter(u=>!u.startsWith('data:')))
-    :'[]';
-  
+  // Imagens
+  const mainImage=state.productImages.length>0?state.productImages[0]:null;
+  let extraImages='[]';
+  if(state.productImages.length>1){
+    const extras=state.productImages.slice(1);
+    // Só guardar URLs HTTP (não base64)
+    const httpExtras=extras.filter(function(u){return u&&u.startsWith('http');});
+    if(httpExtras.length>0){
+      extraImages=JSON.stringify(httpExtras);
+    }
+  }
+
   // Variações
   const vars=[];
   document.querySelectorAll('.var-row').forEach(row=>{
@@ -2498,7 +2504,7 @@ async function saveProduct(){
     preco_base:preco,
     preco_original:precoOrig||null,
     categoria_id:parseInt($('productCategory').value)||null,
-    imagem_url:mainImage,
+    imagem_url:mainImage||null,
     imagens_extra:extraImages,
     destaque:$('productFeatured').checked?1:0,
     disponivel:$('productAvailable').checked?1:0,
