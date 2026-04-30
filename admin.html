@@ -974,6 +974,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <i class="fa-solid fa-ticket"></i>
         <span class="sidebar-item-label">Cupões</span>
       </button>
+      <button class="sidebar-item" data-panel="cleanup" onclick="navigate('cleanup')">
+        <i class="fa-solid fa-broom"></i>
+        <span class="sidebar-item-label">Limpeza</span>
+      </button>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
@@ -1217,6 +1221,59 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             LIMPEZA DE IMAGENS
+             ============================================ -->
+        <div class="panel" id="panel-cleanup">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-broom" style="color:var(--orange)"></i> Limpeza de Imagens</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="loadCleanup()"><i class="fa-solid fa-rotate"></i> Verificar</button>
+            </div>
+          </div>
+          
+          <div class="info-box warning">
+            <i class="fa-solid fa-triangle-exclamation"></i> Esta secção lista imagens que estão no GitHub mas não são usadas por nenhum produto. Remova apenas se tiver a certeza.
+          </div>
+          
+          <!-- Stats -->
+          <div class="stats-grid" style="margin-bottom:14px">
+            <div class="stat-card orange">
+              <div class="stat-icon orange"><i class="fa-solid fa-image"></i></div>
+              <div class="stat-value" id="cleanupTotal">—</div>
+              <div class="stat-label">Total no GitHub</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-icon teal"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-value" id="cleanupEmUso">—</div>
+              <div class="stat-label">Em Uso</div>
+            </div>
+            <div class="stat-card" style="border-color:var(--red)">
+              <div class="stat-icon" style="background:rgba(255,71,87,.1);color:var(--red)"><i class="fa-solid fa-trash-can"></i></div>
+              <div class="stat-value" id="cleanupOrfas" style="color:var(--red)">—</div>
+              <div class="stat-label">Não Utilizadas</div>
+            </div>
+          </div>
+          
+          <!-- Botão limpar todas -->
+          <div id="cleanupActions" style="display:none;margin-bottom:14px">
+            <button class="btn btn-danger" onclick="removerTodasOrfas()">
+              <i class="fa-solid fa-trash-can"></i> Remover Todas as Não Utilizadas
+            </button>
+          </div>
+          
+          <!-- Tabela -->
+          <div class="section-card" style="padding:0;overflow:hidden">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Imagem</th><th>Nome</th><th>Estado</th><th>Acções</th></tr></thead>
+                <tbody id="cleanupTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="cleanupInfo"></p>
+        </div>
+
+        <!-- ============================================
              CONFIGURAÇÕES
              ============================================ -->
         <div class="panel" id="panel-settings">
@@ -1273,6 +1330,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn teal" onclick="navigateMore('coupons')">
           <i class="fa-solid fa-ticket"></i>
           <span>Cupões</span>
+        </button>
+        <button class="more-btn orange" onclick="navigateMore('cleanup')">
+          <i class="fa-solid fa-broom"></i>
+          <span>Limpeza</span>
         </button>
         <button class="more-btn" onclick="navigateMore('settings')">
           <i class="fa-solid fa-gear"></i>
@@ -1821,6 +1882,7 @@ function navigate(panel){
     renderReviews();
   }
   if(panel==='coupons')renderCoupons();
+  if(panel==='cleanup')loadCleanup();
   if(panel==='settings')renderSettingsForm();
 }
 
@@ -2427,12 +2489,7 @@ async function loadProductForEdit(id){
     // Carregar imagens
     state.productImages=[];
     if(p.imagem_url)state.productImages.push(p.imagem_url);
-    try{
-      var extrasRaw=p.imagens_extra;
-      // Verificar se já é array ou string JSON
-      var extras=Array.isArray(extrasRaw)?extrasRaw:JSON.parse(extrasRaw||'[]');
-      state.productImages=state.productImages.concat(extras);
-    }catch(e){}
+    try{const extras=JSON.parse(p.imagens_extra||'[]');state.productImages=state.productImages.concat(extras);}catch(e){}
     renderProductImages();
     updateImageUrlsField();
     
@@ -3068,6 +3125,91 @@ async function deleteCoupon(id, codigo) {
     toast('Cupão removido', 'success');
     renderCoupons();
   } catch(e) { toast('Erro ao remover', 'error'); }
+  btnDone(btn);
+}
+
+/* ============================================================
+   LIMPEZA DE IMAGENS
+   ============================================================ */
+let cleanupData = { imagens: [], emUso: [], orfas: [] };
+
+async function loadCleanup() {
+  const tbody = $('cleanupTableBody');
+  tbody.innerHTML = '<tr><td colspan="4"><div class="spinner"></div></td></tr>';
+  
+  try {
+    const data = await api('/api/admin/imagens/lista');
+    cleanupData = data;
+    
+    $('cleanupTotal').textContent = data.total || '0';
+    $('cleanupEmUso').textContent = (data.emUso||[]).length || '0';
+    $('cleanupOrfas').textContent = (data.orfas||[]).length || '0';
+    $('cleanupInfo').textContent = 'Espaço estimado: ' + ((data.orfas||[]).length * 0.2).toFixed(1) + ' MB em imagens não utilizadas';
+    
+    if ((data.orfas||[]).length > 0) {
+      $('cleanupActions').style.display = 'block';
+    } else {
+      $('cleanupActions').style.display = 'none';
+    }
+    
+    if (!data.imagens || data.imagens.length === 0) {
+      tbody.innerHTML = '<tr class="table-empty"><td colspan="4"><div class="empty-state"><i class="fa-solid fa-image"></i><h3>Nenhuma imagem encontrada</h3><p>Verifica se o GitHub está configurado.</p></div></td></tr>';
+      return;
+    }
+    
+    // Mostrar primeiro as órfãs, depois as em uso
+    const ordenadas = [...(data.orfas||[]), ...(data.emUso||[])];
+    
+    tbody.innerHTML = ordenadas.map(img => {
+      return '<tr>' +
+        '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image></i>\'" style="width:100%;height:100%;object-fit:cover"></div></td>' +
+        '<td><div class="table-name" style="font-size:.75rem;word-break:break-all">' + esc(img.nome) + '</div></td>' +
+        '<td><span class="badge ' + (img.emUso ? 'badge-active' : 'badge-cancelled') + '">' + (img.emUso ? 'Em Uso' : 'Não Utilizada') + '</span></td>' +
+        '<td>' + (!img.emUso ? '<button class="btn btn-danger btn-sm" onclick="removerImagem(\'' + esc(img.path) + '\', \'' + esc(img.sha) + '\', \'' + esc(img.nome) + '\')"><i class="fa-solid fa-trash"></i> Remover</button>' : '<span style="font-size:.68rem;color:var(--muted)">—</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+    
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--red)">Erro: ' + esc(e.message) + '</td></tr>';
+  }
+}
+
+async function removerImagem(path, sha, nome) {
+  if (!confirm('Remover "' + nome + '" do GitHub?\n\nEsta ação é irreversível!')) return;
+  
+  const btn = btnBusy(document.activeElement);
+  try {
+    await api('/api/admin/imagens/remover', {
+      method: 'DELETE',
+      body: JSON.stringify({ path, sha })
+    });
+    toast('Imagem removida!', 'success');
+    loadCleanup();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+  btnDone(btn);
+}
+
+async function removerTodasOrfas() {
+  if (!cleanupData.orfas || cleanupData.orfas.length === 0) {
+    toast('Nenhuma imagem órfã para remover.', 'info');
+    return;
+  }
+  
+  if (!confirm('Remover TODAS as ' + cleanupData.orfas.length + ' imagens não utilizadas?\n\nEsta ação é irreversível!')) return;
+  
+  const btn = btnBusy(document.activeElement);
+  try {
+    const result = await api('/api/admin/imagens/remover-todas', {
+      method: 'DELETE',
+      body: JSON.stringify({ orfas: cleanupData.orfas })
+    });
+    toast('Removidas: ' + result.removidas + ' | Erros: ' + result.erros, 'success');
+    loadCleanup();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
   btnDone(btn);
 }
 
