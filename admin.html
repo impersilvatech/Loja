@@ -370,6 +370,10 @@ tbody tr:hover td{background:rgba(255,107,157,.025)}
 }
 .btn-lg:hover{filter:brightness(1.1)}
 .btn-lg:disabled{opacity:.5;cursor:not-allowed}
+.btn:disabled{opacity:.6;cursor:not-allowed;pointer-events:none}
+.btn-loading{position:relative;pointer-events:none;opacity:.8}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+.btn-loading .fa-spinner{animation:btn-spin .7s linear infinite}
 
 /* ============================================================
    19. FORMS
@@ -563,6 +567,50 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   display:none;align-items:center;justify-content:center;
 }
 .mobile-nav-badge.visible{display:flex}
+
+/* ============================================================
+   MORE DRAWER (bottom sheet)
+   ============================================================ */
+.more-overlay{
+  display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);
+  align-items:flex-end;
+}
+.more-overlay.open{display:flex}
+.more-sheet{
+  width:100%;background:var(--bg2);border-radius:18px 18px 0 0;
+  padding:12px 16px 28px;
+}
+.more-sheet-handle{
+  width:36px;height:4px;background:var(--border);border-radius:2px;
+  margin:0 auto 16px;
+}
+.more-sheet-title{
+  font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px;padding-left:2px;
+}
+.more-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+}
+.more-btn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  padding:14px 6px 10px;cursor:pointer;color:var(--text);
+  font-size:.55rem;text-transform:uppercase;font-weight:600;
+  letter-spacing:.04em;transition:var(--tr);position:relative;
+}
+.more-btn:hover,.more-btn:active{background:var(--bg4);border-color:var(--pink)}
+.more-btn i{font-size:1.3rem;color:var(--pink)}
+.more-btn.teal i{color:var(--teal)}
+.more-btn.purple i{color:var(--purple)}
+.more-btn.orange i{color:var(--orange)}
+.more-btn.yellow i{color:var(--yellow)}
+.more-btn-badge{
+  position:absolute;top:6px;right:8px;
+  background:var(--red);color:#fff;border-radius:50%;
+  width:14px;height:14px;font-size:.44rem;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+}
+.more-btn-badge.visible{display:flex}
 
 /* ============================================================
    27. TOAST
@@ -922,6 +970,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <span class="sidebar-item-label">Avaliações</span>
         <span class="sidebar-badge" id="sidebarReviewsBadge">0</span>
       </button>
+      <button class="sidebar-item" data-panel="coupons" onclick="navigate('coupons')">
+        <i class="fa-solid fa-ticket"></i>
+        <span class="sidebar-item-label">Cupões</span>
+      </button>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
@@ -1119,6 +1171,27 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             CUPÕES
+             ============================================ -->
+        <div class="panel" id="panel-coupons">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-ticket" style="color:var(--teal)"></i> Cupões de Desconto</div>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="openCouponModal()"><i class="fa-solid fa-plus"></i> Novo Cupão</button>
+            </div>
+          </div>
+          <div class="section-card" style="padding:0;overflow:hidden">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Código</th><th>Tipo</th><th>Valor</th><th>Mínimo</th><th>Validade</th><th>Usos</th><th>Estado</th><th>Acções</th></tr></thead>
+                <tbody id="couponsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="couponsCount"></p>
+        </div>
+
+        <!-- ============================================
              AVALIAÇÕES
              ============================================ -->
         <div class="panel" id="panel-reviews">
@@ -1177,13 +1250,36 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <button class="mobile-nav-btn" data-panel="categories" onclick="navigate('categories')">
       <i class="fa-solid fa-tags"></i><span>Cats.</span>
     </button>
-    <button class="mobile-nav-btn" data-panel="reviews" onclick="navigate('reviews')">
-      <i class="fa-solid fa-star"></i><span>Aval.</span>
-      <span class="mobile-nav-badge" id="mobileReviewsBadge">0</span>
+    <button class="mobile-nav-btn" data-panel="clients" onclick="navigate('clients')">
+      <i class="fa-solid fa-users"></i><span>Clientes</span>
     </button>
-    <button class="mobile-nav-btn" onclick="openDrawer()">
-      <i class="fa-solid fa-ellipsis-vertical"></i><span>Menu</span>
+    <button class="mobile-nav-btn" onclick="openMoreSheet()">
+      <i class="fa-solid fa-ellipsis"></i><span>Mais</span>
+      <span class="mobile-nav-badge" id="mobileMoreBadge">0</span>
     </button>
+  </div>
+
+  <!-- Bottom sheet "Mais" -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMoreSheet(event)">
+    <div class="more-sheet" id="moreSheet">
+      <div class="more-sheet-handle"></div>
+      <div class="more-sheet-title">Mais opções</div>
+      <div class="more-grid">
+        <button class="more-btn yellow" onclick="navigateMore('reviews')">
+          <span class="more-btn-badge" id="moreReviewsBadge">0</span>
+          <i class="fa-solid fa-star"></i>
+          <span>Avaliações</span>
+        </button>
+        <button class="more-btn teal" onclick="navigateMore('coupons')">
+          <i class="fa-solid fa-ticket"></i>
+          <span>Cupões</span>
+        </button>
+        <button class="more-btn" onclick="navigateMore('settings')">
+          <i class="fa-solid fa-gear"></i>
+          <span>Config.</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1390,6 +1486,45 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </div>
 
 <!-- ============================================================
+     MODAL - CUPÃO
+     ============================================================ -->
+<div class="modal-overlay" id="couponModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-ticket"></i> <span id="couponModalTitle">Novo Cupão</span></div>
+      <button class="modal-close" onclick="closeModal('couponModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="couponId"/>
+      <div class="form-row">
+        <div class="form-group"><label>Código *</label><input class="form-input" id="couponCode" placeholder="EX: NATAL2026" style="text-transform:uppercase" maxlength="20"/></div>
+        <div class="form-group"><label>Tipo</label><select class="form-input" id="couponType"><option value="percentagem">Percentagem (%)</option><option value="fixo">Valor Fixo (Kz)</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Valor *</label><input class="form-input" type="number" id="couponValue" placeholder="10" min="1"/></div>
+        <div class="form-group"><label>Mínimo Encomenda (Kz)</label><input class="form-input" type="number" id="couponMin" value="0" min="0"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Data Início</label><input class="form-input" type="date" id="couponStart"/></div>
+        <div class="form-group"><label>Data Fim</label><input class="form-input" type="date" id="couponEnd"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Máximo de Usos <span class="optional">(0=ilimitado)</span></label><input class="form-input" type="number" id="couponMaxUsos" value="0" min="0"/></div>
+        <div class="form-group"><label>Usos actuais</label><input class="form-input" type="number" id="couponUsos" value="0" min="0" readonly style="opacity:.6"/></div>
+      </div>
+      <div class="switch-row">
+        <div><div class="switch-label">Cupão Activo</div></div>
+        <label class="switch"><input type="checkbox" id="couponActive" checked/><span class="switch-slider"></span></label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('couponModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveCoupon()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      DRAWER (aberto pelos 3 pontinhos no topbar)
      ============================================================ -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
@@ -1505,7 +1640,8 @@ let state = {
   productImages: [], // URLs das imagens do produto sendo editado
   uploadingCount: 0,
   avaliacoes: [],
-  filteredReviews: []
+  filteredReviews: [],
+  coupons: []
 };
 
 /* ============================================================
@@ -1534,6 +1670,35 @@ function toast(msg,type='success'){
   el.innerHTML='<i class="fa-solid '+icons[type]+'"></i> '+msg;
   el.className='toast show '+type;
   toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+/* Spinner helpers */
+function btnBusy(el){
+  if(!el||el.tagName!=='BUTTON')return null;
+  el._origHTML=el.innerHTML;
+  el.disabled=true;
+  el.classList.add('btn-loading');
+  const txt=el.textContent.trim();
+  el.innerHTML='<i class="fa-solid fa-spinner"></i> '+txt;
+  return el;
+}
+function btnDone(el){
+  if(!el||!el._origHTML)return;
+  el.disabled=false;
+  el.classList.remove('btn-loading');
+  el.innerHTML=el._origHTML;
+  delete el._origHTML;
+}
+
+function openMoreSheet(){
+  $('moreOverlay').classList.add('open');
+}
+function closeMoreSheet(e){
+  if(!e||e.target===e.currentTarget)$('moreOverlay').classList.remove('open');
+}
+function navigateMore(panel){
+  $('moreOverlay').classList.remove('open');
+  navigate(panel);
 }
 
 function toggleTheme(){
@@ -1595,7 +1760,7 @@ async function initApp(){
   $('topbarLoja').textContent=state.loja.nome||'Sem nome';
   $('drawerLojaName').textContent=state.loja.nome||'—';
   
-  await Promise.all([loadCategorias(),loadProdutos(),loadEncomendas(),loadReviews()]);
+  await Promise.all([loadCategorias(),loadProdutos(),loadEncomendas(),loadReviews(),loadCoupons()]);
   
   state.encomendas.forEach(e=>{
     if((e.pagamento_estado==='pago'||e.estado==='entregue')&&!localStorage.getItem('pgdt_'+e.ref)){
@@ -1640,11 +1805,22 @@ function navigate(panel){
   if(mobileBtn)mobileBtn.classList.add('active');
   
   if(panel==='dashboard')renderDashboard();
-  if(panel==='orders')renderOrders();
+  if(panel==='orders'){
+    localStorage.setItem('orders_seen_at',new Date().toISOString());
+    const sb=$('sidebarOrdersBadge'),mb=$('mobileOrdersBadge');
+    sb.classList.remove('visible');mb.classList.remove('visible');
+    renderOrders();
+  }
   if(panel==='products')renderProducts();
   if(panel==='categories')renderCategories();
   if(panel==='clients')renderClients();
-  if(panel==='reviews')renderReviews();
+  if(panel==='reviews'){
+    localStorage.setItem('reviews_seen_at',new Date().toISOString());
+    const sb=$('sidebarReviewsBadge'),mb=$('moreReviewsBadge'),mob=$('mobileMoreBadge');
+    sb.classList.remove('visible');mb.classList.remove('visible');mob.classList.remove('visible');
+    renderReviews();
+  }
+  if(panel==='coupons')renderCoupons();
   if(panel==='settings')renderSettingsForm();
 }
 
@@ -1679,9 +1855,13 @@ async function loadEncomendas(){
   try{
     state.encomendas=await api('/api/admin/encomendas');
     state.filteredOrders=[...state.encomendas];
-    const pending=state.encomendas.filter(e=>e.estado==='pendente').length;
+    const pending=state.encomendas.filter(e=>e.estado==='pendente');
+    const seenAt=localStorage.getItem('orders_seen_at');
+    const newPending=seenAt
+      ? pending.filter(e=>new Date(e.criado_em)>new Date(seenAt)).length
+      : pending.length;
     const sb=$('sidebarOrdersBadge'),mb=$('mobileOrdersBadge');
-    if(pending>0){sb.textContent=pending;sb.classList.add('visible');mb.textContent=pending;mb.classList.add('visible');}
+    if(newPending>0){sb.textContent=newPending;sb.classList.add('visible');mb.textContent=newPending;mb.classList.add('visible');}
     else{sb.classList.remove('visible');mb.classList.remove('visible');}
   }catch(e){state.encomendas=[];state.filteredOrders=[];}
 }
@@ -2295,17 +2475,19 @@ async function saveProduct(){
   };
 
   try{
+    const btn=btnBusy(document.activeElement);
     const method=id?'PUT':'POST';
     const url=id?'/api/produtos/'+id:'/api/produtos';
     await api(url,{method,body:JSON.stringify(body)});
     if(typeof invalidarCache==='function')invalidarCache();
     toast(id?'Produto actualizado!':'Produto criado!','success');
+    btnDone(btn);
     closeModal('productModal');
     await loadProdutos();
     state.filteredProducts=[...state.produtos];
     renderProducts();
     updateDashboardStats();
-  }catch(e){toast('Erro: '+e.message,'error');}
+  }catch(e){btnDone(document.activeElement);toast('Erro: '+e.message,'error');}
 }
 
 async function editProduct(id){openProductModal(id);}
@@ -2357,10 +2539,12 @@ async function saveCategory(){
   if(!nome||!slug){toast('Nome e slug obrigatórios','error');return;}
   const body={nome,slug,nome_en:$('categoryNameEn').value.trim()||null,descricao:$('categoryDesc').value.trim()||null,icone:$('categoryIcon').value.trim()||'fa-solid fa-tag',ordem:parseInt($('categoryOrder').value)||0,ativa:$('categoryActive').checked?1:0};
   try{
+    const btn=btnBusy(document.activeElement);
     const method=id?'PUT':'POST',url=id?'/api/categorias/'+id:'/api/categorias';
     await api(url,{method,body:JSON.stringify(body)});
     if(typeof invalidarCache==='function')invalidarCache();
     toast(id?'Categoria actualizada!':'Categoria criada!','success');
+    btnDone(btn);
     closeModal('categoryModal');await loadCategorias();renderCategories();
   }catch(e){toast('Erro: '+e.message,'error');}
 }
@@ -2474,12 +2658,12 @@ const settingsSections={
         '<div class="form-group"><label>Banner URL</label><input class="form-input" id="cfgBanner" value="'+esc(l.banner_url||'')+'"/></div>'+
         '<div class="form-group"><label>Favicon URL</label><input class="form-input" id="cfgFavicon" value="'+esc(l.favicon_url||'')+'"/></div>'+
       '</div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-brands fa-github"></i> GitHub — Upload de Imagens</div></div>'+
-        '<div class="info-box success">Com estas configurações, as imagens são enviadas para o teu repositório GitHub.</div>'+
-        '<div class="form-group"><label>Personal Access Token</label><input class="form-input" type="password" id="cfgGhTk" value="'+(localStorage.getItem('adm_gh')||'')+'" placeholder="ghp_..."/></div>'+
-        '<div class="form-row"><div class="form-group"><label>Utilizador GitHub</label><input class="form-input" id="cfgGhUser" value="'+esc(ghUser)+'"/></div>'+
-        '<div class="form-group"><label>Repositório</label><input class="form-input" id="cfgGhRepo" value="'+esc(ghRepo)+'"/></div></div>'+
-        '<div class="form-group"><label>Branch</label><input class="form-input" id="cfgGhBranch" value="'+esc(ghBranch)+'" placeholder="main"/></div>'+
-        '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-outline btn-sm" onclick="saveGitHubConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar GitHub</button><button class="btn btn-outline btn-sm" onclick="testGitHub()"><i class="fa-brands fa-github"></i> Testar Ligação</button></div>'+
+        '<div class="info-box success">Estas configurações são guardadas na base de dados e usadas para upload de imagens dos clientes.</div>'+
+        '<div class="form-group"><label>Personal Access Token</label><input class="form-input" type="password" id="cfgGhTk" value="'+(l.github_token||localStorage.getItem('adm_gh')||'')+'" placeholder="ghp_..."/></div>'+
+        '<div class="form-row"><div class="form-group"><label>Utilizador GitHub</label><input class="form-input" id="cfgGhUser" value="'+(l.github_user||localStorage.getItem('adm_gh_user')||GH_DEFAULT_USER)+'"/></div>'+
+        '<div class="form-group"><label>Repositório</label><input class="form-input" id="cfgGhRepo" value="'+(l.github_repo||localStorage.getItem('adm_gh_repo')||GH_DEFAULT_REPO)+'"/></div></div>'+
+        '<div class="form-group"><label>Branch</label><input class="form-input" id="cfgGhBranch" value="'+(l.github_branch||localStorage.getItem('adm_gh_branch')||'main')+'" placeholder="main"/></div>'+
+        '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-outline btn-sm" onclick="saveGitHubToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> Guardar na Base de Dados</button><button class="btn btn-outline btn-sm" onclick="testGitHub()"><i class="fa-brands fa-github"></i> Testar Ligação</button></div>'+
         '<p id="ghTestResult" style="font-size:.72rem;margin-top:8px;display:none"></p></div>';
     }
   },
@@ -2558,6 +2742,7 @@ async function saveSettings(){
   }
   
   if(!Object.keys(campos).length){toast('Nada para guardar','info');return;}
+  const btn=btnBusy(document.activeElement);
   try{
     await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
     Object.assign(state.loja,campos);
@@ -2565,6 +2750,27 @@ async function saveSettings(){
     if(typeof invalidarCache==='function')invalidarCache();
     toast('Configurações guardadas!','success');
   }catch(e){toast('Erro: '+e.message,'error');}
+  btnDone(btn);
+}
+
+async function saveGitHubToDB(){
+  const token=$('cfgGhTk')?.value?.trim()||'';
+  const user=$('cfgGhUser')?.value?.trim()||GH_DEFAULT_USER;
+  const repo=$('cfgGhRepo')?.value?.trim()||GH_DEFAULT_REPO;
+  const branch=$('cfgGhBranch')?.value?.trim()||'main';
+  const btn=btnBusy(document.activeElement);
+  try{
+    await api('/api/loja',{method:'PUT',body:JSON.stringify({
+      github_token:token,github_user:user,github_repo:repo,github_branch:branch
+    })});
+    Object.assign(state.loja,{github_token:token,github_user:user,github_repo:repo,github_branch:branch});
+    if(token)localStorage.setItem('adm_gh',token);
+    localStorage.setItem('adm_gh_user',user);
+    localStorage.setItem('adm_gh_repo',repo);
+    localStorage.setItem('adm_gh_branch',branch);
+    toast('GitHub guardado na base de dados!','success');
+  }catch(e){toast('Erro: '+e.message,'error');}
+  btnDone(btn);
 }
 
 function saveGitHubConfig(){
@@ -2585,6 +2791,7 @@ async function testGitHub(){
   const repo=$('cfgGhRepo')?.value?.trim()||localStorage.getItem('adm_gh_repo');
   const res=$('ghTestResult');
   if(!tk||!user||!repo){res.textContent='Preenche token, user e repo.';res.style.color='var(--red)';res.style.display='block';return;}
+  const btn=btnBusy(document.activeElement);
   res.textContent='A verificar...';res.style.color='var(--muted)';res.style.display='block';
   try{
     const r=await fetch('https://api.github.com/repos/'+user+'/'+repo,{headers:{'Authorization':'token '+tk}});
@@ -2592,6 +2799,7 @@ async function testGitHub(){
     res.innerHTML=r.ok?'<i class="fa-solid fa-circle-check" style="color:var(--teal)"></i> Ligado! '+esc(d.full_name):'<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Erro '+r.status+': '+esc(d.message||'?');
     res.style.color=r.ok?'var(--teal)':'var(--red)';
   }catch(e){res.innerHTML='<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Erro de ligação';res.style.color='var(--red)';}
+  btnDone(btn);
 }
 
 async function changeToken(){
@@ -2599,7 +2807,8 @@ async function changeToken(){
   if(!t1||t1.length<12){toast('Token deve ter ≥12 caracteres','error');return;}
   if(t1!==t2){toast('Tokens não coincidem','error');return;}
   if(!confirm('Alterar o token irá desligar a sessão. Confirmas?'))return;
-  try{await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:t1})});toast('Token alterado!','success');setTimeout(logout,2000);}catch(e){toast('Erro: '+e.message,'error');}
+  const btn=btnBusy(document.activeElement);
+  try{await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:t1})});toast('Token alterado!','success');setTimeout(logout,2000);}catch(e){toast('Erro: '+e.message,'error');btnDone(btn);}
 }
 
 /* ============================================================
@@ -2609,14 +2818,20 @@ async function loadReviews() {
   try {
     state.avaliacoes = await api('/api/admin/avaliacoes');
     state.filteredReviews = [...state.avaliacoes];
-    const pending = state.avaliacoes.filter(a => a.aprovada === 0).length;
-    const sb = $('sidebarReviewsBadge'), mb = $('mobileReviewsBadge');
-    if (pending > 0) {
-      sb.textContent = pending; sb.classList.add('visible');
-      mb.textContent = pending; mb.classList.add('visible');
+    const pendingRev = state.avaliacoes.filter(a => a.aprovada === 0);
+    const seenRevAt = localStorage.getItem('reviews_seen_at');
+    const newPendingRev = seenRevAt
+      ? pendingRev.filter(a => new Date(a.criado_em) > new Date(seenRevAt)).length
+      : pendingRev.length;
+    const sb = $('sidebarReviewsBadge'), mb = $('moreReviewsBadge'), mob = $('mobileMoreBadge');
+    if (newPendingRev > 0) {
+      sb.textContent = newPendingRev; sb.classList.add('visible');
+      mb.textContent = newPendingRev; mb.classList.add('visible');
+      mob.textContent = newPendingRev; mob.classList.add('visible');
     } else {
       sb.classList.remove('visible');
       mb.classList.remove('visible');
+      mob.classList.remove('visible');
     }
   } catch(e) { state.avaliacoes = []; state.filteredReviews = []; }
 }
@@ -2665,6 +2880,7 @@ function renderReviews() {
 }
 
 async function approveReview(id, status) {
+  const btn=btnBusy(document.activeElement);
   try {
     await api('/api/admin/avaliacoes/' + id, { method: 'PUT', body: JSON.stringify({ aprovada: status }) });
     const idx = state.avaliacoes.findIndex(a => a.id === id);
@@ -2673,10 +2889,12 @@ async function approveReview(id, status) {
     filterReviews();
     loadReviews();
   } catch(e) { toast('Erro ao actualizar', 'error'); }
+  btnDone(btn);
 }
 
 async function deleteReview(id) {
   if (!confirm('Apagar esta avaliação?')) return;
+  const btn=btnBusy(document.activeElement);
   try {
     await api('/api/admin/avaliacoes/' + id, { method: 'DELETE' });
     state.avaliacoes = state.avaliacoes.filter(a => a.id !== id);
@@ -2684,6 +2902,129 @@ async function deleteReview(id) {
     filterReviews();
     loadReviews();
   } catch(e) { toast('Erro ao remover', 'error'); }
+  btnDone(btn);
+}
+
+/* ============================================================
+   CUPÕES
+   ============================================================ */
+async function loadCoupons() {
+  try { state.coupons = await api('/api/admin/cupoes'); }
+  catch(e) { state.coupons = []; }
+}
+
+function renderCoupons() {
+  const tbody = $('couponsTableBody');
+  const coupons = state.coupons;
+  $('couponsCount').textContent = coupons.length + ' cup' + (coupons.length !== 1 ? 'ões' : 'ão');
+
+  if (!coupons.length) {
+    tbody.innerHTML = '<tr class="table-empty"><td colspan="8"><div class="empty-state"><i class="fa-solid fa-ticket"></i><h3>Sem cupões</h3></div></td></tr>';
+    return;
+  }
+
+  const now = new Date();
+
+  tbody.innerHTML = coupons.map(c => {
+    const expirado = c.ativo && c.data_fim && new Date(c.data_fim) < now;
+    const esgotado = c.max_usos > 0 && c.usos >= c.max_usos;
+    const estadoLabel = !c.ativo ? 'Inactivo' : expirado ? 'Expirado' : esgotado ? 'Esgotado' : 'Activo';
+    const estadoCls = !c.ativo ? 'badge-inactive' : (expirado || esgotado) ? 'badge-cancelled' : 'badge-active';
+
+    return '<tr>' +
+      '<td><span style="font-family:monospace;font-weight:700;font-size:.82rem;text-transform:uppercase">' + esc(c.codigo) + '</span></td>' +
+      '<td>' + (c.tipo === 'percentagem' ? '%' : 'Kz') + '</td>' +
+      '<td><strong>' + (c.tipo === 'percentagem' ? c.valor + '%' : kz(c.valor)) + '</strong></td>' +
+      '<td>' + (c.minimo_encomenda > 0 ? kz(c.minimo_encomenda) : '—') + '</td>' +
+      '<td style="font-size:.7rem">' + fmtDate(c.data_inicio) + ' → ' + fmtDate(c.data_fim) + '</td>' +
+      '<td>' + c.usos + (c.max_usos > 0 ? '/' + c.max_usos : '') + '</td>' +
+      '<td><span class="badge ' + estadoCls + '">' + estadoLabel + '</span></td>' +
+      '<td><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm btn-icon" onclick="editCoupon(' + c.id + ')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm btn-icon" onclick="deleteCoupon(' + c.id + ',\'' + esc(c.codigo) + '\')"><i class="fa-solid fa-trash"></i></button></div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function openCouponModal(id) {
+  $('couponId').value = '';
+  $('couponModalTitle').textContent = 'Novo Cupão';
+  $('couponCode').value = '';
+  $('couponType').value = 'percentagem';
+  $('couponValue').value = '';
+  $('couponMin').value = '0';
+  $('couponMaxUsos').value = '0';
+  $('couponUsos').value = '0';
+  $('couponActive').checked = true;
+
+  const today = new Date().toISOString().split('T')[0];
+  const future = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+  $('couponStart').value = today;
+  $('couponEnd').value = future;
+
+  if (id) {
+    const c = state.coupons.find(x => x.id === id);
+    if (c) {
+      $('couponId').value = c.id;
+      $('couponModalTitle').textContent = 'Editar Cupão';
+      $('couponCode').value = c.codigo;
+      $('couponType').value = c.tipo || 'percentagem';
+      $('couponValue').value = c.valor;
+      $('couponMin').value = c.minimo_encomenda || 0;
+      $('couponStart').value = c.data_inicio?.split('T')[0] || today;
+      $('couponEnd').value = c.data_fim?.split('T')[0] || future;
+      $('couponMaxUsos').value = c.max_usos || 0;
+      $('couponUsos').value = c.usos || 0;
+      $('couponActive').checked = !!c.ativo;
+    }
+  }
+
+  openModal('couponModal');
+}
+
+function editCoupon(id) { openCouponModal(id); }
+
+async function saveCoupon() {
+  const id = $('couponId').value;
+  const codigo = $('couponCode').value.trim().toUpperCase();
+  const tipo = $('couponType').value;
+  const valor = parseFloat($('couponValue').value);
+  const minimo = parseFloat($('couponMin').value) || 0;
+
+  if (!codigo) { toast('Código obrigatório', 'error'); return; }
+  if (!valor || valor <= 0) { toast('Valor obrigatório', 'error'); return; }
+  if (tipo === 'percentagem' && valor > 100) { toast('Percentagem máxima: 100%', 'error'); return; }
+
+  const body = {
+    codigo, tipo, valor,
+    minimo_encomenda: minimo,
+    data_inicio: $('couponStart').value,
+    data_fim: $('couponEnd').value,
+    max_usos: parseInt($('couponMaxUsos').value) || 0,
+    ativo: $('couponActive').checked ? 1 : 0
+  };
+
+  const btn = btnBusy(document.activeElement);
+  try {
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? '/api/admin/cupoes/' + id : '/api/admin/cupoes';
+    await api(url, { method, body: JSON.stringify(body) });
+    toast(id ? 'Cupão actualizado!' : 'Cupão criado!', 'success');
+    btnDone(btn);
+    closeModal('couponModal');
+    await loadCoupons();
+    renderCoupons();
+  } catch(e) { toast('Erro: ' + e.message, 'error'); btnDone(btn); }
+}
+
+async function deleteCoupon(id, codigo) {
+  if (!confirm('Apagar o cupão "' + codigo + '"?')) return;
+  const btn = btnBusy(document.activeElement);
+  try {
+    await api('/api/admin/cupoes/' + id, { method: 'DELETE' });
+    state.coupons = state.coupons.filter(c => c.id !== id);
+    toast('Cupão removido', 'success');
+    renderCoupons();
+  } catch(e) { toast('Erro ao remover', 'error'); }
+  btnDone(btn);
 }
 
 /* ============================================================

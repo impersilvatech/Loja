@@ -33,9 +33,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .fg label{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
 .fg label .opc{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
 .fi{width:100%;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-family:var(--fb);font-size:.88rem;color:var(--white);outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--pink)}
-.fi::placeholder{color:var(--muted)}
-.fi.err{border-color:var(--red)}
+.fi:focus{border-color:var(--pink)}.fi::placeholder{color:var(--muted)}.fi.err{border-color:var(--red)}
 select.fi option{background:var(--bg2);color:var(--white)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ent-opts{display:flex;gap:8px;margin-bottom:10px}
@@ -58,14 +56,13 @@ select.fi option{background:var(--bg2);color:var(--white)}
 .rl:last-child{border-bottom:none}
 .rl.total{margin-top:6px;padding-top:12px;border-top:2px solid var(--border);font-family:var(--ft);font-size:1.05rem;color:var(--white)}
 .rl.total span:last-child{color:var(--pink)}
+.rl.cupao span{color:var(--teal)}
 .btn-final{width:100%;padding:15px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 6px 24px rgba(255,107,157,.35);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s}
 .btn-final:hover{transform:translateY(-2px)}
 .btn-final:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .msg-err{color:var(--red);font-size:.78rem;text-align:center;margin-top:10px;min-height:18px}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--pink);border-radius:14px;padding:10px 18px;font-size:.82rem;font-weight:700;color:var(--pink);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.toast.err{border-color:var(--red);color:var(--red)}
-/* Data */
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}.toast.err{border-color:var(--red);color:var(--red)}
 input[type="date"].fi{color-scheme:dark;min-height:44px}
 input[type="date"].fi::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;opacity:.7}
 input[type="date"].fi:valid{color:var(--white)}
@@ -86,9 +83,12 @@ input[type="date"].fi:valid{color:var(--white)}
 var API = 'https://impersilva-d1work.3miliosilva.workers.dev';
 var loja = {};
 var tipoEntrega = localStorage.getItem('ist_entrega') || 'levantamento';
+var cupaoCodigo = localStorage.getItem('ist_cupao') || '';
+var descontoCupao = parseFloat(localStorage.getItem('ist_desconto')) || 0;
+var refImgDataLocal = localStorage.getItem('cf_ref_img') || null;
 
 function getCarrinho(){ try{return JSON.parse(localStorage.getItem('cf_carrinho')||'[]');}catch(e){return[];} }
-function limparCarrinho(){ localStorage.removeItem('cf_carrinho'); }
+function limparCarrinho(){ localStorage.removeItem('cf_carrinho'); localStorage.removeItem('cf_ref_img'); }
 function getCliente(){ try{return JSON.parse(localStorage.getItem('cf_cliente')||'null');}catch(e){return null;} }
 function getClienteTel(){ return localStorage.getItem('cf_cliente_tel') || ''; }
 function kz(v,s){ if(v==null)return'—';return(s||'Kz')+' '+Number(v).toLocaleString('pt'); }
@@ -96,120 +96,103 @@ function toast(msg,t){ var el=document.getElementById('toast');el.textContent=ms
 function validarTel(t){ return /^(\+244)?\s?9\d{8}$/.test(t.replace(/\s+/g,'')); }
 function validarEmail(e){ return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function formatarTel(inp){ var v=inp.value.replace(/[^0-9+]/g,'');if(v.startsWith('+244')){var r=v.slice(4);if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.startsWith('9')){var r=v.replace(/[^0-9]/g,'');if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.length>0){inp.value='+244 ';} }
+function dataMinima(){ var d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]; }
 
-// Data mínima = amanhã
-function dataMinima(){
-  var d = new Date(); d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
-}
+async function carregar(){
+  var c=getCarrinho();
+  if(!c.length){window.location.href='carrinho.html';return;}
+  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
 
-async function carregar() {
-  var c = getCarrinho();
-  if (!c.length) { window.location.href = 'carrinho.html'; return; }
+  var progHtml='<div class="progresso"><div class="prog-step"><div class="prog-dot done"><i class="fa-solid fa-check"></i></div><div class="prog-lbl">Carrinho</div></div><div class="prog-step"><div class="prog-dot on">2</div><div class="prog-lbl on">Dados</div></div><div class="prog-step"><div class="prog-dot off">3</div><div class="prog-lbl">Confirmação</div></div></div>';
 
-  try { var r = await fetch(API + '/api/loja'); loja = await r.json(); } catch(e) { loja = {}; }
+  var cli=getCliente();
+  var nomePre='',emailPre='',telPre='+244 ';
+  if(cli){nomePre=cli.nome||'';emailPre=cli.email||'';telPre=getClienteTel()||'+244 ';}
 
-  var progHtml = '<div class="progresso">' +
-    '<div class="prog-step"><div class="prog-dot done"><i class="fa-solid fa-check"></i></div><div class="prog-lbl">Carrinho</div></div>' +
-    '<div class="prog-step"><div class="prog-dot on">2</div><div class="prog-lbl on">Dados</div></div>' +
-    '<div class="prog-step"><div class="prog-dot off">3</div><div class="prog-lbl">Confirmação</div></div>' +
-  '</div>';
+  var infoHtml=cli?'<div class="auth-info"><i class="fa-solid fa-circle-check"></i><span>Sessão activa como <strong>'+cli.nome+'</strong></span></div>':'<div class="guest-info"><i class="fa-solid fa-circle-info"></i><span>A encomendar como convidado. <a onclick="window.location.href=\'conta.html?redir=checkout.html\'">Entrar / criar conta <i class="fa-solid fa-arrow-right"></i></a></span></div>';
 
-  var cli = getCliente();
-  var infoHtml = '';
-  var nomePre = '', emailPre = '', telPre = '+244 ';
+  var itensHtml=c.map(function(i){return'<div class="item-mini"><div class="im-img">'+(i.imagem?'<img src="'+i.imagem+'" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image></i>\'">':'<i class="fa-solid fa-image" style="color:var(--muted)"></i>')+'</div><div class="im-nome">'+i.nome+(i.nota?' <span style="font-size:.65rem;color:var(--muted)">('+i.nota+')</span>':'')+' × '+i.quantidade+'</div><div class="im-preco">'+kz((i.preco||0)*(i.quantidade||1))+'</div></div>';}).join('');
 
-  if (cli) {
-    nomePre = cli.nome || '';
-    emailPre = cli.email || '';
-    telPre = getClienteTel() || '+244 ';
-    infoHtml = '<div class="auth-info"><i class="fa-solid fa-circle-check"></i><span>Sessão activa como <strong>'+cli.nome+'</strong></span></div>';
-  } else {
-    infoHtml = '<div class="guest-info"><i class="fa-solid fa-circle-info"></i><span>A encomendar como convidado. <a onclick="window.location.href=\'conta.html?redir=checkout.html\'">Entrar / criar conta <i class="fa-solid fa-arrow-right"></i></a></span></div>';
-  }
+  var subtotal=c.reduce(function(s,i){return s+(i.preco||0)*(i.quantidade||1);},0);
+  var gratis=loja.entrega_gratis_a>0&&subtotal>=loja.entrega_gratis_a;
+  var precoEnt=tipoEntrega==='entrega'&&!gratis?(loja.entrega_preco||0):0;
+  var total=subtotal+precoEnt-descontoCupao;
+  if(total<0)total=0;
 
-  var itensHtml = c.map(function(i) {
-    return '<div class="item-mini">' +
-      '<div class="im-img">'+(i.imagem?'<img src="'+i.imagem+'" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image></i>\'">':'<i class="fa-solid fa-image" style="color:var(--muted)"></i>')+'</div>' +
-      '<div class="im-nome">'+i.nome+(i.nota?' <span style="font-size:.65rem;color:var(--muted)">('+i.nota+')</span>':'')+' × '+i.quantidade+'</div>' +
-      '<div class="im-preco">'+kz((i.preco||0)*(i.quantidade||1))+'</div>' +
-    '</div>';
-  }).join('');
+  var cupaoHtml='';
+  if(descontoCupao>0){cupaoHtml='<div class="rl cupao"><span>Cupão <span style="font-size:.7rem">('+cupaoCodigo+')</span></span><span>-'+kz(descontoCupao)+'</span></div>';}
 
-  var subtotal = c.reduce(function(s,i){return s+(i.preco||0)*(i.quantidade||1);},0);
-  var gratis = loja.entrega_gratis_a > 0 && subtotal >= loja.entrega_gratis_a;
-  var precoEnt = tipoEntrega === 'entrega' && !gratis ? (loja.entrega_preco||0) : 0;
-  var total = subtotal + precoEnt;
-
-  document.getElementById('ctn').innerHTML = progHtml + infoHtml +
-    '<div class="card">'+
-      '<div class="card-h"><i class="fa-solid fa-user"></i> Dados Pessoais</div>'+
+  document.getElementById('ctn').innerHTML=progHtml+infoHtml+
+    '<div class="card"><div class="card-h"><i class="fa-solid fa-user"></i> Dados Pessoais</div>'+
       '<div class="fg"><label>Nome completo *</label><input class="fi" type="text" id="fNome" placeholder="O seu nome" value="'+nomePre+'"></div>'+
-      '<div class="row2">'+
-        '<div class="fg"><label>Email <span class="opc">(opcional)</span></label><input class="fi" type="email" id="fEmail" placeholder="email@..." value="'+emailPre+'"></div>'+
-        '<div class="fg"><label>Telefone *</label><input class="fi" type="tel" id="fTel" placeholder="+244 9XX XXX XXX" value="'+telPre+'" oninput="formatarTel(this)"></div>'+
-      '</div>'+
+      '<div class="row2"><div class="fg"><label>Email <span class="opc">(opcional)</span></label><input class="fi" type="email" id="fEmail" placeholder="email@..." value="'+emailPre+'"></div>'+
+      '<div class="fg"><label>Telefone *</label><input class="fi" type="tel" id="fTel" placeholder="+244 9XX XXX XXX" value="'+telPre+'" oninput="formatarTel(this)"></div></div>'+
       '<div class="fg"><label>WhatsApp</label><input class="fi" type="tel" id="fWa" placeholder="+244 9XX XXX XXX" value="'+telPre+'" oninput="formatarTel(this)"></div>'+
     '</div>'+
-    '<div class="card">'+
-      '<div class="card-h"><i class="fa-solid fa-truck"></i> Entrega</div>'+
-      (loja.entrega_ativa ? '<div class="ent-opts">'+
-        '<div class="eopt '+(tipoEntrega==='levantamento'?'on':'')+'" onclick="setEnt(\'levantamento\')"><div class="eopt-ico"><i class="fa-solid fa-shop"></i></div><div class="eopt-lbl">Levantamento</div><div class="eopt-preco">Grátis</div></div>'+
-        '<div class="eopt '+(tipoEntrega==='entrega'?'on':'')+'" onclick="setEnt(\'entrega\')"><div class="eopt-ico"><i class="fa-solid fa-truck-fast"></i></div><div class="eopt-lbl">Entrega</div><div class="eopt-preco">'+kz(loja.entrega_preco||0)+'</div></div>'+
-      '</div>' : '')+
+    '<div class="card"><div class="card-h"><i class="fa-solid fa-truck"></i> Entrega</div>'+
+      (loja.entrega_ativa?'<div class="ent-opts"><div class="eopt '+(tipoEntrega==='levantamento'?'on':'')+'" onclick="setEnt(\'levantamento\')"><div class="eopt-ico"><i class="fa-solid fa-shop"></i></div><div class="eopt-lbl">Levantamento</div><div class="eopt-preco">Grátis</div></div><div class="eopt '+(tipoEntrega==='entrega'?'on':'')+'" onclick="setEnt(\'entrega\')"><div class="eopt-ico"><i class="fa-solid fa-truck-fast"></i></div><div class="eopt-lbl">Entrega</div><div class="eopt-preco">'+kz(loja.entrega_preco||0)+'</div></div></div>':'')+
       '<div class="fg"><label>Data de Entrega *</label><input class="fi" type="date" id="fData" min="'+dataMinima()+'" style="color-scheme:dark"></div>'+
-      '<div id="camposEnt" style="display:'+(tipoEntrega==='entrega'?'':'none')+'">'+
-        '<div class="fg"><label>Morada *</label><input class="fi" type="text" id="fMorada" placeholder="Rua, número, bairro"></div>'+
-        '<div class="row2"><div class="fg"><label>Cidade</label><input class="fi" type="text" id="fCidade" placeholder="Luanda"></div>'+
-        '<div class="fg"><label>Província</label><select class="fi" id="fProv"><option value="">—</option><option>Luanda</option><option>Benguela</option><option>Huambo</option><option>Huíla</option><option>Cabinda</option><option>Bié</option><option>Malanje</option><option>Moxico</option><option>Cuando Cubango</option><option>Cunene</option><option>Namibe</option><option>Zaire</option><option>Uíge</option><option>Kwanza Norte</option><option>Kwanza Sul</option><option>Lunda Norte</option><option>Lunda Sul</option><option>Bengo</option></select></div></div>'+
-      '</div>'+
+      '<div id="camposEnt" style="display:'+(tipoEntrega==='entrega'?'':'none')+'"><div class="fg"><label>Morada *</label><input class="fi" type="text" id="fMorada" placeholder="Rua, número, bairro"></div>'+
+      '<div class="row2"><div class="fg"><label>Cidade</label><input class="fi" type="text" id="fCidade" placeholder="Luanda"></div>'+
+      '<div class="fg"><label>Província</label><select class="fi" id="fProv"><option value="">—</option><option>Luanda</option><option>Benguela</option><option>Huambo</option><option>Huíla</option><option>Cabinda</option><option>Bié</option><option>Malanje</option><option>Moxico</option><option>Cuando Cubango</option><option>Cunene</option><option>Namibe</option><option>Zaire</option><option>Uíge</option><option>Kwanza Norte</option><option>Kwanza Sul</option><option>Lunda Norte</option><option>Lunda Sul</option><option>Bengo</option></select></div></div></div>'+
       '<div class="fg"><label>Notas / Observações</label><input class="fi" type="text" id="fNotas" placeholder="Horário preferido, referência, etc."></div>'+
     '</div>'+
-    '<div class="card">'+
-      '<div class="card-h"><i class="fa-solid fa-receipt"></i> Resumo</div>'+
-      itensHtml +
+    '<div class="card"><div class="card-h"><i class="fa-solid fa-receipt"></i> Resumo</div>'+itensHtml+
+      '<div class="rl"><span>Subtotal</span><span>'+kz(subtotal)+'</span></div>'+
+      (tipoEntrega==='entrega'?'<div class="rl"><span>Entrega'+(gratis?' <span style="color:var(--teal);font-size:.7rem">Grátis!</span>':'')+'</span><span>'+kz(precoEnt)+'</span></div>':'')+
+      cupaoHtml+
       '<div class="rl total"><span>Total</span><span>'+kz(total)+'</span></div>'+
     '</div>'+
     '<button class="btn-final" onclick="submeter()"><i class="fa-solid fa-check"></i> Confirmar Pedido</button>'+
     '<p class="msg-err" id="msgErr"></p>';
 }
 
-function setEnt(t) { tipoEntrega = t; localStorage.setItem('ist_entrega', t); carregar(); }
+function setEnt(t){tipoEntrega=t;localStorage.setItem('ist_entrega',t);carregar();}
 
-async function submeter() {
-  var nome = document.getElementById('fNome').value.trim();
-  var email = document.getElementById('fEmail').value.trim();
-  var tel = document.getElementById('fTel').value.trim();
-  var wa = document.getElementById('fWa').value.trim();
-  var dataEntrega = document.getElementById('fData').value;
-  var morada = document.getElementById('fMorada').value.trim();
-  var cidade = document.getElementById('fCidade').value.trim();
-  var prov = document.getElementById('fProv').value;
-  var notas = document.getElementById('fNotas').value.trim();
-  var msg = document.getElementById('msgErr');
+async function submeter(){
+  var nome=document.getElementById('fNome').value.trim();
+  var email=document.getElementById('fEmail').value.trim();
+  var tel=document.getElementById('fTel').value.trim();
+  var wa=document.getElementById('fWa').value.trim();
+  var dataEntrega=document.getElementById('fData').value;
+  var morada=document.getElementById('fMorada').value.trim();
+  var cidade=document.getElementById('fCidade').value.trim();
+  var prov=document.getElementById('fProv').value;
+  var notas=document.getElementById('fNotas').value.trim();
+  var msg=document.getElementById('msgErr');
 
-  if (!nome) { msg.textContent = 'Nome obrigatório.'; return; }
-  if (email && !validarEmail(email)) { msg.textContent = 'Email inválido.'; return; }
-  if (!tel || !validarTel(tel)) { msg.textContent = 'Telefone inválido. Use +244 9XX XXX XXX.'; return; }
-  if (wa && !validarTel(wa)) { msg.textContent = 'WhatsApp inválido.'; return; }
-  if (!dataEntrega) { msg.textContent = 'Data de entrega obrigatória.'; return; }
-  if (tipoEntrega === 'entrega' && !morada) { msg.textContent = 'Morada obrigatória para entrega.'; return; }
+  if(!nome){msg.textContent='Nome obrigatório.';return;}
+  if(email&&!validarEmail(email)){msg.textContent='Email inválido.';return;}
+  if(!tel||!validarTel(tel)){msg.textContent='Telefone inválido. Use +244 9XX XXX XXX.';return;}
+  if(wa&&!validarTel(wa)){msg.textContent='WhatsApp inválido.';return;}
+  if(!dataEntrega){msg.textContent='Data de entrega obrigatória.';return;}
+  if(tipoEntrega==='entrega'&&!morada){msg.textContent='Morada obrigatória para entrega.';return;}
 
-  var c = getCarrinho(); if (!c.length) { msg.textContent = 'Carrinho vazio.'; return; }
-  var btn = document.querySelector('.btn-final'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A processar...';
+  var c=getCarrinho();if(!c.length){msg.textContent='Carrinho vazio.';return;}
+  var btn=document.querySelector('.btn-final');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> A processar...';
 
-  var itens = c.map(function(i) { return { produto_id: i.produto_id, nome_produto: i.nome, preco_unit: i.preco, quantidade: i.quantidade||1 }; });
+  var itens=c.map(function(i){return{produto_id:i.produto_id,nome_produto:i.nome,preco_unit:i.preco,quantidade:i.quantidade||1};});
 
-  try {
-    var r = await fetch(API + '/api/encomendas', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome_cliente: nome, email_cliente: email, telefone_cliente: tel, whatsapp_cliente: wa||tel, data_entrega: dataEntrega, morada_entrega: morada, cidade_entrega: cidade, provincia_entrega: prov, tipo_entrega: tipoEntrega, notas: notas, itens: itens })
+  var cupomValido=cupaoCodigo;
+  var descontoValido=descontoCupao;
+  if(cupomValido){try{var cupaoCheck=await fetch(API+'/api/cupoes/validar/'+cupomValido).then(r=>r.json());if(cupaoCheck.erro){cupomValido='';descontoValido=0;}}catch(e){cupomValido='';descontoValido=0;}}
+
+  try{
+    var r=await fetch(API+'/api/encomendas',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        nome_cliente:nome,email_cliente:email,telefone_cliente:tel,whatsapp_cliente:wa||tel,
+        data_entrega:dataEntrega,morada_entrega:morada,cidade_entrega:cidade,provincia_entrega:prov,
+        tipo_entrega:tipoEntrega,notas:notas,itens:itens,cupom:cupomValido||null,desconto:descontoValido,
+        ref_img:refImgDataLocal||null
+      })
     });
-    var d = await r.json(); if (d.erro) throw new Error(d.erro);
-    localStorage.setItem('ist_ref', d.ref); localStorage.setItem('ist_total', d.total); localStorage.setItem('ist_nome', nome);
-    limparCarrinho(); localStorage.removeItem('ist_entrega');
-    window.location.href = 'confirmacao.html';
-  } catch(e) { msg.textContent = e.message || 'Erro.'; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Pedido'; }
+    var d=await r.json();
+    if(d.erro)throw new Error(d.erro);
+
+    localStorage.setItem('ist_ref',d.ref);localStorage.setItem('ist_total',d.total);localStorage.setItem('ist_nome',nome);
+    limparCarrinho();localStorage.removeItem('ist_entrega');localStorage.removeItem('ist_cupao');localStorage.removeItem('ist_desconto');localStorage.removeItem('cf_ref_img');
+    window.location.href='confirmacao.html';
+  }catch(e){msg.textContent=e.message||'Erro.';btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-check"></i> Confirmar Pedido';}
 }
 
 carregar();
