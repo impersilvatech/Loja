@@ -974,6 +974,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <i class="fa-solid fa-ticket"></i>
         <span class="sidebar-item-label">Cupões</span>
       </button>
+      <button class="sidebar-item" data-panel="cleanup" onclick="navigate('cleanup')">
+        <i class="fa-solid fa-broom"></i>
+        <span class="sidebar-item-label">Limpeza</span>
+      </button>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
@@ -1217,6 +1221,26 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             LIMPEZA DE IMAGENS
+             ============================================ -->
+        <div class="panel" id="panel-cleanup">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-broom" style="color:var(--orange)"></i> Limpeza de Imagens</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="loadCleanup()"><i class="fa-solid fa-rotate"></i> Verificar</button>
+              <button class="btn btn-danger btn-sm" id="btnRemoverTodas" onclick="removerTodasOrfas()" style="display:none"><i class="fa-solid fa-trash"></i> Remover todas as órfãs</button>
+            </div>
+          </div>
+          <div id="cleanupResult">
+            <div class="empty-state">
+              <i class="fa-solid fa-broom"></i>
+              <h3>Pronto para verificar</h3>
+              <p>Clica em "Verificar" para encontrar imagens não utilizadas por nenhum produto.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
              CONFIGURAÇÕES
              ============================================ -->
         <div class="panel" id="panel-settings">
@@ -1273,6 +1297,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn teal" onclick="navigateMore('coupons')">
           <i class="fa-solid fa-ticket"></i>
           <span>Cupões</span>
+        </button>
+        <button class="more-btn orange" onclick="navigateMore('cleanup')">
+          <i class="fa-solid fa-broom"></i>
+          <span>Limpeza</span>
         </button>
         <button class="more-btn" onclick="navigateMore('settings')">
           <i class="fa-solid fa-gear"></i>
@@ -1827,6 +1855,7 @@ function navigate(panel){
     renderReviews();
   }
   if(panel==='coupons')renderCoupons();
+  if(panel==='cleanup')loadCleanup();
   if(panel==='settings')renderSettingsForm();
 }
 
@@ -3069,6 +3098,83 @@ async function deleteCoupon(id, codigo) {
     toast('Cupão removido', 'success');
     renderCoupons();
   } catch(e) { toast('Erro ao remover', 'error'); }
+  btnDone(btn);
+}
+
+/* ============================================================
+   LIMPEZA DE IMAGENS
+   ============================================================ */
+let cleanupData = { orfas: [] };
+
+async function loadCleanup() {
+  const result = $('cleanupResult');
+  if (!result) return;
+  result.innerHTML = '<div class="spinner"></div>';
+  const btnTodas = $('btnRemoverTodas');
+  if (btnTodas) btnTodas.style.display = 'none';
+
+  try {
+    const data = await api('/api/admin/imagens/orfas');
+    cleanupData = data || { orfas: [] };
+    const orfas = cleanupData.orfas || [];
+
+    if (!orfas.length) {
+      result.innerHTML = '<div class="info-box success"><i class="fa-solid fa-circle-check"></i> Sem imagens órfãs encontradas. O repositório está limpo!</div>';
+      return;
+    }
+
+    if (btnTodas) btnTodas.style.display = 'inline-flex';
+
+    result.innerHTML =
+      '<div class="info-box warning"><i class="fa-solid fa-triangle-exclamation"></i> Encontradas <strong>' + orfas.length + '</strong> imagem(ns) não utilizadas por nenhum produto.</div>' +
+      '<div class="section-card" style="padding:0;overflow:hidden"><div class="table-wrap"><table>' +
+      '<thead><tr><th>Pré-visualização</th><th>Ficheiro</th><th>Tamanho</th><th>Acção</th></tr></thead><tbody>' +
+      orfas.map(function(img) {
+        const safeId = 'crow-' + img.sha.slice(0, 12);
+        return '<tr id="' + safeId + '">' +
+          '<td><div class="table-img"><img src="' + esc(img.url) + '" alt="" onerror="this.style.display=\'none\'"/></div></td>' +
+          '<td><div class="table-name" style="font-size:.72rem;word-break:break-all">' + esc(img.path) + '</div></td>' +
+          '<td><span style="font-size:.7rem;color:var(--muted)">' + (img.size ? (img.size / 1024).toFixed(1) + ' KB' : '—') + '</span></td>' +
+          '<td><button class="btn btn-danger btn-sm btn-icon" onclick="removerImagem(\'' + esc(img.path) + '\',\'' + esc(img.sha) + '\')" title="Remover"><i class="fa-solid fa-trash"></i></button></td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table></div></div>';
+
+  } catch(e) {
+    result.innerHTML = '<div class="info-box danger"><i class="fa-solid fa-circle-xmark"></i> Erro ao verificar imagens: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function removerImagem(path, sha) {
+  if (!confirm('Remover a imagem "' + path + '"?\nEsta acção não pode ser revertida.')) return;
+  const btn = btnBusy(document.activeElement);
+  try {
+    await api('/api/admin/imagens', { method: 'DELETE', body: JSON.stringify({ path, sha }) });
+    toast('Imagem removida!', 'success');
+    const row = document.getElementById('crow-' + sha.slice(0, 12));
+    if (row) row.remove();
+    // Se já não há linhas na tabela, recarregar estado vazio
+    const tbody = document.querySelector('#cleanupResult tbody');
+    if (tbody && !tbody.rows.length) loadCleanup();
+  } catch(e) {
+    toast('Erro ao remover: ' + e.message, 'error');
+  }
+  btnDone(btn);
+}
+
+async function removerTodasOrfas() {
+  const total = (cleanupData.orfas || []).length;
+  if (!total) { toast('Sem imagens órfãs para remover', 'info'); return; }
+  if (!confirm('Remover TODAS as ' + total + ' imagens órfãs?\nEsta acção não pode ser revertida.')) return;
+  const btn = btnBusy($('btnRemoverTodas'));
+  try {
+    await api('/api/admin/imagens/orfas', { method: 'DELETE' });
+    toast('Todas as imagens órfãs removidas!', 'success');
+    cleanupData = { orfas: [] };
+    loadCleanup();
+  } catch(e) {
+    toast('Erro ao remover: ' + e.message, 'error');
+  }
   btnDone(btn);
 }
 
