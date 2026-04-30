@@ -1,22 +1,21 @@
 // Service Worker — IMPERSILVATECH PWA
 const CACHE_NAME = 'impersilva-v3';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/catalogo.html',
-  '/produto.html',
-  '/carrinho.html',
-  '/checkout.html',
-  '/confirmacao.html',
-  '/conta.html',
-  '/sobre.html',
-  '/rastrear.html',
-  '/admin.html',
-  '/manifest.json',
-  '/favicon.svg'
+  '/Loja/',
+  '/Loja/index.html',
+  '/Loja/catalogo.html',
+  '/Loja/produto.html',
+  '/Loja/carrinho.html',
+  '/Loja/checkout.html',
+  '/Loja/confirmacao.html',
+  '/Loja/conta.html',
+  '/Loja/sobre.html',
+  '/Loja/rastrear.html',
+  '/Loja/admin.html',
+  '/Loja/manifest.json',
+  '/Loja/favicon.svg'
 ];
 
-// Instalar — guardar recursos em cache
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -26,7 +25,6 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
-// Activar — limpar caches antigos
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -39,9 +37,7 @@ self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
-// Fetch — Cache First, depois Rede
 self.addEventListener('fetch', function(event) {
-  // Não cachear chamadas à API
   if (event.request.url.includes('/api/') || event.request.url.includes('workers.dev')) {
     return;
   }
@@ -62,9 +58,8 @@ self.addEventListener('fetch', function(event) {
         
         return response;
       }).catch(function() {
-        // Se offline e não estiver em cache
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match('/Loja/index.html');
         }
       });
     })

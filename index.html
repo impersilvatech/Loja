@@ -11,7 +11,7 @@
 <meta name="robots" content="index, follow"/>
 <meta property="og:title" id="ogTitle" content="IMPERSILVATECH"/>
 <meta property="og:description" id="ogDesc" content="Loja online de doces e salgados"/>
-<meta property="og:image" content="favicon.svg"/>
+<meta property="og:image" content="/Loja/favicon.svg"/>
 <meta property="og:url" id="ogUrl" content=""/>
 <meta property="og:type" content="website"/>
 <meta property="og:locale" content="pt_AO"/>
@@ -19,13 +19,12 @@
 <meta name="twitter:title" id="twTitle" content="IMPERSILVATECH"/>
 <meta name="twitter:description" id="twDesc" content="Loja online de doces e salgados"/>
 <link rel="canonical" id="canonical" href=""/>
-<!-- iOS PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="IMPERSILVA"/>
-<link rel="apple-touch-icon" href="favicon.svg"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/Loja/favicon.svg"/>
+<link rel="manifest" href="/Loja/manifest.json"/>
+<link rel="icon" href="/Loja/favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <script type="application/ld+json" id="schemaJson">
@@ -111,7 +110,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .cart-ct{background:rgba(255,255,255,.25);border-radius:50px;padding:1px 9px;font-size:.68rem}
 .lang-btn{padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:none;font-family:var(--ft);font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .2s}
 .lang-btn:hover{border-color:var(--pink);color:var(--pink)}.lang-btn.active{background:var(--grad);color:#fff;border-color:transparent}
-/* PWA Banner */
 .pwa-banner{position:fixed;bottom:75px;left:16px;right:16px;z-index:300;background:var(--card);border:1px solid var(--pink);border-radius:16px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadeUp .3s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .pwa-banner-inner{display:flex;align-items:center;gap:12px}
@@ -130,7 +128,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
     <button class="lang-btn" id="langEn" onclick="setIdioma('en')">EN</button>
   </div>
   <button class="hb" onclick="toggleTheme()"><i class="fa-solid fa-sun" id="temaIco"></i></button>
-  <a href="conta.html" class="hb"><i class="fa-solid fa-user"></i></a>
+  <a href="/Loja/conta.html" class="hb"><i class="fa-solid fa-user"></i></a>
 </header>
 
 <div class="ptr" id="ptr"><div class="ptr-spin"></div></div>
@@ -140,35 +138,35 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <span class="hero-tag" data-i18n="welcome">Bem-vindo</span>
   <h1 id="heroTitulo">Bem-vindo!</h1>
   <p id="heroSub"></p>
-  <a href="catalogo.html" class="hero-btn" data-i18n="viewCatalog"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
+  <a href="/Loja/catalogo.html" class="hero-btn" data-i18n="viewCatalog"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
 </div>
 
 <div class="auth-strip" id="authStrip">
   <span class="as-ico"><i class="fa-solid fa-user-plus"></i></span>
   <div class="as-txt"><h4 data-i18n="createAccount">Cria a tua conta</h4><p data-i18n="trackOrders">Acompanha as tuas encomendas em tempo real</p></div>
-  <a href="conta.html" class="as-btn" data-i18n="login">Entrar</a>
+  <a href="/Loja/conta.html" class="as-btn" data-i18n="login">Entrar</a>
 </div>
 
 <div class="search-home">
   <span class="shi-ico"><i class="fa-solid fa-magnifying-glass"></i></span>
-  <input class="shi" type="search" data-i18n-placeholder="searchProduct" placeholder="Pesquisar produto..." onkeydown="if(event.key==='Enter'&&this.value.trim()){window.location.href='catalogo.html?q='+encodeURIComponent(this.value.trim());}"/>
+  <input class="shi" type="search" data-i18n-placeholder="searchProduct" placeholder="Pesquisar produto..." onkeydown="if(event.key==='Enter'&&this.value.trim()){window.location.href='/Loja/catalogo.html?q='+encodeURIComponent(this.value.trim());}"/>
 </div>
 
 <div class="section-top">
   <h2 data-i18n="categories"><i class="fa-solid fa-tags"></i> Categorias</h2>
-  <a href="catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
+  <a href="/Loja/catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
 </div>
 <div class="cats" id="catsRow"><div class="spin"></div></div>
 
 <div class="section-top">
   <h2 data-i18n="featured"><i class="fa-solid fa-fire"></i> Em Destaque</h2>
-  <a href="catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
+  <a href="/Loja/catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
 </div>
 <div class="grid" id="pgDest"><div class="spin" style="grid-column:1/-1"></div></div>
 
 <div class="section-top" id="secNovos" style="display:none">
   <h2 data-i18n="news"><i class="fa-solid fa-sparkles"></i> Novidades</h2>
-  <a href="catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
+  <a href="/Loja/catalogo.html" data-i18n="viewAll">Ver tudo <i class="fa-solid fa-chevron-right"></i></a>
 </div>
 <div class="grid" id="pgNovos"></div>
 
@@ -178,25 +176,21 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </div>
 
 <div class="nav">
-  <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
+  <a href="/Loja/index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
   <div class="nav-links">
-    <a href="catalogo.html" class="nl"><i class="fa-solid fa-store"></i><span data-i18n="catalog">Catálogo</span></a>
-    <a href="rastrear.html" class="nl"><i class="fa-solid fa-magnifying-glass"></i><span data-i18n="track">Rastrear</span></a>
-    <a href="sobre.html" class="nl"><i class="fa-solid fa-circle-info"></i><span data-i18n="about">Sobre</span></a>
-    <a href="conta.html" class="nl"><i class="fa-solid fa-user"></i><span data-i18n="account">Conta</span></a>
+    <a href="/Loja/catalogo.html" class="nl"><i class="fa-solid fa-store"></i><span data-i18n="catalog">Catálogo</span></a>
+    <a href="/Loja/rastrear.html" class="nl"><i class="fa-solid fa-magnifying-glass"></i><span data-i18n="track">Rastrear</span></a>
+    <a href="/Loja/sobre.html" class="nl"><i class="fa-solid fa-circle-info"></i><span data-i18n="about">Sobre</span></a>
+    <a href="/Loja/conta.html" class="nl"><i class="fa-solid fa-user"></i><span data-i18n="account">Conta</span></a>
   </div>
-  <a href="carrinho.html" class="btn-cart-nav" id="btnCart"><i class="fa-solid fa-cart-shopping"></i> Carrinho</a>
+  <a href="/Loja/carrinho.html" class="btn-cart-nav" id="btnCart"><i class="fa-solid fa-cart-shopping"></i> Carrinho</a>
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Banner de Instalação PWA -->
 <div id="pwaBanner" class="pwa-banner" style="display:none">
   <div class="pwa-banner-inner">
     <div class="pwa-ico">📲</div>
-    <div class="pwa-txt">
-      <strong>Instalar App</strong>
-      <span>Adicione ao ecrã principal para acesso rápido</span>
-    </div>
+    <div class="pwa-txt"><strong>Instalar App</strong><span>Adicione ao ecrã principal para acesso rápido</span></div>
     <button class="pwa-btn" onclick="instalarPWA()">Instalar</button>
     <button class="pwa-close" onclick="fecharPWABanner()">✕</button>
   </div>
@@ -208,7 +202,6 @@ var loja,cats,prods;
 var idioma=localStorage.getItem('idioma')||'pt';
 var pwaPrompt=null;
 
-// Traduções
 var i18n={
   pt:{welcome:'Bem-vindo',viewCatalog:'Ver Catálogo',createAccount:'Cria a tua conta',trackOrders:'Acompanha as tuas encomendas em tempo real',login:'Entrar',searchProduct:'Pesquisar produto...',categories:'Categorias',viewAll:'Ver tudo',featured:'Em Destaque',news:'Novidades',delivery:'Entrega ao domicílio',catalog:'Catálogo',track:'Rastrear',about:'Sobre',account:'Conta',cart:'Carrinho',noFeatured:'Sem produtos em destaque.',noProducts:'Sem produtos ainda.'},
   en:{welcome:'Welcome',viewCatalog:'View Catalog',createAccount:'Create your account',trackOrders:'Track your orders in real time',login:'Login',searchProduct:'Search product...',categories:'Categories',viewAll:'View all',featured:'Featured',news:'New Arrivals',delivery:'Home Delivery',catalog:'Catalog',track:'Track',about:'About',account:'Account',cart:'Cart',noFeatured:'No featured products.',noProducts:'No products yet.'}
@@ -231,12 +224,8 @@ function aplicarIdioma(){
   if(prods&&prods.length){renderDestaques();renderNovos();}
 }
 
-// PWA
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pwaPrompt=e;if(!localStorage.getItem('pwa_banner_fechado')){document.getElementById('pwaBanner').style.display='block';}});
-function instalarPWA(){
-  if(pwaPrompt){pwaPrompt.prompt();pwaPrompt.userChoice.then(function(r){if(r.outcome==='accepted'){document.getElementById('pwaBanner').style.display='none';}});}
-  else{document.getElementById('pwaBanner').style.display='none';localStorage.setItem('pwa_banner_fechado','1');}
-}
+function instalarPWA(){if(pwaPrompt){pwaPrompt.prompt();pwaPrompt.userChoice.then(function(r){if(r.outcome==='accepted'){document.getElementById('pwaBanner').style.display='none';}});}else{document.getElementById('pwaBanner').style.display='none';localStorage.setItem('pwa_banner_fechado','1');}}
 function fecharPWABanner(){document.getElementById('pwaBanner').style.display='none';localStorage.setItem('pwa_banner_fechado','1');}
 
 function toggleTheme(){var t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('tema',t);document.getElementById('temaIco').className=t==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
@@ -253,13 +242,13 @@ function toggleWish(id,btn){var wl=getWishlist();var added=!wl.includes(String(i
 
 async function carregar(){
   try{var rL=await fetch(API+'/api/loja');loja=await rL.json();var rC=await fetch(API+'/api/categorias');cats=await rC.json();var rP=await fetch(API+'/api/produtos');prods=await rP.json();}catch(e){loja={};cats=[];prods=[];}
-  var siteUrl=window.location.origin;
+  var siteUrl='https://impersilvatech.github.io/Loja/';
   document.getElementById('pageTitle').textContent=loja.nome||'Loja';document.title=loja.nome||'Loja';
   if(loja.meta_descricao){document.getElementById('metaDesc').setAttribute('content',loja.meta_descricao);document.getElementById('ogDesc').setAttribute('content',loja.meta_descricao);document.getElementById('twDesc').setAttribute('content',loja.meta_descricao);}
   if(loja.palavras_chave){document.getElementById('metaKw').setAttribute('content',loja.palavras_chave);}
   document.getElementById('ogTitle').setAttribute('content',loja.nome||'IMPERSILVATECH');document.getElementById('twTitle').setAttribute('content',loja.nome||'IMPERSILVATECH');
   document.getElementById('ogUrl').setAttribute('content',siteUrl);document.getElementById('canonical').setAttribute('href',siteUrl);
-  var schema={ "@context":"https://schema.org","@type":"Store","name":loja.nome||'IMPERSILVATECH',"description":loja.meta_descricao||loja.descricao||'',"url":siteUrl,"telephone":loja.telefone||'',"address":{"@type":"PostalAddress","streetAddress":loja.morada||'',"addressLocality":loja.cidade||'',"addressRegion":loja.provincia||'',"addressCountry":"AO"} };
+  var schema={"@context":"https://schema.org","@type":"Store","name":loja.nome||'IMPERSILVATECH',"description":loja.meta_descricao||loja.descricao||'',"url":siteUrl,"telephone":loja.telefone||'',"address":{"@type":"PostalAddress","streetAddress":loja.morada||'',"addressLocality":loja.cidade||'',"addressRegion":loja.provincia||'',"addressCountry":"AO"}};
   document.getElementById('schemaJson').textContent=JSON.stringify(schema);
   document.getElementById('hdrLogo').textContent=loja.nome||'Loja';
   document.getElementById('heroTitulo').innerHTML=(idioma==='en'?'Welcome to<br><span style="font-style:italic">':'Bem-vindo à<br><span style="font-style:italic">')+(loja.nome||'Loja')+'</span>';
@@ -270,7 +259,7 @@ async function carregar(){
   aplicarIdioma();buildCats();renderDestaques();renderNovos();atualizarBtnCart();initPTR();
 }
 
-function buildCats(){var row=document.getElementById('catsRow');if(!cats.length){row.innerHTML='';return;}row.innerHTML=cats.map(function(c){return'<a href="catalogo.html?cat='+c.slug+'" class="cat">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';}).join('');}
+function buildCats(){var row=document.getElementById('catsRow');if(!cats.length){row.innerHTML='';return;}row.innerHTML=cats.map(function(c){return'<a href="/Loja/catalogo.html?cat='+c.slug+'" class="cat">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';}).join('');}
 function renderDestaques(){var g=document.getElementById('pgDest');var destaques=prods.filter(function(p){return p.destaque==1||p.destaque===true;});if(!destaques.length){g.innerHTML='<p class="empty-msg" style="grid-column:1/-1">'+t('noFeatured')+'</p>';return;}g.innerHTML=destaques.slice(0,8).map(function(p){return cardHtml(p);}).join('');}
 function renderNovos(){var nov=prods.filter(function(p){return p.etiqueta==='novo';});if(!nov.length)return;document.getElementById('secNovos').style.display='flex';document.getElementById('pgNovos').innerHTML=nov.slice(0,6).map(function(p){return cardHtml(p);}).join('');}
 
@@ -287,7 +276,7 @@ function cardHtml(p){
   else if(isNew)tagHtml='<span class="tag-novo">'+(idioma==='en'?'New':'Novo')+'</span>';
   var nome=(idioma==='en'&&p.nome_en?p.nome_en:p.nome);
   var catNome=cat?(idioma==='en'&&cat.nome_en?cat.nome_en:cat.nome):'';
-  return'<a href="produto.html?id='+p.id+'" class="card"><div class="card-img">'+img+'</div><div style="position:absolute;top:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:flex-start;z-index:1">'+tagHtml+'<button class="wish-btn'+(wished?' active':'')+'" onclick="event.preventDefault();event.stopPropagation();toggleWish('+p.id+',this)">'+(wished?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>')+'</button></div><div class="card-body"><div class="card-cat">'+catNome+'</div><div class="card-nome">'+nome+'</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="card-preco">'+(preco>0?kz(preco):(idioma==='en'?'Quote':'Orçamento'))+'</span>'+(pct>0?'<span class="card-preco-orig">'+kz(precoOrig)+'</span>':'')+'</div></div>'+(p.disponivel!==0&&preco>0?'<button class="btn-add" onclick="event.preventDefault();event.stopPropagation();addCart('+p.id+')"><i class="fa-solid fa-plus"></i></button>':'')+'</a>';
+  return'<a href="/Loja/produto.html?id='+p.id+'" class="card"><div class="card-img">'+img+'</div><div style="position:absolute;top:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:flex-start;z-index:1">'+tagHtml+'<button class="wish-btn'+(wished?' active':'')+'" onclick="event.preventDefault();event.stopPropagation();toggleWish('+p.id+',this)">'+(wished?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>')+'</button></div><div class="card-body"><div class="card-cat">'+catNome+'</div><div class="card-nome">'+nome+'</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="card-preco">'+(preco>0?kz(preco):(idioma==='en'?'Quote':'Orçamento'))+'</span>'+(pct>0?'<span class="card-preco-orig">'+kz(precoOrig)+'</span>':'')+'</div></div>'+(p.disponivel!==0&&preco>0?'<button class="btn-add" onclick="event.preventDefault();event.stopPropagation();addCart('+p.id+')"><i class="fa-solid fa-plus"></i></button>':'')+'</a>';
 }
 
 function addCart(id){var cart=getCarrinho();if(cart.findIndex(function(i){return i.produto_id===id;})>=0){toast(idioma==='en'?'Already added!':'Já adicionado!','err');return;}var p=prods.find(function(x){return x.id===id;});if(!p)return;cart.push({chave:''+id+'-'+Date.now(),produto_id:id,nome:p.nome,preco:p.preco_base,quantidade:1,imagem:p.imagem_url||'',nota:''});salvarCarrinho(cart);atualizarBtnCart();toast(p.nome+' '+(idioma==='en'?'added!':'adicionado!'));}
