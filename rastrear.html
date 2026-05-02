@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#0d0d1a"/>
 <title>Rastrear Encomenda</title>
+<script>
+(function(){
+  var t=localStorage.getItem('tema')||'dark';
+  var l=localStorage.getItem('idioma')||'pt';
+  document.documentElement.setAttribute('data-theme',t);
+  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-AO');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+})();
+</script>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -17,6 +26,11 @@
   --ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;
   --grad:linear-gradient(135deg,#ff6b9d,#b14ae8);--r:14px;--r2:18px;
 }
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b09ab8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547;--yellow:#a07800}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.offline-bar{position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff4757;color:#fff;text-align:center;font-family:var(--ft);font-size:.75rem;padding:7px 12px;transform:translateY(-100%);transition:transform .3s ease}
+.offline-bar.show{transform:translateY(0)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:var(--fb);background:var(--bg);color:var(--white);
@@ -270,17 +284,18 @@ body{
 </head>
 <body>
 
+<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
+
 <header class="hdr">
   <a href="index.html" class="hdr-back"><i class="fa-solid fa-arrow-left"></i></a>
-  <div class="hdr-title">Rastrear Encomenda</div>
+  <div class="hdr-title" id="hdrTitle">Rastrear Encomenda</div>
   <div style="width:36px"></div>
 </header>
 
 <div class="ctn">
-  <!-- Search Card -->
   <div class="search-card">
-    <h2><i class="fa-solid fa-magnifying-glass"></i> Acompanhe o seu pedido</h2>
-    <p>Introduza a referência que recebeu após finalizar o pedido (ex: <strong>ENC-1234567890</strong>).</p>
+    <h2><i class="fa-solid fa-magnifying-glass"></i> <span id="searchTitle">Acompanhe o seu pedido</span></h2>
+    <p id="searchDesc">Introduza a referência que recebeu após finalizar o pedido (ex: <strong>ENC-1234567890</strong>).</p>
     <div class="search-wrap">
       <input class="search-input" type="text" id="refInput" placeholder="ENC-XXXXXXXXXXXXXXX" onkeydown="if(event.key==='Enter')rastrear()"/>
       <button class="search-btn" onclick="rastrear()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -291,20 +306,17 @@ body{
     </div>
   </div>
 
-  <!-- Loading -->
   <div class="loading" id="loading">
     <div class="spin"></div>
-    <p>A procurar encomenda...</p>
+    <p id="loadingTxt">A procurar encomenda...</p>
   </div>
 
-  <!-- Empty State -->
   <div class="empty-state" id="emptyState">
     <i class="fa-solid fa-box-open"></i>
-    <h3>Pronto para rastrear!</h3>
-    <p>Insira a referência acima para ver o estado da sua encomenda.</p>
+    <h3 id="emptyTitle">Pronto para rastrear!</h3>
+    <p id="emptyDesc">Insira a referência acima para ver o estado da sua encomenda.</p>
   </div>
 
-  <!-- Result Card -->
   <div class="result-card" id="resultCard">
     <div class="result-header">
       <div class="result-ref" id="resultRef">—</div>
@@ -314,233 +326,267 @@ body{
       </div>
     </div>
 
-    <!-- Timeline -->
     <div class="timeline">
-      <div class="timeline-title"><i class="fa-solid fa-timeline"></i> Progresso</div>
+      <div class="timeline-title"><i class="fa-solid fa-timeline"></i> <span id="progressTxt">Progresso</span></div>
       <div class="timeline-steps" id="timelineSteps"></div>
     </div>
 
-    <!-- Delivery Info -->
     <div class="delivery-info" id="deliveryInfo" style="display:none">
       <i class="fa-solid fa-truck-fast"></i>
       <span id="deliveryText"></span>
     </div>
 
-    <!-- Items -->
     <div class="items-card">
-      <div class="items-title"><i class="fa-solid fa-receipt"></i> Itens da Encomenda</div>
+      <div class="items-title"><i class="fa-solid fa-receipt"></i> <span id="itemsTitle">Itens da Encomenda</span></div>
       <div id="itemsList"></div>
     </div>
 
-    <!-- Total -->
     <div class="summary-row">
-      <span class="summary-label">Total</span>
+      <span class="summary-label" id="totalLbl">Total</span>
       <span class="summary-value" id="resultTotal">—</span>
     </div>
 
-    <!-- WhatsApp -->
     <a href="#" class="wa-btn" id="waBtn" target="_blank" rel="noopener">
       <i class="fa-brands fa-whatsapp" style="font-size:1.3rem"></i>
-      Falar com a loja
+      <span id="waBtnTxt">Falar com a loja</span>
     </a>
 
-    <!-- Imprimir / PDF -->
     <button class="pdf-btn" onclick="window.print()">
-      <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+      <i class="fa-solid fa-print"></i> <span id="printTxt">Imprimir / Guardar PDF</span>
     </button>
 
     <div class="auto-refresh">
       <i class="fa-solid fa-rotate"></i>
-      Actualização automática a cada 30 segundos
+      <span id="autoRefreshTxt">Actualização automática a cada 30 segundos</span>
     </div>
   </div>
 </div>
 
 <div class="nav">
   <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
-  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
+  <a href="catalogo.html" class="btn-cat-nav" id="btnCatNav"><i class="fa-solid fa-store"></i> <span id="btnCatTxt">Ver Catálogo</span></a>
 </div>
 
 <script>
 var API = 'https://impersilva-d1work.3miliosilva.workers.dev';
 var loja = {};
 var refreshInterval = null;
+var idioma = localStorage.getItem('idioma') || 'pt';
 
-function kz(v,s){if(v==null)return'—';return(s||'Kz')+' '+Number(v).toLocaleString('pt');}
-function fmtData(d){if(!d)return'—';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'long',year:'numeric'});}
+var i18n = {
+  pt:{pageTitle:'Rastrear Encomenda',hdrTitle:'Rastrear Encomenda',
+      searchTitle:'Acompanhe o seu pedido',
+      searchDesc:'Introduza a referência que recebeu após finalizar o pedido (ex: <strong>ENC-1234567890</strong>).',
+      loading:'A procurar encomenda...',
+      emptyTitle:'Pronto para rastrear!',emptyDesc:'Insira a referência acima para ver o estado da sua encomenda.',
+      progress:'Progresso',itemsTitle:'Itens da Encomenda',total:'Total',
+      talkStore:'Falar com a loja',print:'Imprimir / Guardar PDF',
+      autoRefresh:'Actualização automática a cada 30 segundos',
+      catalog:'Ver Catálogo',errEmpty:'Introduza uma referência.',
+      errFormat:'Formato inválido. Ex: ENC-1234567890',
+      errNotFound:'Encomenda não encontrada. Verifique a referência.',
+      errConn:'Erro de ligação. Tente novamente.',
+      noItems:'Detalhes não disponíveis.',
+      deliveryAddr:'Entrega: %addr% | Data prevista: %date%',
+      pickupMsg:'Levantamento na loja. Será notificado quando estiver pronto.',
+      waMsg:'Olá! Gostaria de saber mais sobre a minha encomenda %ref%.',
+      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…',
+      estados:{pendente:'Pedido Recebido',confirmada:'Confirmado',pronta:'Pronto / Em Preparação',entregue:'Entregue',cancelada:'Cancelado'},
+      estadosDesc:{pendente:'Recebemos o seu pedido e vamos analisá-lo.',confirmada:'O seu pedido foi confirmado e está na fila de produção.',pronta:'O seu pedido está pronto! Aguardamos a entrega ou levantamento.',entregue:'Pedido entregue com sucesso. Obrigado pela preferência!',cancelada:'Este pedido foi cancelado. Entre em contacto para mais informações.'}},
+  en:{pageTitle:'Track Order',hdrTitle:'Track Order',
+      searchTitle:'Track your order',
+      searchDesc:'Enter the reference you received after placing your order (e.g. <strong>ENC-1234567890</strong>).',
+      loading:'Searching for order...',
+      emptyTitle:'Ready to track!',emptyDesc:'Enter the reference above to see your order status.',
+      progress:'Progress',itemsTitle:'Order Items',total:'Total',
+      talkStore:'Chat with the store',print:'Print / Save PDF',
+      autoRefresh:'Auto-refresh every 30 seconds',
+      catalog:'View Catalog',errEmpty:'Enter a reference.',
+      errFormat:'Invalid format. E.g. ENC-1234567890',
+      errNotFound:'Order not found. Please check the reference.',
+      errConn:'Connection error. Please try again.',
+      noItems:'Details not available.',
+      deliveryAddr:'Delivery: %addr% | Expected date: %date%',
+      pickupMsg:'Store pickup. You will be notified when ready.',
+      waMsg:'Hi! I would like to know more about my order %ref%.',
+      offlineMsg:'📡 No internet connection — trying to reconnect…',
+      estados:{pendente:'Order Received',confirmada:'Confirmed',pronta:'Ready / In Preparation',entregue:'Delivered',cancelada:'Cancelled'},
+      estadosDesc:{pendente:'We received your order and will review it.',confirmada:'Your order is confirmed and in the production queue.',pronta:'Your order is ready! Awaiting delivery or pickup.',entregue:'Order delivered successfully. Thank you!',cancelada:'This order was cancelled. Contact us for more information.'}}
+};
+function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
+
+/* Offline */
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
+window.addEventListener('offline',function(){setOnline(false);});
+window.addEventListener('online',function(){setOnline(true);});
+setOnline(navigator.onLine);
+
+/* Apply i18n to static UI */
+function aplicarIdioma(){
+  document.title=t('pageTitle');
+  document.getElementById('hdrTitle').textContent=t('hdrTitle');
+  document.getElementById('searchTitle').textContent=t('searchTitle');
+  document.getElementById('searchDesc').innerHTML=t('searchDesc');
+  document.getElementById('loadingTxt').textContent=t('loading');
+  document.getElementById('emptyTitle').textContent=t('emptyTitle');
+  document.getElementById('emptyDesc').textContent=t('emptyDesc');
+  document.getElementById('progressTxt').textContent=t('progress');
+  document.getElementById('itemsTitle').textContent=t('itemsTitle');
+  document.getElementById('totalLbl').textContent=t('total');
+  document.getElementById('waBtnTxt').textContent=t('talkStore');
+  document.getElementById('printTxt').textContent=t('print');
+  document.getElementById('autoRefreshTxt').textContent=t('autoRefresh');
+  document.getElementById('btnCatTxt').textContent=t('catalog');
+}
+
+function kz(v){if(v==null)return'—';return'Kz '+Number(v).toLocaleString('pt');}
+function fmtData(d){if(!d)return'—';return new Date(d).toLocaleDateString(idioma==='en'?'en-GB':'pt',{day:'2-digit',month:'long',year:'numeric'});}
 
 var ESTADOS_ORDEM = ['pendente','confirmada','pronta','entregue'];
-var ESTADOS_LABEL = {
-  pendente:'Pedido Recebido',
-  confirmada:'Confirmado',
-  pronta:'Pronto / Em Preparação',
-  entregue:'Entregue',
-  cancelada:'Cancelado'
-};
-var ESTADOS_DESC = {
-  pendente:'Recebemos o seu pedido e vamos analisá-lo.',
-  confirmada:'O seu pedido foi confirmado e está na fila de produção.',
-  pronta:'O seu pedido está pronto! Aguardamos a entrega ou levantamento.',
-  entregue:'Pedido entregue com sucesso. Obrigado pela preferência!',
-  cancelada:'Este pedido foi cancelado. Entre em contacto para mais informações.'
-};
+
+function getParam(n){return new URLSearchParams(window.location.search).get(n);}
 
 async function carregarLoja(){
   try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
 }
 
-function getParam(n){return new URLSearchParams(window.location.search).get(n);}
-
 async function rastrear(refInput){
   var ref = refInput || document.getElementById('refInput').value.trim().toUpperCase();
-  
+
   document.getElementById('errorMsg').classList.remove('show');
   document.getElementById('loading').classList.remove('show');
   document.getElementById('emptyState').classList.remove('show');
   document.getElementById('resultCard').classList.remove('show');
-  
+
   if(!ref){
-    document.getElementById('errorText').textContent = 'Introduza uma referência.';
+    document.getElementById('errorText').textContent=t('errEmpty');
     document.getElementById('errorMsg').classList.add('show');
     return;
   }
-  
   if(!/^ENC-\d{8,}$/.test(ref)){
-    document.getElementById('errorText').textContent = 'Formato inválido. Ex: ENC-1234567890';
+    document.getElementById('errorText').textContent=t('errFormat');
     document.getElementById('errorMsg').classList.add('show');
     return;
   }
-  
+
   document.getElementById('loading').classList.add('show');
-  
+
   try{
-    var r = await fetch(API+'/api/encomendas/'+ref);
-    var enc = await r.json();
-    
+    var r=await fetch(API+'/api/encomendas/'+ref);
+    var enc=await r.json();
     document.getElementById('loading').classList.remove('show');
-    
+
     if(enc.erro){
-      document.getElementById('errorText').textContent = 'Encomenda não encontrada. Verifique a referência.';
+      document.getElementById('errorText').textContent=t('errNotFound');
       document.getElementById('errorMsg').classList.add('show');
       return;
     }
-    
+
     mostrarResultado(enc);
-    
+
     if(refreshInterval)clearInterval(refreshInterval);
-    if(enc.estado !== 'entregue' && enc.estado !== 'cancelada'){
-      refreshInterval = setInterval(function(){
-        fetch(API+'/api/encomendas/'+ref).then(function(r2){return r2.json();}).then(function(enc2){
-          if(!enc2.erro)mostrarResultado(enc2,true);
-        }).catch(function(){});
-      }, 30000);
+    if(enc.estado!=='entregue'&&enc.estado!=='cancelada'){
+      refreshInterval=setInterval(function(){
+        fetch(API+'/api/encomendas/'+ref)
+          .then(function(r2){return r2.json();})
+          .then(function(enc2){if(!enc2.erro)mostrarResultado(enc2,true);})
+          .catch(function(){});
+      },30000);
     }
-    
   }catch(e){
     document.getElementById('loading').classList.remove('show');
-    document.getElementById('errorText').textContent = 'Erro de ligação. Tente novamente.';
+    document.getElementById('errorText').textContent=t('errConn');
     document.getElementById('errorMsg').classList.add('show');
   }
 }
 
-function mostrarResultado(enc, silent){
-  var resultCard = document.getElementById('resultCard');
-  
-  if(!silent){
-    resultCard.classList.remove('show');
-    setTimeout(function(){resultCard.classList.add('show');},50);
-  }
-  
-  document.getElementById('resultRef').textContent = enc.ref;
-  document.getElementById('resultDate').textContent = '📅 '+fmtData(enc.criado_em);
-  
-  var statusBadge = document.getElementById('resultStatus');
-  statusBadge.textContent = ESTADOS_LABEL[enc.estado] || enc.estado;
-  statusBadge.className = 'status-badge '+(enc.estado||'pendente');
-  
-  var timelineHtml = '';
-  if(enc.estado === 'cancelada'){
-    var idx = ESTADOS_ORDEM.indexOf('pendente');
+function mostrarResultado(enc,silent){
+  var resultCard=document.getElementById('resultCard');
+  if(!silent){resultCard.classList.remove('show');setTimeout(function(){resultCard.classList.add('show');},50);}
+
+  document.getElementById('resultRef').textContent=enc.ref;
+  document.getElementById('resultDate').textContent='📅 '+fmtData(enc.criado_em);
+
+  var estados=t('estados');
+  var statusBadge=document.getElementById('resultStatus');
+  statusBadge.textContent=estados[enc.estado]||enc.estado;
+  statusBadge.className='status-badge '+(enc.estado||'pendente');
+
+  var timelineHtml='';
+  var estadosDesc=t('estadosDesc');
+  if(enc.estado==='cancelada'){
+    var idx=ESTADOS_ORDEM.indexOf('pendente');
     ESTADOS_ORDEM.forEach(function(est,i){
-      var cls = i <= idx ? 'done' : 'pending';
-      if(i === idx+1){
-        timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,'cancelled',enc);
-      }else{
-        timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,cls,enc);
-      }
+      var cls=i<=idx?'done':'pending';
+      if(i===idx+1)timelineHtml+=construirStep(est,i,ESTADOS_ORDEM.length,'cancelled',estados,estadosDesc);
+      else timelineHtml+=construirStep(est,i,ESTADOS_ORDEM.length,cls,estados,estadosDesc);
     });
   }else{
-    var currentIdx = ESTADOS_ORDEM.indexOf(enc.estado);
-    if(currentIdx < 0) currentIdx = 0;
-    
+    var currentIdx=ESTADOS_ORDEM.indexOf(enc.estado);
+    if(currentIdx<0)currentIdx=0;
     ESTADOS_ORDEM.forEach(function(est,i){
-      var cls = i < currentIdx ? 'done' : (i === currentIdx ? 'current' : 'pending');
-      timelineHtml += construirStep(est,i,ESTADOS_ORDEM.length,cls,enc);
+      var cls=i<currentIdx?'done':(i===currentIdx?'current':'pending');
+      timelineHtml+=construirStep(est,i,ESTADOS_ORDEM.length,cls,estados,estadosDesc);
     });
   }
-  document.getElementById('timelineSteps').innerHTML = timelineHtml;
-  
-  var deliveryInfo = document.getElementById('deliveryInfo');
-  if(enc.tipo_entrega === 'entrega' && enc.morada_entrega){
-    deliveryInfo.style.display = 'flex';
-    document.getElementById('deliveryText').textContent = 'Entrega: '+enc.morada_entrega+(enc.cidade_entrega?', '+enc.cidade_entrega:'')+' | Data prevista: '+fmtData(enc.data_entrega);
-  }else if(enc.tipo_entrega === 'levantamento'){
-    deliveryInfo.style.display = 'flex';
-    document.getElementById('deliveryText').textContent = 'Levantamento na loja. Será notificado quando estiver pronto.';
+  document.getElementById('timelineSteps').innerHTML=timelineHtml;
+
+  var deliveryInfo=document.getElementById('deliveryInfo');
+  if(enc.tipo_entrega==='entrega'&&enc.morada_entrega){
+    deliveryInfo.style.display='flex';
+    var addr=enc.morada_entrega+(enc.cidade_entrega?', '+enc.cidade_entrega:'');
+    document.getElementById('deliveryText').textContent=t('deliveryAddr').replace('%addr%',addr).replace('%date%',fmtData(enc.data_entrega));
+  }else if(enc.tipo_entrega==='levantamento'){
+    deliveryInfo.style.display='flex';
+    document.getElementById('deliveryText').textContent=t('pickupMsg');
   }else{
-    deliveryInfo.style.display = 'none';
+    deliveryInfo.style.display='none';
   }
-  
-  var itensHtml = '';
-  if(enc.itens && enc.itens.length){
+
+  var itensHtml='';
+  if(enc.itens&&enc.itens.length){
     enc.itens.forEach(function(item){
-      itensHtml += '<div class="item-row"><span class="item-name">'+item.nome_produto+'</span><span class="item-qty">×'+item.quantidade+'</span><span class="item-price">'+kz((item.preco_unit||0)*item.quantidade)+'</span></div>';
+      itensHtml+='<div class="item-row"><span class="item-name">'+item.nome_produto+'</span><span class="item-qty">×'+item.quantidade+'</span><span class="item-price">'+kz((item.preco_unit||0)*item.quantidade)+'</span></div>';
     });
   }else{
-    itensHtml = '<p style="font-size:.76rem;color:var(--muted);padding:8px 0">Detalhes não disponíveis.</p>';
+    itensHtml='<p style="font-size:.76rem;color:var(--muted);padding:8px 0">'+t('noItems')+'</p>';
   }
-  document.getElementById('itemsList').innerHTML = itensHtml;
-  
-  document.getElementById('resultTotal').textContent = kz(enc.total);
-  
-  var waNum = (loja.whatsapp||'').replace(/\D/g,'');
-  var waBtn = document.getElementById('waBtn');
+  document.getElementById('itemsList').innerHTML=itensHtml;
+  document.getElementById('resultTotal').textContent=kz(enc.total);
+
+  var waNum=(loja.whatsapp||'').replace(/\D/g,'');
+  var waBtn=document.getElementById('waBtn');
   if(waNum){
-    waBtn.style.display = 'flex';
-    waBtn.href = 'https://wa.me/'+waNum+'?text='+encodeURIComponent('Olá! Gostaria de saber mais sobre a minha encomenda '+enc.ref+'.');
+    waBtn.style.display='flex';
+    waBtn.href='https://wa.me/'+waNum+'?text='+encodeURIComponent(t('waMsg').replace('%ref%',enc.ref));
   }else{
-    waBtn.style.display = 'none';
+    waBtn.style.display='none';
   }
 }
 
-function construirStep(estado, index, total, cls, enc){
-  var icon = '';
-  if(cls === 'done') icon = 'fa-solid fa-check';
-  else if(cls === 'current') icon = 'fa-solid fa-circle';
-  else if(cls === 'cancelled') icon = 'fa-solid fa-xmark';
-  else icon = 'fa-regular fa-circle';
-  
-  var title = ESTADOS_LABEL[estado] || estado;
-  var desc = ESTADOS_DESC[estado] || '';
-  
-  if(cls === 'cancelled'){
-    title = 'Cancelado';
-    desc = ESTADOS_DESC['cancelada'];
-    return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot pending" style="background:var(--red);color:#fff"><i class="fa-solid fa-xmark"></i></div>'+(index<total-1?'<div class="timeline-line"></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title pending" style="color:var(--red)">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
+function construirStep(estado,index,total,cls,estados,estadosDesc){
+  var icon=cls==='done'?'fa-solid fa-check':cls==='current'?'fa-solid fa-circle':cls==='cancelled'?'fa-solid fa-xmark':'fa-regular fa-circle';
+  var title=estados[estado]||estado;
+  var desc=estadosDesc[estado]||'';
+  if(cls==='cancelled'){
+    title=estados['cancelada']||'Cancelado';
+    desc=estadosDesc['cancelada']||'';
+    return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot pending" style="background:var(--red);color:#fff"><i class="'+icon+'"></i></div>'+(index<total-1?'<div class="timeline-line"></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title pending" style="color:var(--red)">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
   }
-  
-  return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot '+cls+'"><i class="'+icon+'"></i></div>'+(index<total-1?'<div class="timeline-line'+(cls==='done'?' done':'')+'"></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title '+cls+'">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
+  return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot '+cls+'"><i class="'+icon+'"></i></div>'+(index<total-1?'<div class="timeline-line'+(cls==='done'?' done':'')+'" ></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title '+cls+'">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
 }
 
+aplicarIdioma();
 carregarLoja();
 
-var refParam = getParam('ref');
+var refParam=getParam('ref');
 if(refParam){
-  document.getElementById('refInput').value = refParam;
+  document.getElementById('refInput').value=refParam;
   rastrear(refParam);
 }else{
   document.getElementById('emptyState').classList.add('show');
 }
+-e 
 </script>
 </body>
 </html>

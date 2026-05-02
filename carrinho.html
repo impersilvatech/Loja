@@ -5,12 +5,36 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#0d0d1a"/>
 <title>Carrinho</title>
+<script>
+(function(){
+  var t=localStorage.getItem('tema')||'dark';
+  var l=localStorage.getItem('idioma')||'pt';
+  document.documentElement.setAttribute('data-theme',t);
+  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-AO');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+})();
+</script>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547}
+[data-theme="light"] .hdr,[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+@media(prefers-reduced-motion:reduce){.item,.vazio-icon{animation:none!important;transition:none!important}}
+.offline-bar{position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff4757;color:#fff;text-align:center;font-family:var(--ft);font-size:.75rem;padding:7px 12px;transform:translateY(-100%);transition:transform .3s ease}
+.offline-bar.show{transform:translateY(0)}
+.confirm-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.confirm-overlay.show{opacity:1;pointer-events:all}
+.confirm-box{background:var(--card);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
+.confirm-overlay.show .confirm-box{transform:translateY(0)}
+.confirm-title{font-family:var(--ft);font-size:1rem;margin-bottom:6px;text-align:center}
+.confirm-sub{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:20px}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns button{flex:1;padding:13px;border-radius:50px;font-family:var(--ft);font-size:.85rem;cursor:pointer;border:none;transition:all .2s}
+.confirm-cancel{background:var(--bg2);border:1px solid var(--border)!important;color:var(--white)}
+.confirm-ok{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(255,71,87,.3)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
@@ -86,6 +110,19 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </head>
 <body>
 
+<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Remover item?</div>
+    <div class="confirm-sub" id="confirmSub">Este item será removido do carrinho.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="fecharConfirm()"><i class="fa-solid fa-xmark"></i> <span id="confirmCancelTxt">Cancelar</span></button>
+      <button class="confirm-ok" id="confirmOkBtn"><i class="fa-solid fa-trash-can"></i> <span id="confirmOkTxt">Remover</span></button>
+    </div>
+  </div>
+</div>
+
 <header class="hdr">
   <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
   <div class="hdr-nome">Carrinho</div>
@@ -106,105 +143,181 @@ var tipoEntrega=localStorage.getItem('ist_entrega')||'levantamento';
 var loja={};
 var cupaoAplicado=null;
 var descontoCupao=0;
+var idioma=localStorage.getItem('idioma')||'pt';
+
+var i18n={
+  pt:{title:'Carrinho',cart:'Carrinho',data:'Dados',confirm:'Confirmação',
+      empty:'Carrinho Vazio',emptyMsg:'Adiciona produtos para começar a tua encomenda',
+      explore:'Explorar Produtos',subtotal:'Subtotal',delivery:'Entrega',free:'Grátis',
+      pickup:'Levantamento',total:'Total',items:'item',itemsPl:'itens',
+      coupon:'Código do cupão',apply:'Aplicar',finish:'Finalizar Pedido',
+      continueShopping:'Continuar a comprar',removed:'Item removido',emptyCart:'Carrinho vazio!',
+      couponRequired:'Insira um código de cupão.',couponMin:'Mínimo de',couponFor:'para este cupão.',
+      couponApplied:'Cupão aplicado! Desconto:',couponErr:'Erro ao validar cupão.',
+      removeTitle:'Remover item?',removeSub:'Este item será removido do carrinho.',
+      cancel:'Cancelar',remove:'Remover',
+      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…',
+      summary:'Resumo do Pedido'},
+  en:{title:'Cart',cart:'Cart',data:'Details',confirm:'Confirmation',
+      empty:'Empty Cart',emptyMsg:'Add products to start your order',
+      explore:'Explore Products',subtotal:'Subtotal',delivery:'Delivery',free:'Free',
+      pickup:'Pickup',total:'Total',items:'item',itemsPl:'items',
+      coupon:'Coupon code',apply:'Apply',finish:'Place Order',
+      continueShopping:'Continue shopping',removed:'Item removed',emptyCart:'Cart is empty!',
+      couponRequired:'Enter a coupon code.',couponMin:'Minimum of',couponFor:'for this coupon.',
+      couponApplied:'Coupon applied! Discount:',couponErr:'Error validating coupon.',
+      removeTitle:'Remove item?',removeSub:'This item will be removed from your cart.',
+      cancel:'Cancel',remove:'Remove',
+      offlineMsg:'📡 No internet connection — trying to reconnect…',
+      summary:'Order Summary'}
+};
+function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
+
+/* Offline */
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
+window.addEventListener('offline',function(){setOnline(false);});
+window.addEventListener('online',function(){setOnline(true);});
+setOnline(navigator.onLine);
 
 function getCarrinho(){try{return JSON.parse(localStorage.getItem('cf_carrinho')||'[]');}catch(e){return[];}}
 function salvarCarrinho(c){localStorage.setItem('cf_carrinho',JSON.stringify(c));}
 function kz(v){if(v==null)return'—';return'Kz '+Number(v).toLocaleString('pt');}
-function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.className='toast show';setTimeout(function(){el.classList.remove('show');},3000);}
+function toast(msg,tp){var el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(tp||'ok');setTimeout(function(){el.classList.remove('show');},3000);}
 function subtotalAtual(){return getCarrinho().reduce(function(s,i){return s+(i.preco||0)*(i.quantidade||1);},0);}
 
-async function carregar(){try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}render();}
+/* Confirm dialog */
+var _confirmCallback=null;
+function abrirConfirm(titulo,sub,cb){
+  document.getElementById('confirmTitle').textContent=titulo;
+  document.getElementById('confirmSub').textContent=sub;
+  document.getElementById('confirmCancelTxt').textContent=t('cancel');
+  document.getElementById('confirmOkTxt').textContent=t('remove');
+  _confirmCallback=cb;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function fecharConfirm(){document.getElementById('confirmOverlay').classList.remove('show');_confirmCallback=null;}
+document.getElementById('confirmOkBtn').onclick=function(){if(_confirmCallback)_confirmCallback();fecharConfirm();};
+document.getElementById('confirmOverlay').addEventListener('click',function(e){if(e.target===this)fecharConfirm();});
+
+async function carregar(){
+  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+  document.title=t('title')+' — '+(loja.nome||'Loja');
+  render();
+
+  /* Auto-refresh: re-fetch loja a cada 30s (preços entrega podem mudar) */
+  setInterval(async function(){
+    try{
+      var r=await fetch(API+'/api/loja');
+      var novaLoja=await r.json();
+      if(JSON.stringify(novaLoja)!==JSON.stringify(loja)){loja=novaLoja;render();}
+    }catch(e){}
+  },30000);
+}
 
 function render(){
   var c=getCarrinho(),cont=document.getElementById('ctn');
-  var progHtml='<div class="progresso"><div class="prog-step"><div class="prog-dot on">1</div><div class="prog-lbl on">Carrinho</div></div><div class="prog-step"><div class="prog-dot off">2</div><div class="prog-lbl">Dados</div></div><div class="prog-step"><div class="prog-dot off">3</div><div class="prog-lbl">Confirmação</div></div></div>';
+  var progHtml='<div class="progresso"><div class="prog-step"><div class="prog-dot on">1</div><div class="prog-lbl on">'+t('cart')+'</div></div><div class="prog-step"><div class="prog-dot off">2</div><div class="prog-lbl">'+t('data')+'</div></div><div class="prog-step"><div class="prog-dot off">3</div><div class="prog-lbl">'+t('confirm')+'</div></div></div>';
 
-  if(!c.length){cont.innerHTML=progHtml+'<div class="vazio"><div class="vazio-icon"><i class="fa-solid fa-cart-shopping"></i></div><h2>Carrinho Vazio</h2><p>Adiciona produtos para começar a tua encomenda</p><a href="catalogo.html" class="btn-sub"><i class="fa-solid fa-store"></i> Explorar Produtos</a></div>';return;}
+  if(!c.length){
+    cont.innerHTML=progHtml+'<div class="vazio"><div class="vazio-icon"><i class="fa-solid fa-cart-shopping"></i></div><h2>'+t('empty')+'</h2><p>'+t('emptyMsg')+'</p><a href="catalogo.html" class="btn-sub"><i class="fa-solid fa-store"></i> '+t('explore')+'</a></div>';
+    document.querySelector('.btn-cat-nav').textContent=t('continueShopping');
+    return;
+  }
 
   var itemsHtml=c.map(function(item,i){
     var subtotalItem=(item.preco||0)*(item.quantidade||1);
-    return'<div class="item" style="animation-delay:'+(i*0.08)+'s"><div class="item-img">'+(item.imagem?'<img src="'+item.imagem+'" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image style=color:var(--muted)></i>\'">':'<i class="fa-solid fa-image" style="color:var(--muted)"></i>')+'<div class="item-img-badge">'+(item.quantidade||1)+'</div></div><div class="item-info"><div class="item-nome">'+item.nome+'</div>'+(item.nota?'<div class="item-nota"><i class="fa-solid fa-pen" style="font-size:.55rem;margin-right:4px"></i>'+item.nota+'</div>':'')+'<div class="item-preco">'+kz(item.preco)+' <span class="item-preco-total">= '+kz(subtotalItem)+'</span></div><div class="item-acts"><div class="qty-ctrl"><button class="qb" onclick="altQty('+i+',-1)"><i class="fa-solid fa-minus"></i></button><span class="qv">'+(item.quantidade||1)+'</span><button class="qb" onclick="altQty('+i+',1)"><i class="fa-solid fa-plus"></i></button></div><button class="btn-rm" onclick="remover('+i+')" title="Remover"><i class="fa-solid fa-trash-can"></i></button></div></div></div>';
+    return'<div class="item" style="animation-delay:'+(i*0.08)+'s">'+
+      '<div class="item-img">'+(item.imagem?'<img src="'+item.imagem+'" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image style=color:var(--muted)></i>\'">'
+        :'<i class="fa-solid fa-image" style="color:var(--muted)"></i>')+
+      '<div class="item-img-badge">'+(item.quantidade||1)+'</div></div>'+
+      '<div class="item-info">'+
+        '<div class="item-nome">'+item.nome+'</div>'+
+        (item.nota?'<div class="item-nota"><i class="fa-solid fa-pen" style="font-size:.55rem;margin-right:4px"></i>'+item.nota+'</div>':'')+
+        '<div class="item-preco">'+kz(item.preco)+' <span class="item-preco-total">= '+kz(subtotalItem)+'</span></div>'+
+        '<div class="item-acts">'+
+          '<div class="qty-ctrl">'+
+            '<button class="qb" onclick="altQty('+i+',-1)"><i class="fa-solid fa-minus"></i></button>'+
+            '<span class="qv">'+(item.quantidade||1)+'</span>'+
+            '<button class="qb" onclick="altQty('+i+',1)"><i class="fa-solid fa-plus"></i></button>'+
+          '</div>'+
+          '<button class="btn-rm" onclick="confirmarRemover('+i+',\''+item.nome.replace(/'/g,"\\'")+'\')" title="'+t('remove')+'"><i class="fa-solid fa-trash-can"></i></button>'+
+        '</div>'+
+      '</div></div>';
   }).join('');
 
   var subtotal=c.reduce(function(s,i){return s+(i.preco||0)*(i.quantidade||1);},0);
   var gratis=loja.entrega_gratis_a>0&&subtotal>=loja.entrega_gratis_a;
   var precoEnt=tipoEntrega==='entrega'&&!gratis?(loja.entrega_preco||0):0;
   var desconto=descontoCupao||0;
-  var total=subtotal+precoEnt-desconto;
-  if(total<0)total=0;
+  var total=Math.max(0,subtotal+precoEnt-desconto);
+  var nItems=c.length;
 
-  var resumoHtml='<div class="resumo"><div class="resumo-h"><i class="fa-solid fa-receipt"></i> Resumo do Pedido</div>';
-  if(loja.entrega_ativa){resumoHtml+='<div class="entrega-opts"><div class="eopt '+(tipoEntrega==='levantamento'?'on':'')+'" onclick="setEnt(\'levantamento\')"><div class="eopt-ico"><i class="fa-solid fa-shop"></i></div><div class="eopt-lbl">Levantamento</div><div class="eopt-preco">Grátis</div></div><div class="eopt '+(tipoEntrega==='entrega'?'on':'')+'" onclick="setEnt(\'entrega\')"><div class="eopt-ico"><i class="fa-solid fa-truck-fast"></i></div><div class="eopt-lbl">Entrega</div><div class="eopt-preco">'+(gratis?'Grátis':kz(loja.entrega_preco||0))+'</div></div></div>';}
-  resumoHtml+='<div class="rl"><span>Subtotal ('+c.length+' item'+(c.length>1?'ns':'')+')</span><span>'+kz(subtotal)+'</span></div>';
-  if(tipoEntrega==='entrega'){resumoHtml+='<div class="rl"><span>Entrega'+(gratis?' <span style="color:var(--teal);font-size:.7rem">(Grátis!)</span>':'')+'</span><span>'+kz(precoEnt)+'</span></div>';}
+  var resumoHtml='<div class="resumo"><div class="resumo-h"><i class="fa-solid fa-receipt"></i> '+t('summary')+'</div>';
+  if(loja.entrega_ativa){
+    resumoHtml+='<div class="entrega-opts">'+
+      '<div class="eopt '+(tipoEntrega==='levantamento'?'on':'')+'" onclick="setEnt(\'levantamento\')">'+
+        '<div class="eopt-ico"><i class="fa-solid fa-shop"></i></div>'+
+        '<div class="eopt-lbl">'+t('pickup')+'</div>'+
+        '<div class="eopt-preco">'+t('free')+'</div></div>'+
+      '<div class="eopt '+(tipoEntrega==='entrega'?'on':'')+'" onclick="setEnt(\'entrega\')">'+
+        '<div class="eopt-ico"><i class="fa-solid fa-truck-fast"></i></div>'+
+        '<div class="eopt-lbl">'+t('delivery')+'</div>'+
+        '<div class="eopt-preco">'+(gratis?t('free'):kz(loja.entrega_preco||0))+'</div></div></div>';
+  }
+  resumoHtml+='<div class="rl"><span>'+t('subtotal')+' ('+nItems+' '+(nItems!==1?t('itemsPl'):t('items'))+')</span><span>'+kz(subtotal)+'</span></div>';
+  if(tipoEntrega==='entrega'){resumoHtml+='<div class="rl"><span>'+t('delivery')+(gratis?' <span style="color:var(--teal);font-size:.7rem">('+t('free')+'!)</span>':'')+'</span><span>'+kz(precoEnt)+'</span></div>';}
 
-  // Cupão
-  resumoHtml+='<div class="cupao-row"><div class="cupao-row-inner"><input class="cupao-input" type="text" id="cupaoInput" placeholder="Código do cupão" onkeydown="if(event.key===\'Enter\')validarCupao()"/><button class="btn btn-outline btn-sm" onclick="validarCupao()" style="padding:10px 16px;font-size:.75rem;flex-shrink:0"><i class="fa-solid fa-ticket"></i> Aplicar</button></div><div class="cupao-msg" id="cupaoMsg"></div></div>';
+  resumoHtml+='<div class="cupao-row"><div class="cupao-row-inner">'+
+    '<input class="cupao-input" type="text" id="cupaoInput" placeholder="'+t('coupon')+'" onkeydown="if(event.key===\'Enter\')validarCupao()"/>'+
+    '<button class="btn btn-outline btn-sm" onclick="validarCupao()" style="padding:10px 16px;font-size:.75rem;flex-shrink:0"><i class="fa-solid fa-ticket"></i> '+t('apply')+'</button>'+
+    '</div><div class="cupao-msg" id="cupaoMsg"></div></div>';
 
   if(desconto>0){
-    resumoHtml+='<div class="rl"><span>Cupão <span style="color:var(--teal);font-size:.7rem">('+(cupaoAplicado?cupaoAplicado.codigo:'')+')</span></span><span style="color:var(--teal)">-'+kz(desconto)+'</span></div>';
+    resumoHtml+='<div class="rl"><span>Cupão <span style="color:var(--teal);font-size:.7rem">'+(cupaoAplicado?'('+cupaoAplicado.codigo+')':'')+'</span></span><span style="color:var(--teal)">-'+kz(desconto)+'</span></div>';
   }
-  resumoHtml+='<div class="rl total"><span>Total</span><span>'+kz(total)+'</span></div></div>';
+  resumoHtml+='<div class="rl total"><span>'+t('total')+'</span><span>'+kz(total)+'</span></div></div>';
 
-  cont.innerHTML=progHtml+itemsHtml+resumoHtml+'<button class="btn-final" onclick="finalizar()"><i class="fa-solid fa-check"></i> Finalizar Pedido</button>';
+  cont.innerHTML=progHtml+itemsHtml+resumoHtml+
+    '<button class="btn-final" onclick="finalizar()"><i class="fa-solid fa-check"></i> '+t('finish')+'</button>';
+
+  document.querySelector('.btn-cat-nav').innerHTML='<i class="fa-solid fa-store"></i> '+t('continueShopping');
+}
+
+function confirmarRemover(i,nome){
+  abrirConfirm(t('removeTitle'),'"'+nome+'" '+t('removeSub'),function(){
+    var c=getCarrinho();c.splice(i,1);salvarCarrinho(c);render();toast(t('removed'));
+  });
 }
 
 function altQty(i,d){var c=getCarrinho();c[i].quantidade=Math.max(1,(c[i].quantidade||1)+d);salvarCarrinho(c);render();}
-function remover(i){var c=getCarrinho();c.splice(i,1);salvarCarrinho(c);render();toast('Item removido');}
-function setEnt(t){tipoEntrega=t;localStorage.setItem('ist_entrega',t);render();}
+function setEnt(tipo){tipoEntrega=tipo;localStorage.setItem('ist_entrega',tipo);render();}
 
 async function validarCupao(){
   var codigo=document.getElementById('cupaoInput').value.trim().toUpperCase();
   var msg=document.getElementById('cupaoMsg');
-  
-  if(!codigo){msg.innerHTML='<span style="color:var(--red)">Insira um código de cupão.</span>';return;}
-  
+  if(!codigo){msg.innerHTML='<span style="color:var(--red)">'+t('couponRequired')+'</span>';return;}
   try{
     var r=await fetch(API+'/api/cupoes/validar/'+codigo);
     var cupao=await r.json();
-    
-    if(cupao.erro){
-      msg.innerHTML='<span style="color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> '+cupao.erro+'</span>';
-      cupaoAplicado=null;descontoCupao=0;
-      render();return;
-    }
-    
+    if(cupao.erro){msg.innerHTML='<span style="color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> '+cupao.erro+'</span>';cupaoAplicado=null;descontoCupao=0;render();return;}
     var subtotal=subtotalAtual();
-    if(cupao.minimo_encomenda>0&&subtotal<cupao.minimo_encomenda){
-      msg.innerHTML='<span style="color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> Mínimo de '+kz(cupao.minimo_encomenda)+' para este cupão.</span>';
-      cupaoAplicado=null;descontoCupao=0;
-      render();return;
-    }
-    
+    if(cupao.minimo_encomenda>0&&subtotal<cupao.minimo_encomenda){msg.innerHTML='<span style="color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> '+t('couponMin')+' '+kz(cupao.minimo_encomenda)+' '+t('couponFor')+'</span>';cupaoAplicado=null;descontoCupao=0;render();return;}
     cupaoAplicado=cupao;
-    
-    if(cupao.tipo==='percentagem'){
-      descontoCupao=Math.round(subtotal*cupao.valor/100);
-    }else{
-      descontoCupao=Math.min(cupao.valor,subtotal);
-    }
-    
-    msg.innerHTML='<span style="color:var(--teal)"><i class="fa-solid fa-circle-check"></i> Cupão aplicado! Desconto: '+kz(descontoCupao)+' ('+(cupao.tipo==='percentagem'?cupao.valor+'%':kz(cupao.valor))+')</span>';
+    descontoCupao=cupao.tipo==='percentagem'?Math.round(subtotal*cupao.valor/100):Math.min(cupao.valor,subtotal);
+    msg.innerHTML='<span style="color:var(--teal)"><i class="fa-solid fa-circle-check"></i> '+t('couponApplied')+' '+kz(descontoCupao)+' ('+(cupao.tipo==='percentagem'?cupao.valor+'%':kz(cupao.valor))+')</span>';
     render();
-    
-  }catch(e){
-    msg.innerHTML='<span style="color:var(--red)">Erro ao validar cupão.</span>';
-  }
+  }catch(e){msg.innerHTML='<span style="color:var(--red)">'+t('couponErr')+'</span>';}
 }
 
 function finalizar(){
-  if(!getCarrinho().length){toast('Carrinho vazio!');return;}
-  if(cupaoAplicado){
-    localStorage.setItem('ist_cupao',cupaoAplicado.codigo);
-    localStorage.setItem('ist_desconto',descontoCupao);
-  }else{
-    localStorage.removeItem('ist_cupao');
-    localStorage.removeItem('ist_desconto');
-  }
+  if(!getCarrinho().length){toast(t('emptyCart'),'err');return;}
+  if(cupaoAplicado){localStorage.setItem('ist_cupao',cupaoAplicado.codigo);localStorage.setItem('ist_desconto',descontoCupao);}
+  else{localStorage.removeItem('ist_cupao');localStorage.removeItem('ist_desconto');}
   window.location.href='checkout.html';
 }
 
 carregar();
+
 </script>
 </body>
 </html>

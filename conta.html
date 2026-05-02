@@ -5,13 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#0d0d1a"/>
 <title>A Minha Conta</title>
+<script>
+(function(){
+  var t=localStorage.getItem('tema')||'dark';
+  var l=localStorage.getItem('idioma')||'pt';
+  document.documentElement.setAttribute('data-theme',t);
+  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-AO');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+})();
+</script>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
-[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547;--yellow:#a07800}
+.offline-bar{position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff4757;color:#fff;text-align:center;font-family:var(--ft);font-size:.75rem;padding:7px 12px;transform:translateY(-100%);transition:transform .3s ease}
+.offline-bar.show{transform:translateY(0)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px;transition:background .35s}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
@@ -116,98 +127,370 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </head>
 <body>
 
+<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
+
 <header class="hdr">
   <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
-  <div class="hdr-nome">A Minha Conta</div>
-  <button class="hb" onclick="toggleTema()"><i class="fa-solid fa-circle-half-stroke"></i></button>
+  <div class="hdr-nome" id="hdrNome">A Minha Conta</div>
+  <div style="width:34px"></div>
 </header>
 
 <div class="ctn">
   <!-- RASTREIO RÁPIDO (sempre visível) -->
   <div class="rastreio-card">
-    <h3><i class="fa-solid fa-magnifying-glass"></i> Rastrear Encomenda</h3>
-    <p>Acompanhe o estado do seu pedido em tempo real.</p>
+    <h3><i class="fa-solid fa-magnifying-glass"></i> <span id="trackTitle">Rastrear Encomenda</span></h3>
+    <p id="trackDesc">Acompanhe o estado do seu pedido em tempo real.</p>
     <input class="fi" type="text" id="rastrearRef" placeholder="ENC-XXXXXXXXXXXXXXX" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')irRastrear()"/>
-    <button class="btn-sub" onclick="irRastrear()"><i class="fa-solid fa-magnifying-glass"></i> Ver Estado da Encomenda</button>
+    <button class="btn-sub" onclick="irRastrear()"><i class="fa-solid fa-magnifying-glass"></i> <span id="trackBtn">Ver Estado da Encomenda</span></button>
   </div>
 
   <!-- NÃO LOGADO -->
   <div id="authBox">
     <div class="tabs">
-      <button class="tab on" id="tabL" onclick="mudarTab('login')">Entrar</button>
-      <button class="tab" id="tabR" onclick="mudarTab('registar')">Criar Conta</button>
+      <button class="tab on" id="tabL" onclick="mudarTab('login')" id="tabLogin">Entrar</button>
+      <button class="tab" id="tabR" onclick="mudarTab('registar')" id="tabReg">Criar Conta</button>
     </div>
     <div class="card" id="fLogin">
-      <div class="fg"><label>Email ou Telefone</label><input class="fi" type="text" id="lContact" placeholder="email@... ou +244..."></div>
-      <div class="fg"><label>Password</label><input class="fi" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
-      <button class="btn-sub" onclick="login()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar</button>
+      <div class="fg"><label id="lContactLbl">Email ou Telefone</label><input class="fi" type="text" id="lContact" placeholder="email@... ou +244..."></div>
+      <div class="fg"><label id="lPassLbl">Password</label><input class="fi" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn-sub" onclick="login()"><i class="fa-solid fa-arrow-right-to-bracket"></i> <span id="loginBtn">Entrar</span></button>
       <p class="msg" id="lMsg"></p>
     </div>
     <div class="card hidden" id="fReg">
-      <div class="fg"><label>Nome completo *</label><input class="fi" type="text" id="rNome" placeholder="O seu nome"></div>
-      <div class="fg"><label>Email <span class="opc">(opcional)</span></label><input class="fi" type="email" id="rEmail" placeholder="email@..."></div>
-      <div class="fg"><label>Telefone (+244) *</label><input class="fi" type="tel" id="rTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
-      <div class="fg"><label>Password *</label><input class="fi" type="password" id="rPass" placeholder="Mínimo 6 caracteres"></div>
-      <button class="btn-sub" onclick="registar()"><i class="fa-solid fa-user-plus"></i> Criar Conta</button>
+      <div class="fg"><label id="rNomeLbl">Nome completo *</label><input class="fi" type="text" id="rNome" placeholder="O seu nome"></div>
+      <div class="fg"><label id="rEmailLbl">Email <span class="opc">(opcional)</span></label><input class="fi" type="email" id="rEmail" placeholder="email@..."></div>
+      <div class="fg"><label id="rTelLbl">Telefone (+244) *</label><input class="fi" type="tel" id="rTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
+      <div class="fg"><label id="rPassLbl">Password *</label><input class="fi" type="password" id="rPass" placeholder="Mínimo 6 caracteres"></div>
+      <button class="btn-sub" onclick="registar()"><i class="fa-solid fa-user-plus"></i> <span id="registerBtn">Criar Conta</span></button>
       <p class="msg" id="rMsg"></p>
     </div>
   </div>
 
   <!-- LOGADO -->
   <div id="perfilBox" style="display:none">
-    <!-- Perfil -->
     <div class="perfil-card perfil-anim" id="perfilCard"></div>
-    
+
     <!-- Menu rápido -->
     <div class="card" style="padding:8px">
       <a href="rastrear.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background='rgba(255,107,157,.05)'" onmouseout="this.style.background='none'">
         <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <span style="flex:1;font-family:var(--ft);font-size:.82rem">Rastrear Encomenda</span>
+        <span style="flex:1;font-family:var(--ft);font-size:.82rem" id="menuTrack">Rastrear Encomenda</span>
         <i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>
       </a>
       <a href="catalogo.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background='rgba(255,107,157,.05)'" onmouseout="this.style.background='none'">
         <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-store"></i></span>
-        <span style="flex:1;font-family:var(--ft);font-size:.82rem">Ver Catálogo</span>
+        <span style="flex:1;font-family:var(--ft);font-size:.82rem" id="menuCatalog">Ver Catálogo</span>
         <i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>
       </a>
     </div>
 
-    <!-- Encomendas -->
-    <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px;padding:0 4px"><i class="fa-solid fa-clock-rotate-left"></i> As Minhas Encomendas</div>
+    <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px;padding:0 4px"><i class="fa-solid fa-clock-rotate-left"></i> <span id="myOrdersTxt">As Minhas Encomendas</span></div>
     <div id="encLista"><div class="spin"></div></div>
 
     <!-- Editar Perfil -->
     <div class="card" id="editPerfilCard" style="display:none">
-      <div style="font-family:var(--ft);font-size:.9rem;color:var(--pink);margin-bottom:12px"><i class="fa-solid fa-user-pen"></i> Editar Perfil</div>
-      
+      <div style="font-family:var(--ft);font-size:.9rem;color:var(--pink);margin-bottom:12px"><i class="fa-solid fa-user-pen"></i> <span id="editProfileTitle">Editar Perfil</span></div>
       <div style="margin-bottom:12px">
-        <label style="font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px">Avatar</label>
+        <label style="font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px" id="avatarLbl">Avatar</label>
         <div class="avatar-grid" id="avatarGrid"></div>
       </div>
-      
-      <div class="fg"><label>Nome</label><input class="fi" type="text" id="editNome" placeholder="O seu nome"></div>
-      <div class="fg"><label>Email</label><input class="fi" type="email" id="editEmail" placeholder="email@..."></div>
-      <div class="fg"><label>Telefone</label><input class="fi" type="tel" id="editTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
+      <div class="fg"><label id="editNomeLbl">Nome</label><input class="fi" type="text" id="editNome" placeholder="O seu nome"></div>
+      <div class="fg"><label id="editEmailLbl">Email</label><input class="fi" type="email" id="editEmail" placeholder="email@..."></div>
+      <div class="fg"><label id="editTelLbl">Telefone</label><input class="fi" type="tel" id="editTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
       <div style="display:flex;gap:8px">
-        <button class="btn-outline" onclick="cancelarEdicao()" style="flex:1"><i class="fa-solid fa-xmark"></i> Cancelar</button>
-        <button class="btn-sub" onclick="salvarPerfil()" style="flex:1;padding:12px;font-size:.82rem"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        <button class="btn-outline" onclick="cancelarEdicao()" style="flex:1"><i class="fa-solid fa-xmark"></i> <span id="cancelBtn">Cancelar</span></button>
+        <button class="btn-sub" onclick="salvarPerfil()" style="flex:1;padding:12px;font-size:.82rem"><i class="fa-solid fa-floppy-disk"></i> <span id="saveBtn">Guardar</span></button>
       </div>
       <p class="msg" id="editMsg"></p>
     </div>
 
-    <button class="btn-outline" onclick="abrirEdicao()"><i class="fa-solid fa-user-pen"></i> Editar Perfil</button>
-    <button class="btn-sair" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i> Terminar Sessão</button>
+    <button class="btn-outline" onclick="abrirEdicao()"><i class="fa-solid fa-user-pen"></i> <span id="editProfileBtn">Editar Perfil</span></button>
+    <button class="btn-sair" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i> <span id="logoutBtn">Terminar Sessão</span></button>
   </div>
 </div>
 
 <div class="nav">
   <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
-  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
+  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> <span id="btnCatTxt">Ver Catálogo</span></a>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 var API = 'https://impersilva-d1work.3miliosilva.workers.dev';
+var idioma = localStorage.getItem('idioma') || 'pt';
+
+var i18n = {
+  pt:{pageTitle:'A Minha Conta',hdrNome:'A Minha Conta',
+      trackTitle:'Rastrear Encomenda',trackDesc:'Acompanhe o estado do seu pedido em tempo real.',trackBtn:'Ver Estado da Encomenda',
+      tabLogin:'Entrar',tabReg:'Criar Conta',
+      lContactLbl:'Email ou Telefone',lPassLbl:'Password',loginBtn:'Entrar',
+      rNomeLbl:'Nome completo *',rEmailLbl:'Email',rPassLbl:'Password *',rTelLbl:'Telefone (+244) *',registerBtn:'Criar Conta',
+      menuTrack:'Rastrear Encomenda',menuCatalog:'Ver Catálogo',
+      myOrdersTxt:'As Minhas Encomendas',editProfileTitle:'Editar Perfil',
+      avatarLbl:'Avatar',editNomeLbl:'Nome',editEmailLbl:'Email',editTelLbl:'Telefone',
+      cancelBtn:'Cancelar',saveBtn:'Guardar',editProfileBtn:'Editar Perfil',logoutBtn:'Terminar Sessão',
+      btnCat:'Ver Catálogo',orders:'Encomendas',cart:'Carrinho',wishlist:'Wishlist',
+      errFill:'Preenche todos os campos.',errTel:'Telefone inválido. Use +244 9XX XXX XXX.',
+      errEmail:'Email inválido.',errPass:'Password: mínimo 6 caracteres.',
+      errRef:'Insira uma referência.',errRefFmt:'Formato inválido: ENC-XXXXXXXXXXXXXXX',
+      welcome:'Bem-vindo, ',accountCreated:'Conta criada!',profileSaved:'Perfil actualizado!',
+      reordered:'Produtos adicionados ao carrinho!',reorderErr:'Erro ao reencomendar.',
+      noOrders:'Ainda não tens encomendas.',loadErr:'Erro ao carregar encomendas.',
+      noItems:'Encomenda sem itens.',
+      statusLabels:{pendente:'Pendente',confirmada:'Confirmada',pronta:'Pronta',entregue:'Entregue',cancelada:'Cancelada'},
+      seeOrder:'Ver',reorder:'Reencomendar',
+      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…'},
+  en:{pageTitle:'My Account',hdrNome:'My Account',
+      trackTitle:'Track Order',trackDesc:'Track your order status in real time.',trackBtn:'Check Order Status',
+      tabLogin:'Sign In',tabReg:'Create Account',
+      lContactLbl:'Email or Phone',lPassLbl:'Password',loginBtn:'Sign In',
+      rNomeLbl:'Full name *',rEmailLbl:'Email',rPassLbl:'Password *',rTelLbl:'Phone (+244) *',registerBtn:'Create Account',
+      menuTrack:'Track Order',menuCatalog:'View Catalog',
+      myOrdersTxt:'My Orders',editProfileTitle:'Edit Profile',
+      avatarLbl:'Avatar',editNomeLbl:'Name',editEmailLbl:'Email',editTelLbl:'Phone',
+      cancelBtn:'Cancel',saveBtn:'Save',editProfileBtn:'Edit Profile',logoutBtn:'Sign Out',
+      btnCat:'View Catalog',orders:'Orders',cart:'Cart',wishlist:'Wishlist',
+      errFill:'Please fill in all fields.',errTel:'Invalid phone. Use +244 9XX XXX XXX.',
+      errEmail:'Invalid email.',errPass:'Password: minimum 6 characters.',
+      errRef:'Enter a reference.',errRefFmt:'Invalid format: ENC-XXXXXXXXXXXXXXX',
+      welcome:'Welcome, ',accountCreated:'Account created!',profileSaved:'Profile updated!',
+      reordered:'Products added to cart!',reorderErr:'Error re-ordering.',
+      noOrders:'You have no orders yet.',loadErr:'Error loading orders.',
+      noItems:'Order has no items.',
+      statusLabels:{pendente:'Pending',confirmada:'Confirmed',pronta:'Ready',entregue:'Delivered',cancelada:'Cancelled'},
+      seeOrder:'View',reorder:'Re-order',
+      offlineMsg:'📡 No internet connection — trying to reconnect…'}
+};
+function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
+
+/* Offline */
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
+window.addEventListener('offline',function(){setOnline(false);});
+window.addEventListener('online',function(){setOnline(true);});
+setOnline(navigator.onLine);
+
+/* Apply i18n to static UI */
+function aplicarIdioma(){
+  document.title=t('pageTitle');
+  document.getElementById('hdrNome').textContent=t('hdrNome');
+  document.getElementById('trackTitle').textContent=t('trackTitle');
+  document.getElementById('trackDesc').textContent=t('trackDesc');
+  document.getElementById('trackBtn').textContent=t('trackBtn');
+  document.getElementById('tabL').textContent=t('tabLogin');
+  document.getElementById('tabR').textContent=t('tabReg');
+  document.getElementById('lContactLbl').textContent=t('lContactLbl');
+  document.getElementById('lPassLbl').textContent=t('lPassLbl');
+  document.getElementById('loginBtn').textContent=t('loginBtn');
+  document.getElementById('rNomeLbl').textContent=t('rNomeLbl');
+  document.getElementById('rPassLbl').textContent=t('rPassLbl');
+  document.getElementById('rTelLbl').textContent=t('rTelLbl');
+  document.getElementById('registerBtn').textContent=t('registerBtn');
+  document.getElementById('menuTrack').textContent=t('menuTrack');
+  document.getElementById('menuCatalog').textContent=t('menuCatalog');
+  document.getElementById('myOrdersTxt').textContent=t('myOrdersTxt');
+  document.getElementById('editProfileTitle').textContent=t('editProfileTitle');
+  document.getElementById('avatarLbl').textContent=t('avatarLbl');
+  document.getElementById('editNomeLbl').textContent=t('editNomeLbl');
+  document.getElementById('editEmailLbl').textContent=t('editEmailLbl');
+  document.getElementById('editTelLbl').textContent=t('editTelLbl');
+  document.getElementById('cancelBtn').textContent=t('cancelBtn');
+  document.getElementById('saveBtn').textContent=t('saveBtn');
+  document.getElementById('editProfileBtn').textContent=t('editProfileBtn');
+  document.getElementById('logoutBtn').textContent=t('logoutBtn');
+  document.getElementById('btnCatTxt').textContent=t('btnCat');
+  var rEmailLbl=document.getElementById('rEmailLbl');
+  if(rEmailLbl)rEmailLbl.innerHTML=t('rEmailLbl')+' <span class="opc">('+( idioma==='en'?'optional':'opcional')+')</span>';
+}
+
+var avatares = [
+  'fa-solid fa-crown','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-gem',
+  'fa-solid fa-bolt','fa-solid fa-fire','fa-solid fa-sun','fa-solid fa-moon',
+  'fa-solid fa-ghost','fa-solid fa-dragon','fa-solid fa-fish','fa-solid fa-cat',
+  'fa-solid fa-dog','fa-solid fa-kiwi-bird','fa-solid fa-otter','fa-solid fa-hippo',
+  'fa-solid fa-feather','fa-solid fa-leaf','fa-solid fa-seedling','fa-solid fa-tree'
+];
+
+function getParam(n){return new URLSearchParams(window.location.search).get(n);}
+function toast(msg,tp){var el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(tp||'ok');setTimeout(function(){el.classList.remove('show');},3000);}
+function kz(v){if(v==null)return'—';return'Kz '+Number(v).toLocaleString('pt');}
+function fmtData(d){if(!d)return'';return new Date(d).toLocaleDateString(idioma==='en'?'en-GB':'pt',{day:'2-digit',month:'short',year:'numeric'});}
+function formatarTel(inp){var v=inp.value.replace(/[^0-9+]/g,'');if(v.startsWith('+244')){var r=v.slice(4);if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.startsWith('9')){var r=v.replace(/[^0-9]/g,'');if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.length>0){inp.value='+244 ';}}
+function validarTel(v){return /^(\+244)?\s?9\d{8}$/.test(v.replace(/\s+/g,''));}
+function validarEmail(e){return !e||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+function getCliente(){try{return JSON.parse(localStorage.getItem('cf_cliente')||'null');}catch(e){return null;}}
+function getClienteTel(){return localStorage.getItem('cf_cliente_tel')||'';}
+function getAvatar(){return localStorage.getItem('cf_avatar')||avatares[0];}
+
+function irRastrear(){
+  var ref=document.getElementById('rastrearRef').value.trim().toUpperCase();
+  if(!ref){toast(t('errRef'),'err');return;}
+  if(!/^ENC-\d{8,}$/.test(ref)){toast(t('errRefFmt'),'err');return;}
+  window.location.href='rastrear.html?ref='+encodeURIComponent(ref);
+}
+
+function mudarTab(tab){
+  document.getElementById('tabL').classList.toggle('on',tab==='login');
+  document.getElementById('tabR').classList.toggle('on',tab==='registar');
+  document.getElementById('fLogin').classList.toggle('hidden',tab!=='login');
+  document.getElementById('fReg').classList.toggle('hidden',tab!=='registar');
+}
+
+async function login(){
+  var c=document.getElementById('lContact').value.trim(),p=document.getElementById('lPass').value;
+  var msg=document.getElementById('lMsg');
+  if(!c||!p){msg.textContent=t('errFill');msg.className='msg err';return;}
+  try{
+    var body={password:p};if(c.includes('@'))body.email=c;else body.telefone=c;
+    var r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json();if(d.erro)throw new Error(d.erro);
+    if(!localStorage.getItem('cf_avatar'))localStorage.setItem('cf_avatar',avatares[Math.floor(Math.random()*avatares.length)]);
+    localStorage.setItem('cf_token',d.token);localStorage.setItem('cf_cliente',JSON.stringify({nome:d.nome,email:d.email}));
+    localStorage.setItem('cf_cliente_tel',d.telefone||c);
+    toast(t('welcome')+d.nome.split(' ')[0]+'!');
+    var redir=getParam('redir');if(redir){window.location.href=redir;return;}
+    mostrarPerfil({nome:d.nome,email:d.email,telefone:d.telefone||c});
+  }catch(e){msg.textContent=e.message;msg.className='msg err';}
+}
+
+async function registar(){
+  var nome=document.getElementById('rNome').value.trim(),email=document.getElementById('rEmail').value.trim();
+  var tel=document.getElementById('rTel').value.trim(),pass=document.getElementById('rPass').value;
+  var msg=document.getElementById('rMsg');
+  if(!nome||!pass){msg.textContent=t('errFill');msg.className='msg err';return;}
+  if(!validarTel(tel)){msg.textContent=t('errTel');msg.className='msg err';return;}
+  if(email&&!validarEmail(email)){msg.textContent=t('errEmail');msg.className='msg err';return;}
+  if(pass.length<6){msg.textContent=t('errPass');msg.className='msg err';return;}
+  try{
+    localStorage.setItem('cf_avatar',avatares[Math.floor(Math.random()*avatares.length)]);
+    var r=await fetch(API+'/api/auth/registar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome,email:email||'',telefone:tel,senha:pass})});
+    var d=await r.json();if(d.erro)throw new Error(d.erro);
+    localStorage.setItem('cf_token',d.token);localStorage.setItem('cf_cliente',JSON.stringify({nome:d.nome,email:d.email}));
+    localStorage.setItem('cf_cliente_tel',tel);
+    toast(t('accountCreated'));
+    var redir=getParam('redir');if(redir){window.location.href=redir;return;}
+    mostrarPerfil({nome:d.nome,email:d.email,telefone:tel});
+  }catch(e){msg.textContent=e.message;msg.className='msg err';}
+}
+
+function mostrarPerfil(cli){
+  document.getElementById('authBox').style.display='none';
+  document.getElementById('perfilBox').style.display='block';
+  atualizarPerfilCard(cli);
+  carregarEncs();
+  setInterval(carregarEncs,30000);
+}
+
+function atualizarPerfilCard(cli){
+  var avatar=getAvatar();
+  document.getElementById('perfilCard').innerHTML=
+    '<div class="perfil-top">'+
+      '<div class="perfil-avatar"><i class="'+avatar+'"></i></div>'+
+      '<div class="perfil-nome">'+(cli.nome||'Cliente')+'</div>'+
+      '<div class="perfil-email">'+(cli.email||'')+'</div>'+
+    '</div>'+
+    '<div class="perfil-stats">'+
+      '<div class="perfil-stat"><span class="perfil-stat-num" id="statEnc">—</span><span class="perfil-stat-lbl">'+t('orders')+'</span></div>'+
+      '<a href="carrinho.html" class="perfil-stat"><span class="perfil-stat-num" id="statCart">—</span><span class="perfil-stat-lbl">'+t('cart')+'</span></a>'+
+      '<a href="catalogo.html" class="perfil-stat"><span class="perfil-stat-num" id="statWish">—</span><span class="perfil-stat-lbl">'+t('wishlist')+'</span></a>'+
+    '</div>';
+  carregarStats();
+}
+
+function carregarStats(){
+  try{
+    var c=JSON.parse(localStorage.getItem('cf_carrinho')||'[]');
+    var w=JSON.parse(localStorage.getItem('cf_wl')||'[]');
+    document.getElementById('statCart').textContent=c.length||'0';
+    document.getElementById('statWish').textContent=w.length||'0';
+  }catch(e){}
+}
+
+function abrirEdicao(){
+  var cli=getCliente();
+  document.getElementById('editPerfilCard').style.display='block';
+  var avatarAtual=getAvatar();
+  document.getElementById('avatarGrid').innerHTML=avatares.map(function(a){
+    return'<div class="avatar-opt'+(a===avatarAtual?' sel':'')+'" onclick="selecionarAvatar(\''+a+'\',this)"><i class="'+a+'"></i></div>';
+  }).join('');
+  document.getElementById('editNome').value=cli?cli.nome:'';
+  document.getElementById('editEmail').value=cli?cli.email:'';
+  document.getElementById('editTel').value=getClienteTel();
+}
+
+function selecionarAvatar(avatar,el){
+  document.querySelectorAll('.avatar-opt').forEach(function(x){x.classList.remove('sel');});
+  el.classList.add('sel');el.dataset.avatar=avatar;
+}
+
+function cancelarEdicao(){document.getElementById('editPerfilCard').style.display='none';}
+
+function salvarPerfil(){
+  var nome=document.getElementById('editNome').value.trim();
+  var email=document.getElementById('editEmail').value.trim();
+  var tel=document.getElementById('editTel').value.trim();
+  var msg=document.getElementById('editMsg');
+  if(!nome){msg.textContent=t('errFill');msg.className='msg err';return;}
+  if(email&&!validarEmail(email)){msg.textContent=t('errEmail');msg.className='msg err';return;}
+  if(tel&&!validarTel(tel)){msg.textContent=t('errTel');msg.className='msg err';return;}
+  var avatarSel=document.querySelector('.avatar-opt.sel');
+  if(avatarSel&&avatarSel.dataset.avatar)localStorage.setItem('cf_avatar',avatarSel.dataset.avatar);
+  var cli=getCliente()||{};cli.nome=nome;cli.email=email;
+  localStorage.setItem('cf_cliente',JSON.stringify(cli));
+  localStorage.setItem('cf_cliente_tel',tel);
+  document.getElementById('editPerfilCard').style.display='none';
+  atualizarPerfilCard({nome:nome,email:email});
+  toast(t('profileSaved'));
+}
+
+async function carregarEncs(){
+  var cont=document.getElementById('encLista');
+  if(!cont)return;
+  try{
+    var token=localStorage.getItem('cf_token');
+    if(!token){cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-box-open"></i><p>'+t('noOrders')+'</p></div>';document.getElementById('statEnc').textContent='0';return;}
+    var r=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+token}});
+    var encs=await r.json();
+    if(!Array.isArray(encs)||!encs.length){cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-box-open"></i><p>'+t('noOrders')+'</p></div>';document.getElementById('statEnc').textContent='0';return;}
+    encs.sort(function(a,b){return new Date(b.criado_em)-new Date(a.criado_em);});
+    document.getElementById('statEnc').textContent=encs.length;
+    var statusLabels=t('statusLabels');
+    cont.innerHTML=encs.map(function(e){
+      var itensNomes=(e.itens||[]).slice(0,3).map(function(i){return i.nome_produto;}).join(', ');
+      if((e.itens||[]).length>3)itensNomes+=' +'+(e.itens.length-3)+' '+(idioma==='en'?'items':'itens');
+      return'<div class="enc-card" onclick="window.location.href=\'rastrear.html?ref='+e.ref+'\'">'+
+        '<div class="enc-header"><span class="enc-ref">'+e.ref+'</span><span class="enc-data">'+fmtData(e.criado_em)+'</span></div>'+
+        '<div class="enc-body"><span class="enc-items">'+itensNomes+'</span><span class="enc-total">'+kz(e.total)+'</span></div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
+          '<span class="enc-badge '+e.estado+'">'+(statusLabels[e.estado]||e.estado)+'</span>'+
+        '</div>'+
+        '<div class="enc-actions">'+
+          '<a href="rastrear.html?ref='+e.ref+'" class="enc-btn"><i class="fa-solid fa-eye"></i> '+t('seeOrder')+'</a>'+
+          '<button class="enc-btn primary" onclick="event.stopPropagation();reencomendar(\''+e.ref+'\')"><i class="fa-solid fa-rotate-left"></i> '+t('reorder')+'</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }catch(e){cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-triangle-exclamation"></i><p>'+t('loadErr')+'</p></div>';}
+}
+
+async function reencomendar(ref){
+  try{
+    var r=await fetch(API+'/api/encomendas/'+ref);
+    var enc=await r.json();
+    if(!enc.itens||!enc.itens.length){toast(t('noItems'),'err');return;}
+    var cart=enc.itens.map(function(item){return{chave:''+item.produto_id+'-'+Date.now()+Math.random(),produto_id:item.produto_id,nome:item.nome_produto||'Produto',preco:item.preco_unit||0,quantidade:item.quantidade||1,imagem:'',nota:''};});
+    localStorage.setItem('cf_carrinho',JSON.stringify(cart));
+    toast(t('reordered'));
+    setTimeout(function(){window.location.href='carrinho.html';},800);
+  }catch(e){toast(t('reorderErr'),'err');}
+}
+
+function logout(){
+  localStorage.removeItem('cf_token');localStorage.removeItem('cf_cliente');localStorage.removeItem('cf_cliente_tel');
+  location.reload();
+}
+
+aplicarIdioma();
+var cli=getCliente();if(cli)mostrarPerfil(cli);
 
 var avatares = [
   'fa-solid fa-crown','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-gem',
@@ -242,207 +525,9 @@ function mudarTab(t){
   document.getElementById('fLogin').classList.toggle('hidden',t!=='login');
   document.getElementById('fReg').classList.toggle('hidden',t!=='registar');
 }
-
-async function login(){
-  var c=document.getElementById('lContact').value.trim(),p=document.getElementById('lPass').value;
-  var msg=document.getElementById('lMsg');
-  if(!c||!p){msg.textContent='Preenche todos os campos.';msg.className='msg err';return;}
-  try{
-    var body={password:p}; if(c.includes('@')) body.email=c; else body.telefone=c;
-    var r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var d=await r.json(); if(d.erro) throw new Error(d.erro);
-    if(!localStorage.getItem('cf_avatar')) localStorage.setItem('cf_avatar', avatares[Math.floor(Math.random()*avatares.length)]);
-    localStorage.setItem('cf_token',d.token); localStorage.setItem('cf_cliente',JSON.stringify({nome:d.nome,email:d.email}));
-    localStorage.setItem('cf_cliente_tel',d.telefone||c);
-    toast('Bem-vindo, '+d.nome.split(' ')[0]+'!');
-    var redir=getParam('redir'); if(redir){window.location.href=redir;return;}
-    mostrarPerfil({nome:d.nome,email:d.email,telefone:d.telefone||c});
-  }catch(e){msg.textContent=e.message;msg.className='msg err';}
-}
-
-async function registar(){
-  var nome=document.getElementById('rNome').value.trim(),email=document.getElementById('rEmail').value.trim();
-  var tel=document.getElementById('rTel').value.trim(),pass=document.getElementById('rPass').value;
-  var msg=document.getElementById('rMsg');
-  if(!nome||!pass){msg.textContent='Preenche nome, telefone e password.';msg.className='msg err';return;}
-  if(!validarTel(tel)){msg.textContent='Telefone inválido. Use +244 9XX XXX XXX.';msg.className='msg err';return;}
-  if(email && !validarEmail(email)){msg.textContent='Email inválido.';msg.className='msg err';return;}
-  if(pass.length<6){msg.textContent='Password: mínimo 6 caracteres.';msg.className='msg err';return;}
-  try{
-    localStorage.setItem('cf_avatar', avatares[Math.floor(Math.random()*avatares.length)]);
-    var r=await fetch(API+'/api/auth/registar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome,email:email||'',telefone:tel,senha:pass})});
-    var d=await r.json(); if(d.erro) throw new Error(d.erro);
-    localStorage.setItem('cf_token',d.token); localStorage.setItem('cf_cliente',JSON.stringify({nome:d.nome,email:d.email}));
-    localStorage.setItem('cf_cliente_tel',tel);
-    toast('Conta criada!');
-    var redir=getParam('redir'); if(redir){window.location.href=redir;return;}
-    mostrarPerfil({nome:d.nome,email:d.email,telefone:tel});
-  }catch(e){msg.textContent=e.message;msg.className='msg err';}
-}
-
-function mostrarPerfil(cli){
-  document.getElementById('authBox').style.display='none';
-  document.getElementById('perfilBox').style.display='block';
-  atualizarPerfilCard(cli);
-  carregarEncs();
-}
-
-function atualizarPerfilCard(cli){
-  var avatar=getAvatar();
-  document.getElementById('perfilCard').innerHTML=
-    '<div class="perfil-top">'+
-      '<div class="perfil-avatar"><i class="'+avatar+'"></i></div>'+
-      '<div class="perfil-nome">'+(cli.nome||'Cliente')+'</div>'+
-      '<div class="perfil-email">'+(cli.email||'')+'</div>'+
-    '</div>'+
-    '<div class="perfil-stats">'+
-      '<div class="perfil-stat"><span class="perfil-stat-num" id="statEnc">—</span><span class="perfil-stat-lbl">Encomendas</span></div>'+
-      '<a href="carrinho.html" class="perfil-stat"><span class="perfil-stat-num" id="statCart">—</span><span class="perfil-stat-lbl">Carrinho</span></a>'+
-      '<a href="catalogo.html" class="perfil-stat"><span class="perfil-stat-num" id="statWish">—</span><span class="perfil-stat-lbl">Wishlist</span></a>'+
-    '</div>';
-  carregarStats();
-}
-
-function carregarStats(){
-  try{
-    var c=JSON.parse(localStorage.getItem('cf_carrinho')||'[]');
-    var w=JSON.parse(localStorage.getItem('cf_wl')||'[]');
-    document.getElementById('statCart').textContent=c.length||'0';
-    document.getElementById('statWish').textContent=w.length||'0';
-  }catch(e){}
-}
-
-function abrirEdicao(){
-  var cli=getCliente();
-  var card=document.getElementById('editPerfilCard');
-  card.style.display='block';
-  
-  // Avatar grid
-  var avatarAtual=getAvatar();
-  var grid=document.getElementById('avatarGrid');
-  grid.innerHTML=avatares.map(function(a){
-    return'<div class="avatar-opt'+(a===avatarAtual?' sel':'')+'" onclick="selecionarAvatar(\''+a+'\',this)"><i class="'+a+'"></i></div>';
-  }).join('');
-  
-  document.getElementById('editNome').value=cli?cli.nome:'';
-  document.getElementById('editEmail').value=cli?cli.email:'';
-  document.getElementById('editTel').value=getClienteTel();
-}
-
-function selecionarAvatar(avatar,el){
-  document.querySelectorAll('.avatar-opt').forEach(function(x){x.classList.remove('sel');});
-  el.classList.add('sel');
-  el.dataset.avatar=avatar;
-}
-
-function cancelarEdicao(){
-  document.getElementById('editPerfilCard').style.display='none';
-}
-
-function salvarPerfil(){
-  var nome=document.getElementById('editNome').value.trim();
-  var email=document.getElementById('editEmail').value.trim();
-  var tel=document.getElementById('editTel').value.trim();
-  var msg=document.getElementById('editMsg');
-  
-  if(!nome){msg.textContent='Nome obrigatório.';msg.className='msg err';return;}
-  if(email&&!validarEmail(email)){msg.textContent='Email inválido.';msg.className='msg err';return;}
-  if(tel&&!validarTel(tel)){msg.textContent='Telefone inválido.';msg.className='msg err';return;}
-  
-  // Guardar avatar selecionado
-  var avatarSel=document.querySelector('.avatar-opt.sel');
-  if(avatarSel&&avatarSel.dataset.avatar){
-    localStorage.setItem('cf_avatar',avatarSel.dataset.avatar);
-  }
-  
-  // Actualizar cliente local
-  var cli=getCliente()||{};
-  cli.nome=nome;
-  cli.email=email;
-  localStorage.setItem('cf_cliente',JSON.stringify(cli));
-  localStorage.setItem('cf_cliente_tel',tel);
-  
-  document.getElementById('editPerfilCard').style.display='none';
-  atualizarPerfilCard({nome:nome,email:email});
-  toast('Perfil actualizado!');
-}
-
-async function carregarEncs(){
-  var cont=document.getElementById('encLista');
-  try{
-    var token=localStorage.getItem('cf_token');
-    if(!token){cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-box-open"></i><p>Ainda não tens encomendas.</p></div>';document.getElementById('statEnc').textContent='0';return;}
-    
-    var r=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+token}});
-    var encs=await r.json();
-    
-    if(!Array.isArray(encs)||!encs.length){
-      cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-box-open"></i><p>Ainda não tens encomendas.</p></div>';
-      document.getElementById('statEnc').textContent='0';
-      return;
-    }
-    
-    // Ordenar por data (mais recente primeiro)
-    encs.sort(function(a,b){return new Date(b.criado_em)-new Date(a.criado_em);});
-    
-    document.getElementById('statEnc').textContent=encs.length;
-    
-    var estadosLabel={pendente:'Pendente',confirmada:'Confirmada',pronta:'Pronta',entregue:'Entregue',cancelada:'Cancelada'};
-    
-    cont.innerHTML=encs.map(function(e){
-      var itensNomes=(e.itens||[]).slice(0,3).map(function(i){return i.nome_produto;}).join(', ');
-      if((e.itens||[]).length>3)itensNomes+=' +'+(e.itens.length-3)+' itens';
-      
-      return'<div class="enc-card" onclick="window.location.href=\'rastrear.html?ref='+e.ref+'\'">'+
-        '<div class="enc-header"><span class="enc-ref">'+e.ref+'</span><span class="enc-data">'+fmtData(e.criado_em)+'</span></div>'+
-        '<div class="enc-body"><span class="enc-items">'+itensNomes+'</span><span class="enc-total">'+kz(e.total)+'</span></div>'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
-          '<span class="enc-badge '+e.estado+'">'+(estadosLabel[e.estado]||e.estado)+'</span>'+
-        '</div>'+
-        '<div class="enc-actions">'+
-          '<a href="rastrear.html?ref='+e.ref+'" class="enc-btn"><i class="fa-solid fa-eye"></i> Ver</a>'+
-          '<button class="enc-btn primary" onclick="event.stopPropagation();reencomendar(\''+e.ref+'\')"><i class="fa-solid fa-rotate-left"></i> Reencomendar</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
-    
-  }catch(e){cont.innerHTML='<div class="enc-vazia"><i class="fa-solid fa-triangle-exclamation"></i><p>Erro ao carregar encomendas.</p></div>';}
-}
-
-async function reencomendar(ref){
-  try{
-    var r=await fetch(API+'/api/encomendas/'+ref);
-    var enc=await r.json();
-    
-    if(!enc.itens||!enc.itens.length){toast('Encomenda sem itens','err');return;}
-    
-    var cart=[];
-    enc.itens.forEach(function(item){
-      cart.push({
-        chave:''+item.produto_id+'-'+Date.now()+Math.random(),
-        produto_id:item.produto_id,
-        nome:item.nome_produto||'Produto',
-        preco:item.preco_unit||0,
-        quantidade:item.quantidade||1,
-        imagem:'',
-        nota:''
-      });
-    });
-    
-    localStorage.setItem('cf_carrinho',JSON.stringify(cart));
-    toast('Produtos adicionados ao carrinho!');
-    setTimeout(function(){window.location.href='carrinho.html';},800);
-  }catch(e){toast('Erro ao reencomendar','err');}
-}
-
-function logout(){
-  localStorage.removeItem('cf_token');
-  localStorage.removeItem('cf_cliente');
-  localStorage.removeItem('cf_cliente_tel');
-  location.reload();
-}
-
-var cli=getCliente(); if(cli) mostrarPerfil(cli);
+-e 
+aplicarIdioma();
+var cli=getCliente();if(cli)mostrarPerfil(cli);
 </script>
 </body>
 </html>
