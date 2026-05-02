@@ -121,6 +121,63 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </head>
 <body>
 
+<!-- Splash Screen -->
+<div id="splashScreen" style="position:fixed;inset:0;z-index:9999;background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s ease,visibility .4s ease">
+  <div style="width:90px;height:90px;margin-bottom:20px;animation:floatSplash 3s ease-in-out infinite">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%">
+      <defs>
+        <linearGradient id="bgS" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#ff6b9d"/>
+          <stop offset="50%" style="stop-color:#b14ae8"/>
+          <stop offset="100%" style="stop-color:#06d6a0"/>
+        </linearGradient>
+        <linearGradient id="baseS" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#f8e1a0"/>
+          <stop offset="100%" style="stop-color:#e8c860"/>
+        </linearGradient>
+        <linearGradient id="topS" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#fff5f8"/>
+          <stop offset="100%" style="stop-color:#ffd6e8"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="100" height="100" rx="20" fill="url(#bgS)"/>
+      <path d="M22 70 L18 95 L82 95 L78 70 Z" fill="url(#baseS)" stroke="#d4a830" stroke-width="1.5"/>
+      <line x1="25" y1="75" x2="22" y2="93" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="33" y1="73" x2="31" y2="94" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="41" y1="72" x2="40" y2="94" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="50" y1="71" x2="50" y2="95" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="59" y1="72" x2="60" y2="94" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="67" y1="73" x2="69" y2="94" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <line x1="75" y1="75" x2="78" y2="93" stroke="#d4a830" stroke-width="1" opacity="0.6"/>
+      <path d="M12 72 Q12 42 28 48 Q30 28 50 30 Q70 28 72 48 Q88 42 88 72 Z" fill="url(#topS)"/>
+      <path d="M18 70 Q16 55 24 52 Q28 45 36 50 Q40 38 50 40 Q60 38 64 50 Q72 45 76 52 Q84 55 82 70" fill="none" stroke="#ff6b9d" stroke-width="3" opacity="0.8"/>
+      <rect x="28" y="38" width="5" height="2" rx="1" fill="#ffd166" transform="rotate(30 30 39)"/>
+      <rect x="40" y="34" width="5" height="2" rx="1" fill="#06d6a0" transform="rotate(-20 42 35)"/>
+      <rect x="52" y="36" width="5" height="2" rx="1" fill="#ff4757" transform="rotate(45 54 37)"/>
+      <rect x="60" y="42" width="5" height="2" rx="1" fill="#ffd166" transform="rotate(-35 62 43)"/>
+      <rect x="35" y="46" width="5" height="2" rx="1" fill="#ff9f43" transform="rotate(15 37 47)"/>
+      <rect x="48" y="44" width="5" height="2" rx="1" fill="#4ecdc4" transform="rotate(-40 50 45)"/>
+      <rect x="56" y="38" width="5" height="2" rx="1" fill="#a29bfe" transform="rotate(25 58 39)"/>
+      <circle cx="50" cy="22" r="9" fill="#ff4757"/>
+      <circle cx="47" cy="18" r="3" fill="#fff" opacity="0.7"/>
+      <path d="M50 13 Q55 8 60 12" fill="none" stroke="#2d5a27" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse cx="62" cy="10" rx="6" ry="3" fill="#2d5a27" transform="rotate(-20 62 10)"/>
+      <ellipse cx="30" cy="25" rx="8" ry="4" fill="#fff" opacity="0.15" transform="rotate(-30 30 25)"/>
+    </svg>
+  </div>
+  <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;background:linear-gradient(135deg,#ff6b9d,#b14ae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">IMPERSILVATECH</div>
+  <div style="font-family:'Nunito',sans-serif;font-size:.8rem;color:#9898bb;font-style:italic">Da nossa cozinha para a sua mesa</div>
+  <div style="display:flex;gap:5px;margin-top:18px">
+    <div style="width:5px;height:5px;border-radius:50%;background:#ff6b9d;animation:pulseS 1.5s ease-in-out infinite"></div>
+    <div style="width:5px;height:5px;border-radius:50%;background:#b14ae8;animation:pulseS 1.5s ease-in-out infinite;animation-delay:.2s"></div>
+    <div style="width:5px;height:5px;border-radius:50%;background:#06d6a0;animation:pulseS 1.5s ease-in-out infinite;animation-delay:.4s"></div>
+  </div>
+</div>
+<style>
+@keyframes floatSplash{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulseS{0%,100%{opacity:0.4}50%{opacity:1}}
+</style>
+
 <header class="hdr">
   <div class="hdr-logo" id="hdrLogo">A carregar...</div>
   <div style="display:flex;gap:4px;margin-right:6px">
@@ -257,6 +314,8 @@ async function carregar(){
   if(loja.entrega_ativa){var b=document.getElementById('bannerEntrega');b.style.display='flex';if(loja.entrega_gratis_a>0)document.getElementById('beSub').textContent=(idioma==='en'?'Free from ':'Grátis a partir de ')+kz(loja.entrega_gratis_a)+'.';else if(loja.entrega_prazo)document.getElementById('beSub').textContent=(idioma==='en'?'Delivery time: ':'Prazo: ')+loja.entrega_prazo;}
   document.getElementById('langPt').classList.toggle('active',idioma==='pt');document.getElementById('langEn').classList.toggle('active',idioma==='en');
   aplicarIdioma();buildCats();renderDestaques();renderNovos();atualizarBtnCart();initPTR();
+  // Remove o splash screen
+  var ss=document.getElementById('splashScreen');if(ss){ss.style.opacity='0';ss.style.visibility='hidden';setTimeout(function(){if(ss.parentNode)ss.parentNode.removeChild(ss);},500);}
 }
 
 function buildCats(){var row=document.getElementById('catsRow');if(!cats.length){row.innerHTML='';return;}row.innerHTML=cats.map(function(c){return'<a href="/Loja/catalogo.html?cat='+c.slug+'" class="cat">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';}).join('');}
