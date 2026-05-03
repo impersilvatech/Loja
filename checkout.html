@@ -102,7 +102,7 @@ var loja = {};
 var tipoEntrega = localStorage.getItem('ist_entrega') || 'levantamento';
 var cupaoCodigo = localStorage.getItem('ist_cupao') || '';
 var descontoCupao = parseFloat(localStorage.getItem('ist_desconto')) || 0;
-var refImgDataLocal = localStorage.getItem('cf_ref_img') || null;
+var refImgDataLocal = null; /* lido no momento do submit */
 var idioma = localStorage.getItem('idioma') || 'pt';
 
 var i18n = {
@@ -269,6 +269,10 @@ async function submeter(){
   if(tipoEntrega==='entrega'&&!morada){msg.textContent=t('addressRequired');return;}
 
   var c=getCarrinho();if(!c.length){msg.textContent=t('emptyCart');return;}
+
+  /* Ler ref_img no momento do submit — apanha imagens adicionadas depois de carregar a página */
+  refImgDataLocal=localStorage.getItem('cf_ref_img')||null;
+
   var btn=document.querySelector('.btn-final');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> '+t('processing');
 
   var itens=c.map(function(i){return{produto_id:i.produto_id,nome_produto:i.nome,preco_unit:i.preco,quantidade:i.quantidade||1};});
@@ -295,18 +299,11 @@ async function submeter(){
 
 carregar();
 var loja = {};
-var tipoEntrega = localStorage.getItem('ist_entrega') || 'levantamento';
-var cupaoCodigo = localStorage.getItem('ist_cupao') || '';
-var descontoCupao = parseFloat(localStorage.getItem('ist_desconto')) || 0;
-var refImgDataLocal = localStorage.getItem('cf_ref_img') || null;
-
-function getCarrinho(){ try{return JSON.parse(localStorage.getItem('cf_carrinho')||'[]');}catch(e){return[];} }
-function limparCarrinho(){ localStorage.removeItem('cf_carrinho'); localStorage.removeItem('cf_ref_img'); }
-function getCliente(){ try{return JSON.parse(localStorage.getItem('cf_cliente')||'null');}catch(e){return null;} }
-function getClienteTel(){ return localStorage.getItem('cf_cliente_tel') || ''; }
-function kz(v,s){ if(v==null)return'—';return(s||'Kz')+' '+Number(v).toLocaleString('pt'); }
 
 carregar();
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
