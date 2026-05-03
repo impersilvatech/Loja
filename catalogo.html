@@ -38,6 +38,14 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .srch-inp::placeholder{color:var(--muted2)}
 .srch-clear{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;color:var(--muted);font-size:.7rem;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;transition:var(--tr)}
 .srch-clear.show{display:flex}.srch-clear:active{background:var(--pink);color:#fff}
+.custom-order-card{display:block;margin:10px 14px 4px;border-radius:20px;background:linear-gradient(135deg,#ff6b9d,#b14ae8);text-decoration:none;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(255,107,157,.35);transition:transform .2s,box-shadow .2s}
+.custom-order-card:active{transform:scale(.98)}
+.custom-order-glow{position:absolute;top:-40px;right:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+.custom-order-body{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;position:relative;z-index:1}
+.custom-order-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:50px;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;color:#fff;margin-bottom:6px}
+.custom-order-title{font-family:var(--ft);font-size:1.1rem;color:#fff;margin-bottom:3px}
+.custom-order-sub{font-size:.72rem;color:rgba(255,255,255,.8);line-height:1.4}
+.custom-order-icon{font-size:2.4rem;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2))}
 .cats{overflow-x:auto;scrollbar-width:none;padding:6px 12px 10px}.cats::-webkit-scrollbar{display:none}
 .cats-row{display:flex;gap:6px;width:max-content}
 .cpill{padding:6px 14px;border:1.5px solid var(--border);border-radius:50px;background:none;font-family:var(--ft);font-size:.68rem;color:var(--muted);cursor:pointer;white-space:nowrap;transition:var(--tr)}
@@ -148,6 +156,18 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </header>
 
 <div class="srch-bar"><div class="srch-wrap"><i class="fa-solid fa-magnifying-glass"></i><input class="srch-inp" type="text" id="sInp" placeholder="Pesquisar produto..." oninput="onSrch()" autocomplete="off"/><button class="srch-clear" id="sClear" onclick="limparBusca()"><i class="fa-solid fa-xmark"></i></button></div></div>
+<a href="personalizado.html" class="custom-order-card" id="customCard">
+  <div class="custom-order-glow"></div>
+  <div class="custom-order-body">
+    <div class="custom-order-left">
+      <div class="custom-order-badge" id="customBadge">✨ Novo</div>
+      <div class="custom-order-title" id="customTitle">Pedido Personalizado</div>
+      <div class="custom-order-sub" id="customSub">Cria o teu bolo de sonho, passo a passo</div>
+    </div>
+    <div class="custom-order-icon">🎨</div>
+  </div>
+</a>
+
 <div class="cats"><div class="cats-row" id="catsRow"></div></div>
 <div class="tbar"><span class="tbar-info" id="info">A carregar...</span><div class="tbar-acts"><button class="sort-btn" id="sortBtn" onclick="toggleSort()"><i class="fa-solid fa-arrow-down-wide-short"></i> Ordenar</button><button class="wl-btn" id="wlBtn" onclick="toggleWlModo()"><i class="fa-solid fa-heart"></i> Wishlist <span id="wlN" style="display:none;background:var(--pink);color:#fff;border-radius:50px;padding:0 6px;font-size:.54rem">0</span></button><div class="vtw"><button class="vt on" id="vtG" onclick="setVista('grid')"><i class="fa-solid fa-grip"></i></button><button class="vt" id="vtL" onclick="setVista('list')"><i class="fa-solid fa-list"></i></button></div></div></div>
 
@@ -228,6 +248,13 @@ async function carregarDados(){
   document.getElementById('sortBtn').innerHTML='<i class="fa-solid fa-arrow-down-wide-short"></i> '+t('sort');
   document.querySelector('#nCart').innerHTML='<i class="fa-solid fa-cart-shopping"></i> '+t('cart')+' <span class="cart-ct" id="nCartN">0</span>';
   document.getElementById('offlineBar').textContent=t('offlineMsg');
+  /* i18n do card personalizado */
+  var customBadge=document.getElementById('customBadge');
+  var customTitle=document.getElementById('customTitle');
+  var customSub=document.getElementById('customSub');
+  if(customBadge)customBadge.textContent=idioma==='en'?'✨ New':'✨ Novo';
+  if(customTitle)customTitle.textContent=idioma==='en'?'Custom Order':'Pedido Personalizado';
+  if(customSub)customSub.textContent=idioma==='en'?'Create your dream cake, step by step':'Cria o teu bolo de sonho, passo a passo';
 
   // Auto-refresh invisível a cada 30s
   setInterval(async function(){

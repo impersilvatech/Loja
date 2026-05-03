@@ -227,7 +227,16 @@ body{
 /* ============================================================
    12. HIGHLIGHT STATS
    ============================================================ */
-.highlight-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.highlight-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.daily-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:background .15s}
+.daily-item:last-child{border-bottom:none}
+.daily-item:hover{background:var(--bg3)}
+.daily-item-ref{font-family:var(--ft);font-size:.75rem;color:var(--pink);min-width:130px}
+.daily-item-nome{flex:1;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.daily-item-total{font-family:var(--ft);font-size:.8rem;color:var(--orange);flex-shrink:0}
+.daily-item-status{flex-shrink:0}
+.daily-reset{text-align:center;padding:14px;color:var(--muted);font-size:.75rem}
+.daily-reset i{display:block;font-size:1.4rem;margin-bottom:6px;opacity:.3}
 .highlight-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--r2);padding:16px;border-left:3px solid var(--teal);
@@ -1040,6 +1049,18 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <div class="highlight-value" id="statMonthRevenue">Kz 0</div>
               <div class="highlight-sub" id="statMonthOrders">0 encomendas pagas</div>
             </div>
+          </div>
+
+          <!-- Daily Orders Card -->
+          <div class="section-card" id="dailyOrdersCard" style="margin-bottom:12px">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-boxes-stacked" style="color:var(--orange)"></i> Encomendas do Dia</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:.68rem;color:var(--muted)" id="dailyResetCountdown"></span>
+                <span class="badge badge-warning" id="dailyOrdersBadge">0</span>
+              </div>
+            </div>
+            <div id="dailyOrdersList" style="max-height:220px;overflow-y:auto"></div>
           </div>
 
           <!-- Alerts -->
@@ -1966,9 +1987,57 @@ function updateDashboardStats(){
 function renderDashboard(){
   updateDashboardStats();
   renderDashboardAlerts();
+  renderDailyOrders();
   renderSalesChart(7);
   renderTopProductsChart();
   renderRecentOrders();
+  iniciarCountdownReset();
+}
+
+function renderDailyOrders(){
+  const agora=new Date();
+  const hoje=new Date(agora.getFullYear(),agora.getMonth(),agora.getDate());
+  const amanha=new Date(hoje);amanha.setDate(amanha.getDate()+1);
+
+  const encHoje=state.encomendas.filter(e=>{
+    const d=new Date(e.criado_em);
+    return d>=hoje&&d<amanha;
+  }).sort((a,b)=>new Date(b.criado_em)-new Date(a.criado_em));
+
+  const badge=$('dailyOrdersBadge');
+  if(badge)badge.textContent=encHoje.length;
+
+  const cont=$('dailyOrdersList');
+  if(!cont)return;
+
+  if(!encHoje.length){
+    cont.innerHTML='<div class="daily-reset"><i class="fa-solid fa-moon"></i>Nenhuma encomenda hoje ainda.</div>';
+    return;
+  }
+
+  cont.innerHTML=encHoje.map(e=>{
+    const estadoCor={pendente:'warning',confirmada:'info',pronta:'active',entregue:'active',cancelada:'danger'};
+    return'<div class="daily-item" onclick="navigate(\'orders\');setTimeout(()=>toggleOrderDetail(\''+e.ref+'\'),400)">'+
+      '<div class="daily-item-ref">'+esc(e.ref)+'</div>'+
+      '<div class="daily-item-nome">'+esc(e.nome_cliente||'—')+'</div>'+
+      '<div class="daily-item-total">'+kz(e.total,state.loja.simbolo_moeda)+'</div>'+
+      '<div class="daily-item-status"><span class="badge badge-'+(estadoCor[e.estado]||'pending')+'">'+estadoLabel(e.estado)+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+function iniciarCountdownReset(){
+  function atualizar(){
+    const el=$('dailyResetCountdown');if(!el)return;
+    const agora=new Date();
+    const amanha=new Date(agora.getFullYear(),agora.getMonth(),agora.getDate()+1);
+    const diff=Math.floor((amanha-agora)/1000);
+    const h=Math.floor(diff/3600),m=Math.floor((diff%3600)/60),s=diff%60;
+    el.textContent='Reset em '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  atualizar();
+  if(window._dailyCountdownInterval)clearInterval(window._dailyCountdownInterval);
+  window._dailyCountdownInterval=setInterval(atualizar,1000);
 }
 
 function renderDashboardAlerts(){
@@ -2120,6 +2189,7 @@ async function toggleOrderDetail(ref){
       '<div class="detail-item"><label>Pagamento</label><span class="badge badge-'+(enc.pagamento_estado==='pago'?'active':'pending')+'">'+pagamentoLabel(enc.pagamento_estado)+'</span></div>'+
     '</div>'+
     (enc.notas?'<div class="note-box"><i class="fa-solid fa-pen"></i> '+esc(enc.notas)+'</div>':'')+
+    (detail.ref_img?'<div style="margin-top:10px"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;letter-spacing:.5px"><i class="fa-solid fa-image"></i> Foto de Referência do Cliente</div><div style="border-radius:12px;overflow:hidden;max-width:240px;border:1px solid var(--border);cursor:pointer" onclick="window.open(\''+detail.ref_img+'\',\'_blank\')"><img src="'+detail.ref_img+'" alt="Referência" style="width:100%;display:block;object-fit:cover" onerror="this.parentElement.innerHTML=\'<div style=padding:12px;color:var(--muted);font-size:.75rem><i class=fa-solid fa-image></i> Imagem não disponível</div>\'"></div><div style="font-size:.65rem;color:var(--muted);margin-top:4px"><i class="fa-solid fa-hand-pointer"></i> Clique para ampliar</div></div>':'')+
     '<div style="margin-top:10px"><div class="detail-list">'+
       (detail.itens||[]).map(item=>'<div class="detail-list-item"><span>'+esc(item.nome_produto||'Produto')+' × '+item.quantidade+'</span><span style="font-weight:700">'+kz((item.preco_unit||0)*item.quantidade,state.loja.simbolo_moeda)+'</span></div>').join('')+
       (enc.preco_entrega>0?'<div class="detail-list-item"><span>Entrega</span><span>'+kz(enc.preco_entrega,state.loja.simbolo_moeda)+'</span></div>':'')+

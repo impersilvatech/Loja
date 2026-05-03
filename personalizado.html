@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Pedido Personalizado</title>
+<script>
+(function(){
+  var t=localStorage.getItem('tema')||'dark';
+  var l=localStorage.getItem('idioma')||'pt';
+  document.documentElement.setAttribute('data-theme',t);
+  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-AO');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+})();
+</script>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--red:#ff4757;--white:#f0f0ff;--muted:#9898bb;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547;--yellow:#a07800}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:90px;transition:background .3s}
+/* Header */
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.btn-bk{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;cursor:pointer;color:var(--white)}
+.hdr-nome{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1;text-align:center}
+/* Progress bar */
+.wizard-progress{padding:14px 16px 0}
+.wizard-steps{display:flex;align-items:center;gap:0;margin-bottom:6px}
+.ws{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.ws-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-family:var(--ft);color:var(--muted);transition:all .3s;z-index:1}
+.ws.done .ws-dot{background:var(--grad);border-color:transparent;color:#fff}
+.ws.active .ws-dot{border-color:var(--pink);color:var(--pink);box-shadow:0 0 0 3px rgba(255,107,157,.2)}
+.ws-line{position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;transition:background .3s}
+.ws:last-child .ws-line{display:none}
+.ws.done .ws-line{background:var(--pink)}
+.ws-lbl{font-size:.5rem;color:var(--muted);margin-top:4px;text-align:center;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.ws.active .ws-lbl{color:var(--pink)}
+/* Steps */
+.ctn{padding:0 16px;max-width:520px;margin:0 auto}
+.step{display:none;animation:fadeUp .35s ease both}
+.step.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* Hero do passo */
+.step-hero{text-align:center;padding:20px 0 14px}
+.step-hero-icon{width:60px;height:60px;border-radius:20px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 10px;box-shadow:0 8px 24px rgba(255,107,157,.3)}
+.step-hero h2{font-family:var(--ft);font-size:1.2rem;margin-bottom:4px}
+.step-hero p{font-size:.78rem;color:var(--muted);line-height:1.5}
+/* Cards de seleção */
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sel-card{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:14px 12px;text-align:center;cursor:pointer;transition:all .2s}
+.sel-card:hover{border-color:rgba(255,107,157,.4);transform:translateY(-2px)}
+.sel-card.on{border-color:var(--pink);background:rgba(255,107,157,.08);box-shadow:0 0 0 3px rgba(255,107,157,.1)}
+.sel-card-ico{font-size:1.8rem;margin-bottom:8px;display:block}
+.sel-card-lbl{font-family:var(--ft);font-size:.85rem;margin-bottom:2px}
+.sel-card-sub{font-size:.65rem;color:var(--muted)}
+/* Opções de tamanho */
+.size-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.size-opt{padding:8px 16px;border-radius:50px;border:1.5px solid var(--border);background:none;font-family:var(--ft);font-size:.78rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.size-opt:hover{border-color:var(--pink);color:var(--pink)}
+.size-opt.on{background:var(--grad);color:#fff;border-color:transparent}
+/* Form fields */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.fi{width:100%;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-family:var(--fb);font-size:.88rem;color:var(--white);outline:none;transition:border-color .2s;resize:vertical}
+.fi:focus{border-color:var(--pink)}
+.fi::placeholder{color:var(--muted)}
+/* Color picker */
+.color-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.color-opt{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;position:relative}
+.color-opt:hover{transform:scale(1.15)}
+.color-opt.on{border-color:var(--white);box-shadow:0 0 0 2px var(--pink)}
+.color-opt.custom{background:conic-gradient(from 0deg,#ff6b9d,#ffd166,#06d6a0,#3d9eff,#b14ae8,#ff6b9d);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff}
+/* Upload de referência */
+.upload-area{border:2px dashed var(--border);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;position:relative;overflow:hidden}
+.upload-area:hover{border-color:var(--pink);background:rgba(255,107,157,.04)}
+.upload-area.has-img{border-style:solid;border-color:var(--teal)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-area img{max-height:160px;border-radius:10px;display:none;margin:0 auto}
+.upload-area.has-img img{display:block}
+.upload-area.has-img .upload-placeholder{display:none}
+.upload-ico{font-size:2rem;color:var(--muted);margin-bottom:8px}
+.upload-lbl{font-size:.8rem;color:var(--muted);font-weight:700}
+.upload-sub{font-size:.65rem;color:var(--muted);margin-top:4px}
+/* Urgência */
+.urg-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.urg-opt{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.urg-opt:hover{border-color:var(--pink)}
+.urg-opt.on{border-color:var(--yellow);background:rgba(255,209,102,.08)}
+.urg-opt i{display:block;font-size:1.2rem;margin-bottom:4px}
+.urg-opt span{font-size:.62rem;font-weight:700;display:block;margin-bottom:2px}
+.urg-opt small{font-size:.55rem;color:var(--muted)}
+/* Preview / Resumo */
+.preview-card{background:var(--grad);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff}
+.preview-card h3{font-family:var(--ft);font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.preview-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;font-size:.8rem}
+.preview-row span:first-child{opacity:.75;flex-shrink:0;margin-right:8px}
+.preview-row span:last-child{text-align:right;font-weight:700}
+.preview-img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:2px solid rgba(255,255,255,.3);flex-shrink:0}
+/* Botões de navegação */
+.nav-btns{display:flex;gap:10px;margin-top:6px;margin-bottom:14px}
+.btn-prev{flex:0 0 auto;padding:13px 20px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.82rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.btn-prev:hover{border-color:var(--pink);color:var(--pink)}
+.btn-next{flex:1;padding:14px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.9rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,157,.3);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-next:active{transform:scale(.97)}
+/* Botão WhatsApp final */
+.btn-wa-final{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(37,211,102,.35);transition:all .2s;margin-bottom:10px}
+.btn-wa-final:active{transform:scale(.97)}
+/* Toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--pink);border-radius:14px;padding:10px 18px;font-size:.82rem;font-weight:700;color:var(--pink);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s ease,opacity .4s ease;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.err{border-color:var(--red);color:var(--red)}
+/* Nav */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 10px 8px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);border-top:1px solid var(--border)}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-home-nav{width:38px;height:38px;background:var(--bg2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--white);text-decoration:none;font-size:.9rem;flex-shrink:0}
+.btn-cat-nav{flex:1;height:38px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.78rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;box-shadow:0 4px 14px rgba(255,107,157,.3)}
+/* Quantidade stepper */
+.stepper{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1.5px solid var(--border);border-radius:50px;padding:6px 12px;width:fit-content;margin-bottom:14px}
+.stepper button{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--white);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.stepper button:hover{background:var(--pink);border-color:var(--pink);color:#fff}
+.stepper span{font-family:var(--ft);font-size:1.1rem;min-width:28px;text-align:center}
+/* Orçamento estimado */
+.orcamento-est{background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:.8rem}
+.orcamento-est i{color:var(--yellow);font-size:1rem;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-nome" id="hdrNome">Pedido Personalizado</div>
+  <div style="width:34px"></div>
+</header>
+
+<div class="wizard-progress">
+  <div class="wizard-steps" id="wizardSteps">
+    <div class="ws active" data-i="0"><div class="ws-dot">1</div><div class="ws-line"></div><div class="ws-lbl" id="lbl0">Tipo</div></div>
+    <div class="ws" data-i="1"><div class="ws-dot">2</div><div class="ws-line"></div><div class="ws-lbl" id="lbl1">Detalhes</div></div>
+    <div class="ws" data-i="2"><div class="ws-dot">3</div><div class="ws-line"></div><div class="ws-lbl" id="lbl2">Estilo</div></div>
+    <div class="ws" data-i="3"><div class="ws-dot">4</div><div class="ws-line"></div><div class="ws-lbl" id="lbl3">Urgência</div></div>
+    <div class="ws" data-i="4"><div class="ws-dot">5</div><div class="ws-line"></div><div class="ws-lbl" id="lbl4">Resumo</div></div>
+  </div>
+</div>
+
+<div class="ctn">
+
+<!-- PASSO 1: Tipo de produto -->
+<div class="step active" id="step0">
+  <div class="step-hero">
+    <div class="step-hero-icon">🎂</div>
+    <h2 id="s0title">O que queres encomendar?</h2>
+    <p id="s0desc">Escolhe o tipo de produto personalizado</p>
+  </div>
+  <div class="sel-grid" id="tipoGrid"></div>
+  <div class="fg">
+    <label id="s0otherLbl">Outro — descreve aqui</label>
+    <textarea class="fi" id="tipoOutro" placeholder="Ex: Conjunto de cupcakes temáticos de unicórnio..." rows="2" style="resize:none"></textarea>
+  </div>
+  <div class="nav-btns">
+    <button class="btn-next" onclick="avancar(0)"><span id="s0next">Próximo</span> <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- PASSO 2: Detalhes -->
+<div class="step" id="step1">
+  <div class="step-hero">
+    <div class="step-hero-icon">📐</div>
+    <h2 id="s1title">Tamanho e Quantidade</h2>
+    <p id="s1desc">Define as dimensões do teu pedido</p>
+  </div>
+
+  <div class="fg"><label id="s1sizeLbl">Tamanho / Porções</label></div>
+  <div class="size-opts" id="sizeOpts"></div>
+
+  <div class="fg">
+    <label id="s1qtyLbl">Quantidade</label>
+    <div class="stepper">
+      <button onclick="altQty(-1)"><i class="fa-solid fa-minus"></i></button>
+      <span id="qtyVal">1</span>
+      <button onclick="altQty(1)"><i class="fa-solid fa-plus"></i></button>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label id="s1temaLbl">Tema / Ocasião *</label>
+    <input class="fi" type="text" id="fTema" placeholder="Ex: Aniversário da Maria, 5 anos, tema princesas…"/>
+  </div>
+
+  <div class="fg">
+    <label id="s1nomeLbl">Nome para escrever no produto</label>
+    <input class="fi" type="text" id="fNomeProd" placeholder="Ex: Maria, Parabéns João, etc."/>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="recuar(1)"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="btn-next" onclick="avancar(1)"><span id="s1next">Próximo</span> <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- PASSO 3: Estilo Visual -->
+<div class="step" id="step2">
+  <div class="step-hero">
+    <div class="step-hero-icon">🎨</div>
+    <h2 id="s2title">Cores e Estilo</h2>
+    <p id="s2desc">Define a identidade visual do teu pedido</p>
+  </div>
+
+  <div class="fg"><label id="s2coresLbl">Cores principais</label></div>
+  <div class="color-grid" id="colorGrid"></div>
+
+  <div class="fg">
+    <label id="s2estiloLbl">Estilo / Acabamento</label>
+    <div class="size-opts" id="estiloOpts"></div>
+  </div>
+
+  <div class="fg">
+    <label id="s2notasLbl">Detalhes adicionais</label>
+    <textarea class="fi" id="fNotas" placeholder="Flores de açúcar, pérolas douradas, textura rustica, sem glúten…" rows="3" style="resize:none"></textarea>
+  </div>
+
+  <div class="fg">
+    <label id="s2refLbl">Foto de referência / inspiração</label>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('refInput').click()">
+      <input type="file" id="refInput" accept="image/*" onchange="carregarImagem(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2"/>
+      <div class="upload-placeholder">
+        <div class="upload-ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="upload-lbl" id="uploadLbl">Toque para enviar foto</div>
+        <div class="upload-sub" id="uploadSub">JPG, PNG, HEIC — máx. 10MB</div>
+      </div>
+      <img id="uploadPreview" src="" alt="Preview"/>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="recuar(2)"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="btn-next" onclick="avancar(2)"><span id="s2next">Próximo</span> <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- PASSO 4: Urgência e Dados -->
+<div class="step" id="step3">
+  <div class="step-hero">
+    <div class="step-hero-icon">⏰</div>
+    <h2 id="s3title">Quando precisas?</h2>
+    <p id="s3desc">Ajuda-nos a planear a tua encomenda</p>
+  </div>
+
+  <div class="fg"><label id="s3urgLbl">Prazo</label></div>
+  <div class="urg-opts" id="urgOpts"></div>
+
+  <div class="fg">
+    <label id="s3dateLbl">Data de entrega preferida *</label>
+    <input class="fi" type="date" id="fData" style="color-scheme:dark"/>
+  </div>
+
+  <div class="fg">
+    <label id="s3nomeLbl">O teu nome *</label>
+    <input class="fi" type="text" id="fNomeCli" placeholder="Nome completo"/>
+  </div>
+
+  <div class="fg">
+    <label id="s3telLbl">Telefone / WhatsApp *</label>
+    <input class="fi" type="tel" id="fTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"/>
+  </div>
+
+  <div class="orcamento-est">
+    <i class="fa-solid fa-circle-info"></i>
+    <span id="orcamentoMsg">O orçamento será enviado após análise do pedido pela nossa equipa.</span>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="recuar(3)"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="btn-next" onclick="avancar(3)"><span id="s3next">Ver Resumo</span> <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- PASSO 5: Resumo Final -->
+<div class="step" id="step4">
+  <div class="step-hero">
+    <div class="step-hero-icon">✨</div>
+    <h2 id="s4title">O teu pedido está pronto!</h2>
+    <p id="s4desc">Confirma os detalhes e envia pelo WhatsApp</p>
+  </div>
+
+  <div class="preview-card" id="previewCard">
+    <h3><i class="fa-solid fa-star"></i> <span id="previewTitle">Resumo do Pedido</span></h3>
+    <div id="previewContent"></div>
+  </div>
+
+  <button class="btn-wa-final" id="btnEnviar" onclick="enviarWhatsApp()">
+    <i class="fa-brands fa-whatsapp" style="font-size:1.4rem"></i>
+    <span id="btnEnviarTxt">Enviar Pedido pelo WhatsApp</span>
+  </button>
+
+  <button class="btn-prev" style="width:100%;margin-top:4px" onclick="recuar(4)" id="btnEditar">
+    <i class="fa-solid fa-pen"></i> <span id="btnEditarTxt">Editar pedido</span>
+  </button>
+</div>
+
+</div><!-- /ctn -->
+
+<div class="nav">
+  <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
+  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> <span id="btnCatTxt">Ver Catálogo</span></a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var API='https://impersilva-d1work.3miliosilva.workers.dev';
+var idioma=localStorage.getItem('idioma')||'pt';
+var loja={};
+var estado={
+  passo:0,
+  tipo:'',tipoLabel:'',tipoOutro:'',
+  tamanho:'',quantidade:1,
+  tema:'',nomeProd:'',
+  cores:[],estilo:'',notas:'',
+  refImgBase64:'',refImgNome:'',
+  urgencia:'normal',dataEntrega:'',
+  nomeCli:'',telefone:''
+};
+
+var i18n={
+  pt:{
+    pageTitle:'Pedido Personalizado',hdrNome:'Pedido Personalizado',catalog:'Ver Catálogo',
+    s0title:'O que queres encomendar?',s0desc:'Escolhe o tipo de produto personalizado',
+    s0otherLbl:'Outro — descreve aqui',s0next:'Próximo',
+    s1title:'Tamanho e Quantidade',s1desc:'Define as dimensões do teu pedido',
+    s1sizeLbl:'Tamanho / Porções',s1qtyLbl:'Quantidade',
+    s1temaLbl:'Tema / Ocasião *',s1nomeLbl:'Nome para escrever no produto',s1next:'Próximo',
+    s2title:'Cores e Estilo',s2desc:'Define a identidade visual do teu pedido',
+    s2coresLbl:'Cores principais',s2estiloLbl:'Estilo / Acabamento',
+    s2notasLbl:'Detalhes adicionais',s2refLbl:'Foto de referência / inspiração',
+    uploadLbl:'Toque para enviar foto',uploadSub:'JPG, PNG, HEIC — máx. 10MB',
+    uploadChange:'Trocar imagem',s2next:'Próximo',
+    s3title:'Quando precisas?',s3desc:'Ajuda-nos a planear a tua encomenda',
+    s3urgLbl:'Prazo',s3dateLbl:'Data de entrega preferida *',
+    s3nomeLbl:'O teu nome *',s3telLbl:'Telefone / WhatsApp *',s3next:'Ver Resumo',
+    orcamentoMsg:'O orçamento será enviado após análise do pedido pela nossa equipa.',
+    s4title:'O teu pedido está pronto!',s4desc:'Confirma os detalhes e envia pelo WhatsApp',
+    previewTitle:'Resumo do Pedido',btnEnviarTxt:'Enviar Pedido pelo WhatsApp',btnEditarTxt:'Editar pedido',
+    errTipo:'Escolhe um tipo de produto ou descreve o teu pedido.',
+    errTema:'Indica o tema ou ocasião.',errData:'Escolhe uma data de entrega.',
+    errNome:'Indica o teu nome.',errTel:'Indica um telefone válido.',
+    lblTipo:'Tipo',lblTamanho:'Tamanho',lblQty:'Quantidade',lblTema:'Tema',
+    lblNomeProd:'Nome no produto',lblCores:'Cores',lblEstilo:'Estilo',
+    lblNotas:'Detalhes',lblData:'Data de entrega',lblUrgencia:'Urgência',
+    lblFoto:'Foto de referência',lblContato:'Contacto',
+    tipos:[
+      {id:'bolo',ico:'🎂',lbl:'Bolo',sub:'Aniversário, batizado, casamento'},
+      {id:'cupcakes',ico:'🧁',lbl:'Cupcakes',sub:'Conjunto personalizado'},
+      {id:'bolo-andares',ico:'🏰',lbl:'Bolo de Andares',sub:'Casamentos, festas grandes'},
+      {id:'bolos-mini',ico:'🍰',lbl:'Mini Bolos',sub:'Individuais temáticos'},
+      {id:'donuts',ico:'🍩',lbl:'Donuts',sub:'Personalizados e decorados'},
+      {id:'cookies',ico:'🍪',lbl:'Cookies',sub:'Recheadas ou decoradas'},
+      {id:'cakepops',ico:'🍡',lbl:'Cake Pops',sub:'Para festas e eventos'},
+      {id:'outro',ico:'✨',lbl:'Outro',sub:'Descreve abaixo'}
+    ],
+    tamanhos:['Pequeno (4–6 fatias)','Médio (8–12 fatias)','Grande (14–20 fatias)','Família (+20 fatias)','Definir por peso'],
+    estilos:['Clássico','Moderno','Rústico','Minimalista','Luxuoso','Temático','Aquarela','Floral'],
+    urgencias:[
+      {id:'normal',ico:'fa-solid fa-clock',lbl:'Normal',sub:'5–7 dias'},
+      {id:'rapido',ico:'fa-solid fa-rocket',lbl:'Rápido',sub:'2–4 dias'},
+      {id:'urgente',ico:'fa-solid fa-fire',lbl:'Urgente',sub:'24–48h'}
+    ],
+    waMsg:'Olá! Quero fazer um pedido personalizado:\n\n'
+  },
+  en:{
+    pageTitle:'Custom Order',hdrNome:'Custom Order',catalog:'View Catalog',
+    s0title:'What would you like to order?',s0desc:'Choose the type of custom product',
+    s0otherLbl:'Other — describe here',s0next:'Next',
+    s1title:'Size and Quantity',s1desc:'Define the dimensions of your order',
+    s1sizeLbl:'Size / Portions',s1qtyLbl:'Quantity',
+    s1temaLbl:'Theme / Occasion *',s1nomeLbl:'Name to write on the product',s1next:'Next',
+    s2title:'Colors and Style',s2desc:'Define the visual identity of your order',
+    s2coresLbl:'Main colors',s2estiloLbl:'Style / Finish',
+    s2notasLbl:'Additional details',s2refLbl:'Reference / inspiration photo',
+    uploadLbl:'Tap to upload photo',uploadSub:'JPG, PNG, HEIC — max 10MB',
+    uploadChange:'Change image',s2next:'Next',
+    s3title:'When do you need it?',s3desc:'Help us plan your order',
+    s3urgLbl:'Timeline',s3dateLbl:'Preferred delivery date *',
+    s3nomeLbl:'Your name *',s3telLbl:'Phone / WhatsApp *',s3next:'See Summary',
+    orcamentoMsg:'A quote will be sent after our team reviews your order.',
+    s4title:'Your order is ready!',s4desc:'Confirm the details and send via WhatsApp',
+    previewTitle:'Order Summary',btnEnviarTxt:'Send Order via WhatsApp',btnEditarTxt:'Edit order',
+    errTipo:'Choose a product type or describe your order.',
+    errTema:'Please indicate the theme or occasion.',errData:'Please choose a delivery date.',
+    errNome:'Please enter your name.',errTel:'Please enter a valid phone number.',
+    lblTipo:'Type',lblTamanho:'Size',lblQty:'Quantity',lblTema:'Theme',
+    lblNomeProd:'Name on product',lblCores:'Colors',lblEstilo:'Style',
+    lblNotas:'Details',lblData:'Delivery date',lblUrgencia:'Timeline',
+    lblFoto:'Reference photo',lblContato:'Contact',
+    tipos:[
+      {id:'bolo',ico:'🎂',lbl:'Cake',sub:'Birthday, baptism, wedding'},
+      {id:'cupcakes',ico:'🧁',lbl:'Cupcakes',sub:'Custom set'},
+      {id:'bolo-andares',ico:'🏰',lbl:'Tiered Cake',sub:'Weddings, large events'},
+      {id:'bolos-mini',ico:'🍰',lbl:'Mini Cakes',sub:'Individual themed'},
+      {id:'donuts',ico:'🍩',lbl:'Donuts',sub:'Personalized and decorated'},
+      {id:'cookies',ico:'🍪',lbl:'Cookies',sub:'Filled or decorated'},
+      {id:'cakepops',ico:'🍡',lbl:'Cake Pops',sub:'For parties and events'},
+      {id:'outro',ico:'✨',lbl:'Other',sub:'Describe below'}
+    ],
+    tamanhos:['Small (4–6 slices)','Medium (8–12 slices)','Large (14–20 slices)','Family (+20 slices)','Define by weight'],
+    estilos:['Classic','Modern','Rustic','Minimalist','Luxurious','Themed','Watercolor','Floral'],
+    urgencias:[
+      {id:'normal',ico:'fa-solid fa-clock',lbl:'Normal',sub:'5–7 days'},
+      {id:'rapido',ico:'fa-solid fa-rocket',lbl:'Fast',sub:'2–4 days'},
+      {id:'urgente',ico:'fa-solid fa-fire',lbl:'Urgent',sub:'24–48h'}
+    ],
+    waMsg:'Hello! I would like to make a custom order:\n\n'
+  }
+};
+function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
+
+var CORES=[
+  {cor:'#ff6b9d',lbl:'Rosa'},{'cor':'#b14ae8',lbl:'Roxo'},{'cor':'#ffd166',lbl:'Dourado'},
+  {'cor':'#06d6a0',lbl:'Verde Menta'},{'cor':'#3d9eff',lbl:'Azul'},{'cor':'#ff9f43',lbl:'Laranja'},
+  {'cor':'#ff4757',lbl:'Vermelho'},{'cor':'#fff',lbl:'Branco'},{'cor':'#333',lbl:'Preto'},
+  {'cor':'#c8a96e',lbl:'Bege'},{'cor':'#a8e6cf',lbl:'Verde Suave'},{'cor':'custom',lbl:'Outra'}
+];
+
+function toast(msg,tp){var el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(tp||'ok');setTimeout(function(){el.classList.remove('show');},3000);}
+function formatarTel(inp){var v=inp.value.replace(/[^0-9+]/g,'');if(v.startsWith('+244')){var r=v.slice(4);if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.startsWith('9')){inp.value='+244 '+v.slice(0,9);}else if(v.length>0){inp.value='+244 ';}}
+function validarTel(v){return /^(\+244)?\s?9\d{8}$/.test(v.replace(/\s+/g,''));}
+function dataMinima(){var d=new Date();d.setDate(d.getDate()+2);return d.toISOString().split('T')[0];}
+
+function aplicarIdioma(){
+  document.title=t('pageTitle');
+  document.getElementById('hdrNome').textContent=t('hdrNome');
+  document.getElementById('btnCatTxt').textContent=t('catalog');
+  ['s0title','s0desc','s0otherLbl','s0next',
+   's1title','s1desc','s1sizeLbl','s1qtyLbl','s1temaLbl','s1nomeLbl','s1next',
+   's2title','s2desc','s2coresLbl','s2estiloLbl','s2notasLbl','s2refLbl','uploadLbl','uploadSub','s2next',
+   's3title','s3desc','s3urgLbl','s3dateLbl','s3nomeLbl','s3telLbl','s3next','orcamentoMsg',
+   's4title','s4desc','previewTitle','btnEnviarTxt','btnEditarTxt'
+  ].forEach(function(k){var el=document.getElementById(k);if(el)el.textContent=t(k);});
+  document.getElementById('fData').min=dataMinima();
+  var tema=localStorage.getItem('tema')||'dark';
+  document.getElementById('fData').style.colorScheme=tema;
+}
+
+function construirTipos(){
+  var tipos=t('tipos');
+  document.getElementById('tipoGrid').innerHTML=tipos.map(function(tp){
+    return'<div class="sel-card'+(estado.tipo===tp.id?' on':'')+'" onclick="selecionarTipo(\''+tp.id+'\',\''+tp.lbl+'\',this)">'+
+      '<span class="sel-card-ico">'+tp.ico+'</span>'+
+      '<div class="sel-card-lbl">'+tp.lbl+'</div>'+
+      '<div class="sel-card-sub">'+tp.sub+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function selecionarTipo(id,lbl,el){
+  estado.tipo=id;estado.tipoLabel=lbl;
+  document.querySelectorAll('.sel-card').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  if(id==='outro'){document.getElementById('tipoOutro').focus();}
+}
+
+function construirTamanhos(){
+  var tamanhos=t('tamanhos');
+  document.getElementById('sizeOpts').innerHTML=tamanhos.map(function(s){
+    return'<button class="size-opt'+(estado.tamanho===s?' on':'')+'" onclick="selecionarTamanho(\''+s.replace(/'/g,"\\'").replace(/"/g,'\\"')+'\',this)">'+s+'</button>';
+  }).join('');
+}
+
+function selecionarTamanho(s,el){
+  estado.tamanho=s;
+  document.querySelectorAll('.size-opt').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+}
+
+function altQty(d){
+  estado.quantidade=Math.max(1,Math.min(99,estado.quantidade+d));
+  document.getElementById('qtyVal').textContent=estado.quantidade;
+}
+
+function construirCores(){
+  document.getElementById('colorGrid').innerHTML=CORES.map(function(c){
+    var on=estado.cores.includes(c.cor);
+    if(c.cor==='custom'){
+      return'<div class="color-opt custom'+(on?' on':'')+'" title="Outra cor" onclick="toggleCor(\'custom\',this)"><i class="fa-solid fa-plus" style="font-size:.6rem"></i></div>';
+    }
+    return'<div class="color-opt'+(on?' on':'')+'" style="background:'+c.cor+'" title="'+c.lbl+'" onclick="toggleCor(\''+c.cor+'\',this)"></div>';
+  }).join('');
+}
+
+function toggleCor(cor,el){
+  var idx=estado.cores.indexOf(cor);
+  if(idx>=0){estado.cores.splice(idx,1);el.classList.remove('on');}
+  else if(estado.cores.length<5){estado.cores.push(cor);el.classList.add('on');}
+}
+
+function construirEstilos(){
+  var estilos=t('estilos');
+  document.getElementById('estiloOpts').innerHTML=estilos.map(function(s){
+    return'<button class="size-opt'+(estado.estilo===s?' on':'')+'" onclick="selecionarEstilo(\''+s+'\',this)">'+s+'</button>';
+  }).join('');
+}
+
+function selecionarEstilo(s,el){
+  estado.estilo=s;
+  document.querySelectorAll('#estiloOpts .size-opt').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+}
+
+function carregarImagem(input){
+  var file=input.files[0];
+  if(!file)return;
+  if(file.size>10*1024*1024){toast(t('uploadSub'),'err');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    estado.refImgBase64=e.target.result;
+    estado.refImgNome=file.name;
+    document.getElementById('uploadPreview').src=e.target.result;
+    document.getElementById('uploadArea').classList.add('has-img');
+    document.getElementById('uploadLbl').textContent=t('uploadChange');
+    document.getElementById('uploadSub').textContent=file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function construirUrgencias(){
+  var urgs=t('urgencias');
+  document.getElementById('urgOpts').innerHTML=urgs.map(function(u){
+    return'<div class="urg-opt'+(estado.urgencia===u.id?' on':'')+'" onclick="selecionarUrg(\''+u.id+'\',this)">'+
+      '<i class="'+u.ico+'"></i><span>'+u.lbl+'</span><small>'+u.sub+'</small>'+
+    '</div>';
+  }).join('');
+}
+
+function selecionarUrg(id,el){
+  estado.urgencia=id;
+  document.querySelectorAll('.urg-opt').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+}
+
+function irPasso(n){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('step'+n).classList.add('active');
+  document.querySelectorAll('.ws').forEach(function(w,i){
+    w.classList.remove('active','done');
+    if(i<n)w.classList.add('done');
+    else if(i===n)w.classList.add('active');
+  });
+  estado.passo=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function avancar(passo){
+  if(passo===0){
+    var outro=document.getElementById('tipoOutro').value.trim();
+    if(!estado.tipo&&!outro){toast(t('errTipo'),'err');return;}
+    if(estado.tipo==='outro'||(!estado.tipo&&outro))estado.tipoOutro=outro;
+    construirTamanhos();construirCores();construirEstilos();construirUrgencias();
+    irPasso(1);
+  } else if(passo===1){
+    estado.tema=document.getElementById('fTema').value.trim();
+    estado.nomeProd=document.getElementById('fNomeProd').value.trim();
+    if(!estado.tema){toast(t('errTema'),'err');return;}
+    irPasso(2);
+  } else if(passo===2){
+    estado.notas=document.getElementById('fNotas').value.trim();
+    irPasso(3);
+  } else if(passo===3){
+    estado.dataEntrega=document.getElementById('fData').value;
+    estado.nomeCli=document.getElementById('fNomeCli').value.trim();
+    estado.telefone=document.getElementById('fTel').value.trim();
+    if(!estado.dataEntrega){toast(t('errData'),'err');return;}
+    if(!estado.nomeCli){toast(t('errNome'),'err');return;}
+    if(!validarTel(estado.telefone)){toast(t('errTel'),'err');return;}
+    construirPreview();
+    irPasso(4);
+  }
+}
+
+function recuar(passo){irPasso(passo-1);}
+
+function construirPreview(){
+  var rows='';
+  var lbl=t;
+  var tipoLabel=estado.tipoLabel||(estado.tipoOutro?estado.tipoOutro.substring(0,40):'—');
+  rows+='<div class="preview-row"><span>'+t('lblTipo')+'</span><span>'+tipoLabel+'</span></div>';
+  if(estado.tamanho)rows+='<div class="preview-row"><span>'+t('lblTamanho')+'</span><span>'+estado.tamanho+'</span></div>';
+  rows+='<div class="preview-row"><span>'+t('lblQty')+'</span><span>'+estado.quantidade+'</span></div>';
+  rows+='<div class="preview-row"><span>'+t('lblTema')+'</span><span>'+estado.tema+'</span></div>';
+  if(estado.nomeProd)rows+='<div class="preview-row"><span>'+t('lblNomeProd')+'</span><span>'+estado.nomeProd+'</span></div>';
+  if(estado.estilo)rows+='<div class="preview-row"><span>'+t('lblEstilo')+'</span><span>'+estado.estilo+'</span></div>';
+  if(estado.notas)rows+='<div class="preview-row"><span>'+t('lblNotas')+'</span><span>'+estado.notas.substring(0,60)+(estado.notas.length>60?'…':'')+'</span></div>';
+  rows+='<div class="preview-row"><span>'+t('lblData')+'</span><span>'+new Date(estado.dataEntrega+'T12:00').toLocaleDateString(idioma==='en'?'en-GB':'pt',{day:'2-digit',month:'long',year:'numeric'})+'</span></div>';
+  rows+='<div class="preview-row"><span>'+t('lblUrgencia')+'</span><span>'+(t('urgencias').find(function(u){return u.id===estado.urgencia;})||{lbl:'Normal'}).lbl+'</span></div>';
+  rows+='<div class="preview-row"><span>'+t('lblContato')+'</span><span>'+estado.nomeCli+' · '+estado.telefone+'</span></div>';
+  if(estado.refImgBase64)rows+='<div class="preview-row"><span>'+t('lblFoto')+'</span><span><img src="'+estado.refImgBase64+'" class="preview-img"/></span></div>';
+  document.getElementById('previewContent').innerHTML=rows;
+}
+
+function enviarWhatsApp(){
+  var waNum=(loja.whatsapp||'').replace(/\D/g,'');
+  if(!waNum){toast('WhatsApp não configurado','err');return;}
+  var urg=(t('urgencias').find(function(u){return u.id===estado.urgencia;})||{lbl:'Normal',sub:''});
+  var tipoLabel=estado.tipoLabel||(estado.tipoOutro||'—');
+  var dataFmt=new Date(estado.dataEntrega+'T12:00').toLocaleDateString(idioma==='en'?'en-GB':'pt',{day:'2-digit',month:'long',year:'numeric'});
+  var msg=t('waMsg');
+  msg+='🎂 *'+t('lblTipo')+'*: '+tipoLabel+'\n';
+  if(estado.tamanho)msg+='📐 *'+t('lblTamanho')+'*: '+estado.tamanho+'\n';
+  msg+='🔢 *'+t('lblQty')+'*: '+estado.quantidade+'\n';
+  msg+='🎉 *'+t('lblTema')+'*: '+estado.tema+'\n';
+  if(estado.nomeProd)msg+='✍️ *'+t('lblNomeProd')+'*: '+estado.nomeProd+'\n';
+  if(estado.estilo)msg+='🎨 *'+t('lblEstilo')+'*: '+estado.estilo+'\n';
+  if(estado.notas)msg+='📝 *'+t('lblNotas')+'*: '+estado.notas+'\n';
+  msg+='📅 *'+t('lblData')+'*: '+dataFmt+'\n';
+  msg+='⏱️ *'+t('lblUrgencia')+'*: '+urg.lbl+' ('+urg.sub+')\n';
+  msg+='\n👤 '+estado.nomeCli+'\n📞 '+estado.telefone;
+  if(estado.refImgBase64)msg+='\n\n📷 _(Foto de referência enviada em separado)_';
+  window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+async function init(){
+  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+  if(loja.nome)document.getElementById('hdrNome').textContent=(idioma==='en'?'Custom Order':'Pedido Personalizado');
+  aplicarIdioma();
+  construirTipos();
+}
+
+init();
+</script>
+</body>
+</html>
