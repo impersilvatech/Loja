@@ -233,23 +233,35 @@ function atualizarBtnEnviar(){
 async function mostrarRefImg(input){
   var file=input.files[0];
   if(!file)return;
-  if(file.size>5*1024*1024){toast(t('imgTooBig'),'err');return;}
-  var reader=new FileReader();
-  reader.onload=async function(e){
-    var base64=e.target.result;
-    document.getElementById('refImgPreview').src=base64;
-    document.getElementById('refImgPreview').style.display='block';
-    document.getElementById('refImgIcon').style.display='none';
-    document.getElementById('refImgText').textContent=t('uploading');
-    document.getElementById('refImgText').style.color='var(--yellow)';
-    try{
-      var r=await fetch(API+'/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64,name:file.name})});
-      var d=await r.json();
-      if(d.url){refImgData=d.url;document.getElementById('refImgText').textContent=t('uploadedOk');document.getElementById('refImgText').style.color='var(--teal)';}
-      else{refImgData=base64;document.getElementById('refImgText').textContent=t('uploadedLocal');document.getElementById('refImgText').style.color='var(--teal)';}
-    }catch(err){refImgData=base64;document.getElementById('refImgText').textContent=t('uploadedLocal');document.getElementById('refImgText').style.color='var(--teal)';}
-  };
-  reader.readAsDataURL(file);
+  if(file.size>10*1024*1024){toast(t('imgTooBig'),'err');return;}
+  /* Comprimir imagem via canvas antes de armazenar */
+  var base64Compressed=await comprimirImagem(file,900,0.72);
+  refImgData=base64Compressed;
+  localStorage.setItem('cf_ref_img',base64Compressed);
+  document.getElementById('refImgPreview').src=base64Compressed;
+  document.getElementById('refImgPreview').style.display='block';
+  document.getElementById('refImgIcon').style.display='none';
+  document.getElementById('refImgText').textContent=t('uploadedOk');
+  document.getElementById('refImgText').style.color='var(--teal)';
+}
+
+function comprimirImagem(file,maxPx,qualidade){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var ratio=Math.min(maxPx/img.width,maxPx/img.height,1);
+        var canvas=document.createElement('canvas');
+        canvas.width=Math.round(img.width*ratio);
+        canvas.height=Math.round(img.height*ratio);
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',qualidade));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function carregar(){
