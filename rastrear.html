@@ -280,11 +280,12 @@ body{
   .items-card{padding:12px!important}
   .item-row{font-size:.72rem!important}
 }
+.spinner-inicial{text-align:center;padding:80px 20px}
 </style>
 </head>
 <body>
 
-<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
+<div class="offline-bar" id="offlineBar"><i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…</div>
 
 <header class="hdr">
   <a href="index.html" class="hdr-back"><i class="fa-solid fa-arrow-left"></i></a>
@@ -293,7 +294,9 @@ body{
 </header>
 
 <div class="ctn">
-  <div class="search-card">
+  <div class="spinner-inicial" id="spinnerInicial"><div class="spin"></div></div>
+
+  <div class="search-card" id="searchCard" style="display:none">
     <h2><i class="fa-solid fa-magnifying-glass"></i> <span id="searchTitle">Acompanhe o seu pedido</span></h2>
     <p id="searchDesc">Introduza a referência que recebeu após finalizar o pedido (ex: <strong>ENC-1234567890</strong>).</p>
     <div class="search-wrap">
@@ -390,7 +393,7 @@ var i18n = {
       deliveryAddr:'Entrega: %addr% | Data prevista: %date%',
       pickupMsg:'Levantamento na loja. Será notificado quando estiver pronto.',
       waMsg:'Olá! Gostaria de saber mais sobre a minha encomenda %ref%.',
-      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…',
+      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…',
       estados:{pendente:'Pedido Recebido',confirmada:'Confirmado',pronta:'Pronto / Em Preparação',entregue:'Entregue',cancelada:'Cancelado'},
       estadosDesc:{pendente:'Recebemos o seu pedido e vamos analisá-lo.',confirmada:'O seu pedido foi confirmado e está na fila de produção.',pronta:'O seu pedido está pronto! Aguardamos a entrega ou levantamento.',entregue:'Pedido entregue com sucesso. Obrigado pela preferência!',cancelada:'Este pedido foi cancelado. Entre em contacto para mais informações.'}},
   en:{pageTitle:'Track Order',hdrTitle:'Track Order',
@@ -409,14 +412,14 @@ var i18n = {
       deliveryAddr:'Delivery: %addr% | Expected date: %date%',
       pickupMsg:'Store pickup. You will be notified when ready.',
       waMsg:'Hi! I would like to know more about my order %ref%.',
-      offlineMsg:'📡 No internet connection — trying to reconnect…',
+      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> No internet connection — trying to reconnect…',
       estados:{pendente:'Order Received',confirmada:'Confirmed',pronta:'Ready / In Preparation',entregue:'Delivered',cancelada:'Cancelled'},
       estadosDesc:{pendente:'We received your order and will review it.',confirmada:'Your order is confirmed and in the production queue.',pronta:'Your order is ready! Awaiting delivery or pickup.',entregue:'Order delivered successfully. Thank you!',cancelada:'This order was cancelled. Contact us for more information.'}}
 };
 function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
 
 /* Offline */
-function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.innerHTML=t('offlineMsg');bar.classList.toggle('show',!on);}
 window.addEventListener('offline',function(){setOnline(false);});
 window.addEventListener('online',function(){setOnline(true);});
 setOnline(navigator.onLine);
@@ -445,6 +448,22 @@ function fmtData(d){if(!d)return'—';return new Date(d).toLocaleDateString(idio
 var ESTADOS_ORDEM = ['pendente','confirmada','pronta','entregue'];
 
 function getParam(n){return new URLSearchParams(window.location.search).get(n);}
+
+async function iniciar(){
+  aplicarIdioma();
+  await carregarLoja();
+  /* Esconder spinner e mostrar search card */
+  document.getElementById('spinnerInicial').style.display='none';
+  document.getElementById('searchCard').style.display='block';
+  
+  var refParam=getParam('ref');
+  if(refParam){
+    document.getElementById('refInput').value=refParam;
+    rastrear(refParam);
+  }else{
+    document.getElementById('emptyState').classList.add('show');
+  }
+}
 
 async function carregarLoja(){
   try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
@@ -576,17 +595,7 @@ function construirStep(estado,index,total,cls,estados,estadosDesc){
   return '<div class="timeline-step"><div class="timeline-dot-col"><div class="timeline-dot '+cls+'"><i class="'+icon+'"></i></div>'+(index<total-1?'<div class="timeline-line'+(cls==='done'?' done':'')+'" ></div>':'')+'</div><div class="timeline-content"><div class="timeline-step-title '+cls+'">'+title+'</div><div class="timeline-step-desc">'+desc+'</div></div></div>';
 }
 
-aplicarIdioma();
-carregarLoja();
-
-var refParam=getParam('ref');
-if(refParam){
-  document.getElementById('refInput').value=refParam;
-  rastrear(refParam);
-}else{
-  document.getElementById('emptyState').classList.add('show');
-}
--e 
+iniciar();
 </script>
 </body>
 </html>

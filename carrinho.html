@@ -41,6 +41,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .hb,.btn-bk{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;cursor:pointer;color:var(--white);text-decoration:none}
 .hdr-nome{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1;text-align:center}
 .ctn{padding:14px;max-width:560px;margin:0 auto}
+.loading-center{display:flex;align-items:center;justify-content:center;padding:80px 20px}
 .progresso{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:18px;padding:10px 0}
 .prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative}
 .prog-step::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
@@ -105,12 +106,14 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .btn-cat-nav:hover{border-color:var(--pink);color:var(--pink)}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--pink);border-radius:14px;padding:10px 18px;font-size:.82rem;font-weight:700;color:var(--pink);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite}
+@keyframes spin-anim{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 
-<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
+<div class="offline-bar" id="offlineBar"><i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…</div>
 
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -129,7 +132,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <a href="conta.html" class="hb"><i class="fa-solid fa-user"></i></a>
 </header>
 
-<div class="ctn" id="ctn"></div>
+<div class="ctn" id="ctn"><div class="loading-center"><div class="spin"></div></div></div>
 
 <div class="nav">
   <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
@@ -156,7 +159,7 @@ var i18n={
       couponApplied:'Cupão aplicado! Desconto:',couponErr:'Erro ao validar cupão.',
       removeTitle:'Remover item?',removeSub:'Este item será removido do carrinho.',
       cancel:'Cancelar',remove:'Remover',
-      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…',
+      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…',
       summary:'Resumo do Pedido'},
   en:{title:'Cart',cart:'Cart',data:'Details',confirm:'Confirmation',
       empty:'Empty Cart',emptyMsg:'Add products to start your order',
@@ -168,13 +171,13 @@ var i18n={
       couponApplied:'Coupon applied! Discount:',couponErr:'Error validating coupon.',
       removeTitle:'Remove item?',removeSub:'This item will be removed from your cart.',
       cancel:'Cancel',remove:'Remove',
-      offlineMsg:'📡 No internet connection — trying to reconnect…',
+      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> No internet connection — trying to reconnect…',
       summary:'Order Summary'}
 };
 function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
 
 /* Offline */
-function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.innerHTML=t('offlineMsg');bar.classList.toggle('show',!on);}
 window.addEventListener('offline',function(){setOnline(false);});
 window.addEventListener('online',function(){setOnline(true);});
 setOnline(navigator.onLine);
@@ -204,7 +207,7 @@ async function carregar(){
   document.title=t('title')+' — '+(loja.nome||'Loja');
   render();
 
-  /* Auto-refresh: re-fetch loja a cada 30s (preços entrega podem mudar) */
+  /* Auto-refresh */
   setInterval(async function(){
     try{
       var r=await fetch(API+'/api/loja');
@@ -317,7 +320,6 @@ function finalizar(){
 }
 
 carregar();
-
 </script>
 </body>
 </html>

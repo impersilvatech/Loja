@@ -57,11 +57,13 @@ h1{font-family:var(--ft);font-size:1.6rem;margin-bottom:6px}
 .btn-rastrear:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .btn-cat{width:100%;padding:13px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.88rem;color:var(--muted);cursor:pointer;text-decoration:none;display:block;text-align:center;transition:all .2s}
 .btn-cat:hover{border-color:var(--pink);color:var(--pink)}
+.spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite;margin:80px auto}
+@keyframes spin-anim{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="confetti-wrap" id="confetti"></div>
-<div class="main" id="main">
+<div class="main" id="main" style="display:none">
   <div class="check-circle"><i class="fa-solid fa-check"></i></div>
   <h1 id="titleTxt">Pedido Confirmado!</h1>
   <p class="sub" id="subTxt">Obrigado pelo seu pedido.<br>Entraremos em contacto em breve.</p>
@@ -96,6 +98,7 @@ h1{font-family:var(--ft);font-size:1.6rem;margin-bottom:6px}
 
   <a href="catalogo.html" class="btn-cat"><i class="fa-solid fa-store"></i> <span id="btnCatTxt">Continuar a comprar</span></a>
 </div>
+<div class="spin" id="spinnerConfirmacao"></div>
 
 <script>
 var API='https://impersilva-d1work.3miliosilva.workers.dev';
@@ -157,7 +160,7 @@ async function carregar(){
   document.getElementById('btnWaTxt').textContent=t('whatsapp');
   document.getElementById('btnCatTxt').textContent=t('continueShopping');
 
-  /* Fallback: se não há referência, mostrar estado vazio em vez de página em branco */
+  /* Fallback: se não há referência, mostrar estado vazio */
   if(!ref||ref==='—'){
     document.getElementById('main').innerHTML=
       '<div class="empty-state">'+
@@ -168,6 +171,8 @@ async function carregar(){
           '<i class="fa-solid fa-store"></i> '+t('goShop')+
         '</a>'+
       '</div>';
+    document.getElementById('main').style.display='flex';
+    document.getElementById('spinnerConfirmacao').style.display='none';
     return;
   }
 
@@ -195,6 +200,10 @@ async function carregar(){
   /* Limpar localStorage após usar os dados */
   ['ist_ref','ist_total','ist_nome','ist_wa'].forEach(function(k){localStorage.removeItem(k);});
 
+  /* Mostrar conteúdo e esconder spinner */
+  document.getElementById('main').style.display='flex';
+  document.getElementById('spinnerConfirmacao').style.display='none';
+
   lancarConfetti();
 }
 
@@ -210,7 +219,6 @@ function lancarConfetti(){
     fragment.appendChild(d);
   }
   cont.appendChild(fragment);
-  /* Limpar DOM após todos os confettis terminarem — sem fuga de memória */
   setTimeout(function(){cont.innerHTML='';},5000);
 }
 
@@ -224,8 +232,6 @@ function copiarRef(){
     setTimeout(function(){span.textContent=t('copy');btn.style.color='';btn.style.borderColor='';},2500);
   });
 }
-
-carregar();
 
 carregar();
 </script>
