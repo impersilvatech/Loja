@@ -919,17 +919,15 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo"><i class="fa-solid fa-gear"></i> Admin Panel</div>
-    <p class="login-sub">Painel de Gestão — IMPERSILVATECH</p>
-    <div class="login-card">
-      <h2><i class="fa-solid fa-lock"></i> Acesso Restrito</h2>
-      <input class="form-input" type="password" id="loginToken" placeholder="Token de administrador" onkeydown="if(event.key==='Enter')login()"/>
-      <button class="btn-lg" onclick="login()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar</button>
-      <p class="login-error" id="loginError"></p>
-    </div>
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);flex-direction:column;gap:1rem">
+  <div style="text-align:center">
+    <div id="loginSpinner" style="width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem"></div>
+    <div id="loginMsg" style="font-size:.85rem;color:var(--muted)">A verificar acesso...</div>
+    <div id="loginError" style="font-size:.78rem;color:var(--red);margin-top:.5rem;display:none"></div>
+    <a id="loginBack" href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html" style="display:none;margin-top:1.2rem;color:var(--pink);font-size:.82rem;text-decoration:none"><i class="fa-solid fa-arrow-left"></i> Voltar ao Portal</a>
   </div>
+  <input type="hidden" id="loginToken" value="">
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
 
 <!-- APP -->
@@ -1805,28 +1803,62 @@ function showSpinner(id){$(id).innerHTML='<div class="spinner"></div>';}
    ============================================================ */
 async function login(){
   const token=$('loginToken').value.trim();
-  const error=$('loginError');
-  if(!token){error.textContent='Introduz o token.';return;}
-  error.textContent='A verificar...';
+  if(!token){
+    // No token - block access, show error
+    showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');
+    return;
+  }
+  setLoginMsg('A verificar credenciais...');
   try{
     const data=await fetch(API+'/api/loja',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
-    if(data.erro){error.textContent='Token inválido.';return;}
+    if(data.erro){
+      localStorage.removeItem('adm_tk');
+      sessionStorage.removeItem('loja_admin_tok');
+      showLoginError('Sessão expirada. Volta ao portal e tenta novamente.');
+      return;
+    }
     state.token=token;
     localStorage.setItem('adm_tk',token);
     state.loja=data;
     $('loginScreen').style.display='none';
     $('app').classList.add('active');
     await initApp();
-  }catch(e){error.textContent='Erro de ligação.';}
+  }catch(e){
+    showLoginError('Erro de ligação. Verifica a tua ligação à internet.');
+  }
+}
+
+function setLoginMsg(msg){
+  var el=$('loginMsg');
+  if(el) el.textContent=msg;
+}
+
+function showLoginError(msg){
+  var spinner=$('loginSpinner');
+  var msgEl=$('loginMsg');
+  var errEl=$('loginError');
+  var backEl=$('loginBack');
+  if(spinner) spinner.style.display='none';
+  if(msgEl) msgEl.style.display='none';
+  if(errEl){ errEl.textContent=msg; errEl.style.display='block'; }
+  if(backEl) backEl.style.display='inline-block';
 }
 
 function autoLogin(){
-  const token=localStorage.getItem('adm_tk');
-  if(token){$('loginToken').value=token;login();}
+  // Try sessionStorage first (comes from IMPERSILVA portal)
+  var token = sessionStorage.getItem('loja_admin_tok') || localStorage.getItem('adm_tk');
+  if(token){
+    $('loginToken').value=token;
+    login();
+  } else {
+    // No token anywhere - block access
+    showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');
+  }
 }
 
 function logout(){
   localStorage.removeItem('adm_tk');
+  sessionStorage.removeItem('loja_admin_tok');
   state.token='';
   $('app').classList.remove('active');
   $('loginScreen').style.display='flex';
@@ -3313,6 +3345,21 @@ autoLogin();
     localStorage.setItem('adm_loja_id',portalLojaId||'');
     sessionStorage.removeItem('admin_loja_token');
     sessionStorage.removeItem('admin_loja_id');
+  }
+})();
+</script>
+
+<script>
+// IMPERSILVA AUTH — Preenchimento automático do token
+(function(){
+  // Read token from URL (comes from admin-loja.html redirect)
+  var params = new URLSearchParams(window.location.search);
+  var tok = params.get('tok');
+  if(tok){
+    // Store and clean URL
+    sessionStorage.setItem('loja_admin_tok', tok);
+    localStorage.setItem('adm_tk', tok);
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 })();
 </script>

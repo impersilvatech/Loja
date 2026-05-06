@@ -646,13 +646,14 @@ async function submeter(){
   if(estado.acabamento)descParts.push('Estilo: '+estado.acabamento);
   if(estado.notas)descParts.push('Detalhes: '+estado.notas);
   var urg=urgencias().find(function(u){return u.id===estado.urgencia;})||{lbl:'Normal',sub:''};
+  var notasBase='[PEDIDO PERSONALIZADO]\n'+descParts.join('\n')+'\nUrgência: '+urg.lbl+' ('+urg.sub+')';
+  var notasComImg=notasBase+(estado.refImg?'\n\xA7IMG\xA7'+estado.refImg:'');
   var payload={
     nome_cliente:estado.nome,email_cliente:estado.email||'',
     telefone_cliente:estado.telefone,whatsapp_cliente:estado.telefone,
     data_entrega:estado.dataEntrega,tipo_entrega:estado.tipoEnt,
-    notas:'[PEDIDO PERSONALIZADO]\n'+descParts.join('\n')+'\nUrgência: '+urg.lbl+' ('+urg.sub+')',
+    notas:notasComImg,
     itens:[{produto_id:null,nome_produto:estado.tipoLabel||estado.tipoOutro||'Pedido Personalizado',preco_unit:0,quantidade:estado.quantidade}],
-    ref_img:estado.refImg||null,
     tipo_pedido:'personalizado'
   };
   try{

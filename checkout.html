@@ -273,6 +273,10 @@ async function submeter(){
   /* Ler ref_img no momento do submit — apanha imagens adicionadas depois de carregar a página */
   refImgDataLocal=localStorage.getItem('cf_ref_img')||null;
 
+  /* Embutir imagem nas notas com marcador — o campo ref_img não existe no schema da API */
+  var notasComImg=notas;
+  if(refImgDataLocal){notasComImg=(notasComImg?notasComImg+'\n':'')+'\xA7IMG\xA7'+refImgDataLocal;}
+
   var btn=document.querySelector('.btn-final');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> '+t('processing');
 
   var itens=c.map(function(i){return{produto_id:i.produto_id,nome_produto:i.nome,preco_unit:i.preco,quantidade:i.quantidade||1};});
@@ -285,7 +289,7 @@ async function submeter(){
       body:JSON.stringify({
         nome_cliente:nome,email_cliente:email,telefone_cliente:tel,whatsapp_cliente:wa||tel,
         data_entrega:dataEntrega,morada_entrega:morada,cidade_entrega:cidade,provincia_entrega:prov,
-        tipo_entrega:tipoEntrega,notas:notas,itens:itens,cupom:cupomValido||null,desconto:descontoValido,
+        tipo_entrega:tipoEntrega,notas:notasComImg,itens:itens,cupom:cupomValido||null,desconto:descontoValido,
         ref_img:refImgDataLocal||null
       })
     });
