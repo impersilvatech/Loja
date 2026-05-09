@@ -338,7 +338,22 @@ tbody tr:hover td{background:rgba(255,107,157,.025)}
   font-size:.54rem;text-transform:uppercase;display:inline-flex;
   align-items:center;gap:3px;white-space:nowrap;
 }
-.badge-pending{background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.3)}
+.badge-personalizado{background:rgba(61,158,255,.1);color:var(--blue);border:1px solid rgba(61,158,255,.3)}
+.notif-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(177,74,232,.07);border:1px solid rgba(177,74,232,.25);border-radius:var(--r);margin-bottom:12px;font-size:.76rem;color:var(--purple)}
+@media print{
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important;position:fixed;inset:0;background:#fff;padding:24px;font-family:Arial,sans-serif;color:#000}
+  .print-header{text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px}
+  .print-title{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+  .print-sub{font-size:.8rem;color:#555}
+  .print-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:.85rem}
+  .print-row:last-child{border-bottom:none}
+  .print-total{font-weight:700;font-size:1rem;border-top:2px solid #000!important;margin-top:8px;padding-top:8px}
+  .print-footer{text-align:center;margin-top:20px;font-size:.7rem;color:#888}
+  .print-items{margin:12px 0;border:1px solid #ddd;border-radius:4px;overflow:hidden}
+  .print-item{display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #eee;font-size:.82rem}
+}
+#printArea{display:none}
 .badge-confirmed{background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.3)}
 .badge-ready{background:rgba(177,74,232,.1);color:var(--purple);border:1px solid rgba(177,74,232,.3)}
 .badge-delivered{background:rgba(6,214,160,.08);color:var(--teal);border:1px solid rgba(6,214,160,.2)}
@@ -929,8 +944,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   <input type="hidden" id="loginToken" value="">
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
+</div>
 
 <!-- APP -->
+<div id="printArea"></div>
+
 <div id="app">
 
   <!-- TOPBAR -->
@@ -939,6 +957,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <div class="topbar-separator"></div>
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
     <div class="topbar-actions">
+      <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="refreshData()" title="Actualizar dados"><i class="fa-solid fa-rotate"></i></button>
       <button class="topbar-btn" onclick="openDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -1116,6 +1135,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <option value="">Todos estados</option>
               <option value="pendente">Pendente</option><option value="confirmada">Confirmada</option>
               <option value="pronta">Pronta</option><option value="entregue">Entregue</option><option value="cancelada">Cancelada</option>
+            </select>
+            <select class="search-select" id="ordersTipoFilter" onchange="filterOrders()">
+              <option value="">Todos tipos</option>
+              <option value="normal">Normal</option>
+              <option value="personalizado">Personalizado</option>
             </select>
           </div>
           <div class="section-card" style="padding:0;overflow:hidden">
@@ -1524,6 +1548,16 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
       </div>
 
+      <!-- SECÇÃO: FAQ -->
+      <div class="prod-section">
+        <div class="prod-section-hd"><i class="fa-solid fa-circle-question"></i> Perguntas Frequentes (FAQ)</div>
+        <div class="prod-section-bd">
+          <p style="font-size:.68rem;color:var(--muted);margin-bottom:8px">Perguntas e respostas que aparecem na página do produto.</p>
+          <div class="var-list" id="faqList"></div>
+          <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addFaq()"><i class="fa-solid fa-plus"></i> Adicionar Pergunta</button>
+        </div>
+      </div>
+
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i> Cancelar</button>
         <button class="btn btn-primary" onclick="saveProduct()"><i class="fa-solid fa-floppy-disk"></i> Guardar Produto</button>
@@ -1658,6 +1692,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('security')">
       <span class="drawer-item-icon"><i class="fa-solid fa-shield-halved"></i></span>
       <span class="drawer-item-text">Segurança</span>
+      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
+    </button>
+    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('referidos')">
+      <span class="drawer-item-icon"><i class="fa-solid fa-users-between-lines"></i></span>
+      <span class="drawer-item-text">Sistema de Referidos</span>
       <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
     </button>
 
@@ -1803,11 +1842,7 @@ function showSpinner(id){$(id).innerHTML='<div class="spinner"></div>';}
    ============================================================ */
 async function login(){
   const token=$('loginToken').value.trim();
-  if(!token){
-    // No token - block access, show error
-    showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');
-    return;
-  }
+  if(!token){showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');return;}
   setLoginMsg('A verificar credenciais...');
   try{
     const data=await fetch(API+'/api/loja',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
@@ -1823,37 +1858,23 @@ async function login(){
     $('loginScreen').style.display='none';
     $('app').classList.add('active');
     await initApp();
-  }catch(e){
-    showLoginError('Erro de ligação. Verifica a tua ligação à internet.');
-  }
+  }catch(e){showLoginError('Erro de ligação. Verifica a tua ligação à internet.');}
 }
 
-function setLoginMsg(msg){
-  var el=$('loginMsg');
-  if(el) el.textContent=msg;
-}
+function setLoginMsg(msg){var el=$('loginMsg');if(el)el.textContent=msg;}
 
 function showLoginError(msg){
-  var spinner=$('loginSpinner');
-  var msgEl=$('loginMsg');
-  var errEl=$('loginError');
-  var backEl=$('loginBack');
-  if(spinner) spinner.style.display='none';
-  if(msgEl) msgEl.style.display='none';
-  if(errEl){ errEl.textContent=msg; errEl.style.display='block'; }
-  if(backEl) backEl.style.display='inline-block';
+  var spinner=$('loginSpinner'),msgEl=$('loginMsg'),errEl=$('loginError'),backEl=$('loginBack');
+  if(spinner)spinner.style.display='none';
+  if(msgEl)msgEl.style.display='none';
+  if(errEl){errEl.textContent=msg;errEl.style.display='block';}
+  if(backEl)backEl.style.display='inline-block';
 }
 
 function autoLogin(){
-  // Try sessionStorage first (comes from IMPERSILVA portal)
-  var token = sessionStorage.getItem('loja_admin_tok') || localStorage.getItem('adm_tk');
-  if(token){
-    $('loginToken').value=token;
-    login();
-  } else {
-    // No token anywhere - block access
-    showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');
-  }
+  var token=sessionStorage.getItem('loja_admin_tok')||localStorage.getItem('adm_tk');
+  if(token){$('loginToken').value=token;login();}
+  else{showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');}
 }
 
 function logout(){
@@ -1863,7 +1884,11 @@ function logout(){
   $('app').classList.remove('active');
   $('loginScreen').style.display='flex';
   $('loginToken').value='';
-  $('loginError').textContent='';
+  var errEl=$('loginError'),spinner=$('loginSpinner'),msgEl=$('loginMsg'),backEl=$('loginBack');
+  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  if(spinner)spinner.style.display='block';
+  if(msgEl){msgEl.textContent='A verificar acesso...';msgEl.style.display='block';}
+  if(backEl)backEl.style.display='none';
   if(state.refreshInterval)clearInterval(state.refreshInterval);
 }
 
@@ -1886,6 +1911,7 @@ async function initApp(){
   renderDashboard();
   renderSettingsForm();
   navigate('dashboard');
+  initNotificacoes();
   
   if(state.refreshInterval)clearInterval(state.refreshInterval);
   state.refreshInterval=setInterval(refreshData,60000);
@@ -2159,11 +2185,15 @@ function renderRecentOrders(){
    ENCOMENDAS
    ============================================================ */
 function filterOrders(){
-  const q=$('ordersSearch').value.toLowerCase(),status=$('ordersStatusFilter').value;
+  const q=$('ordersSearch').value.toLowerCase();
+  const status=$('ordersStatusFilter').value;
+  const tipo=$('ordersTipoFilter').value;
   state.filteredOrders=state.encomendas.filter(e=>{
     const ms=!q||e.ref.toLowerCase().includes(q)||e.nome_cliente.toLowerCase().includes(q)||(e.email_cliente||'').toLowerCase().includes(q);
     const mst=!status||e.estado===status;
-    return ms&&mst;
+    const isPersonalizado=(e.notas||'').includes('[PEDIDO PERSONALIZADO]')||e.tipo_pedido==='personalizado';
+    const mtp=!tipo||(tipo==='personalizado'?isPersonalizado:!isPersonalizado);
+    return ms&&mst&&mtp;
   });
   renderOrders();
 }
@@ -2188,7 +2218,10 @@ function renderOrders(){
     
     lista.forEach(e=>{
       const wa=(e.whatsapp_cliente||e.telefone_cliente||'').replace(/\D/g,'');
-      html+='<tr id="orderRow-'+e.ref+'"><td><div class="table-name">'+esc(e.ref)+'</div><div class="table-sub">'+fmtDate(e.criado_em)+'</div></td>'+
+      const isPersonalizado=(e.notas||'').includes('[PEDIDO PERSONALIZADO]')||e.tipo_pedido==='personalizado';
+      const refCode=(e.notas||'').match(/\[REF:([^\]]+)\]/);
+      const refBadge=refCode?'<span class="badge badge-personalizado" style="font-size:.48rem"><i class="fa-solid fa-users"></i> Ref: '+esc(refCode[1])+'</span>':'';
+      html+='<tr id="orderRow-'+e.ref+'"><td><div class="table-name">'+esc(e.ref)+'</div><div class="table-sub">'+fmtDate(e.criado_em)+'</div>'+(isPersonalizado?'<span class="badge badge-personalizado" style="font-size:.48rem"><i class="fa-solid fa-pen-fancy"></i> Personalizado</span>':'')+refBadge+'</td>'+
         '<td><div style="font-size:.8rem;font-weight:600">'+esc(e.nome_cliente)+'</div><div class="table-sub">'+esc(e.email_cliente||'')+'</div>'+(wa?'<a href="https://wa.me/'+wa+'" target="_blank" style="font-size:.62rem;color:var(--teal);text-decoration:none"><i class="fa-brands fa-whatsapp"></i> WA</a>':'')+'</td>'+
         '<td><strong>'+kz(e.total,state.loja.simbolo_moeda)+'</strong></td>'+
         '<td style="font-size:.7rem;color:var(--muted)">'+(e.tipo_entrega==='entrega'?'<i class="fa-solid fa-truck"></i>':'<i class="fa-solid fa-shop"></i>')+'</td>'+
@@ -2211,6 +2244,32 @@ async function toggleOrderDetail(ref){
     const enc=state.encomendas.find(e=>e.ref===ref);
     const detail=await api('/api/encomendas/'+ref);
     const wa=(enc.whatsapp_cliente||enc.telefone_cliente||'').replace(/\D/g,'');
+
+    /* Extrair imagem embutida nas notas — deteção direta por data:image/ */
+    var notasRaw=detail.notas||enc.notas||'';
+    var refImg=detail.ref_img||detail.imagem_referencia||detail.foto_referencia||enc.ref_img||null;
+    var notasLimpas=notasRaw;
+    if(!refImg){
+      var imgStart=notasRaw.indexOf('data:image/');
+      if(imgStart>=0){
+        /* Apanhar tudo a partir de data:image/ até ao fim ou até marcador de fecho */
+        var imgRaw=notasRaw.substring(imgStart);
+        var endIdx=imgRaw.search(/\[\/REFIMG\]|\n(?!\/9j)/); /* para ao fecho ou nova linha não-base64 */
+        refImg=endIdx>=0?imgRaw.substring(0,endIdx):imgRaw;
+        /* Notas limpas = tudo antes da linha que contém data:image/ */
+        var lineStart=notasRaw.lastIndexOf('\n',imgStart-1);
+        notasLimpas=notasRaw.substring(0,lineStart>=0?lineStart:imgStart).trim();
+      }
+    }
+    var refImgHtml=refImg?
+      '<div style="margin-top:10px">'+
+        '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;letter-spacing:.5px"><i class="fa-solid fa-image"></i> Foto de Referência do Cliente</div>'+
+        '<div style="border-radius:12px;overflow:hidden;max-width:220px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.querySelector(\'img\').src,\'_blank\')">'+
+          '<img src="'+refImg+'" alt="Referência" style="width:100%;display:block;object-fit:cover" onerror="this.parentElement.style.display=\'none\'">'+
+        '</div>'+
+        '<div style="font-size:.62rem;color:var(--muted);margin-top:4px"><i class="fa-solid fa-hand-pointer"></i> Clique para ampliar</div>'+
+      '</div>':'';
+
     content.innerHTML='<div class="detail-grid">'+
       '<div class="detail-item"><label>Ref</label><span>'+esc(enc.ref)+'</span></div>'+
       '<div class="detail-item"><label>Data</label><span>'+fmtDate(enc.criado_em)+'</span></div>'+
@@ -2220,14 +2279,15 @@ async function toggleOrderDetail(ref){
       (enc.morada_entrega?'<div class="detail-item"><label>Morada</label><span>'+esc(enc.morada_entrega)+(enc.cidade_entrega?', '+esc(enc.cidade_entrega):'')+'</span></div>':'')+
       '<div class="detail-item"><label>Pagamento</label><span class="badge badge-'+(enc.pagamento_estado==='pago'?'active':'pending')+'">'+pagamentoLabel(enc.pagamento_estado)+'</span></div>'+
     '</div>'+
-    (enc.notas?'<div class="note-box"><i class="fa-solid fa-pen"></i> '+esc(enc.notas)+'</div>':'')+
-    (function(){var ri=detail.ref_img||detail.imagem_referencia||detail.foto_referencia||enc.ref_img||null;return ri?'<div style="margin-top:10px"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;letter-spacing:.5px"><i class="fa-solid fa-image"></i> Foto de Referência do Cliente</div><div style="border-radius:12px;overflow:hidden;max-width:240px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.querySelector(\'img\').src,\'_blank\')"><img src="'+ri+'" alt="Referência" style="width:100%;display:block;object-fit:cover" onerror="this.parentElement.style.display=\'none\'"></div><div style="font-size:.65rem;color:var(--muted);margin-top:4px"><i class="fa-solid fa-hand-pointer"></i> Clique para ampliar</div></div>':'';})() +
+    (notasLimpas?'<div class="note-box"><i class="fa-solid fa-pen"></i> '+esc(notasLimpas)+'</div>':'')+
+    refImgHtml+
     '<div style="margin-top:10px"><div class="detail-list">'+
       (detail.itens||[]).map(item=>'<div class="detail-list-item"><span>'+esc(item.nome_produto||'Produto')+' × '+item.quantidade+'</span><span style="font-weight:700">'+kz((item.preco_unit||0)*item.quantidade,state.loja.simbolo_moeda)+'</span></div>').join('')+
       (enc.preco_entrega>0?'<div class="detail-list-item"><span>Entrega</span><span>'+kz(enc.preco_entrega,state.loja.simbolo_moeda)+'</span></div>':'')+
       '<div class="detail-list-item" style="font-weight:700"><span>Total</span><span style="color:var(--pink)">'+kz(enc.total,state.loja.simbolo_moeda)+'</span></div>'+
     '</div></div>'+
-    (wa?'<a href="https://wa.me/'+wa+'?text='+encodeURIComponent('Olá '+enc.nome_cliente+'! Sobre a encomenda '+enc.ref+'...')+'" target="_blank" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Falar com o cliente</a>':'');
+    (wa?'<a href="https://wa.me/'+wa+'?text='+encodeURIComponent('Olá '+enc.nome_cliente+'! Sobre a encomenda '+enc.ref+'...')+'" target="_blank" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Falar com o cliente</a>':'')+
+    '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="imprimirRecibo(\''+enc.ref+'\')"><i class="fa-solid fa-print"></i> Imprimir Recibo</button>';
   }catch(e){content.innerHTML='<p style="color:var(--muted);padding:8px;font-size:.78rem">Erro ao carregar detalhes.</p>';}
 }
 
@@ -2555,6 +2615,7 @@ function openProductModal(id=null){
   state.productImages=[];
   renderProductImages();
   $('variationsList').innerHTML='';
+  $('faqList').innerHTML='';
   $('discountPreview').style.display='none';
   syncToggleCards();
   updateTagPreview();
@@ -2604,6 +2665,8 @@ async function loadProductForEdit(id){
     
     $('variationsList').innerHTML='';
     (p.variacoes||[]).forEach(v=>addVariation(v.nome,v.preco_extra,v.stock));
+    $('faqList').innerHTML='';
+    try{(JSON.parse(p.faq||'[]')).forEach(f=>addFaq(f.p,f.r));}catch(e){}
     
     syncToggleCards();
     updateTagPreview();
@@ -2665,6 +2728,7 @@ async function saveProduct(){
     if(n)vars.push({nome:n,preco_extra:parseFloat(inputs[1].value)||0,stock:parseInt(inputs[2].value)||-1});
   });
 
+  const faqs=getFaqs();
   const body={
     nome,slug,
     nome_en:$('productNameEn').value.trim()||null,
@@ -2678,7 +2742,8 @@ async function saveProduct(){
     disponivel:$('productAvailable').checked?1:0,
     stock:parseInt($('productStock').value)||-1,
     etiqueta,
-    features,specs,variacoes:vars
+    features,specs,variacoes:vars,
+    faq:faqs.length?JSON.stringify(faqs):null
   };
 
   try{
@@ -2909,6 +2974,22 @@ const settingsSections={
         '<div class="form-group"><label>Confirmar Novo Token</label><input class="form-input" type="password" id="cfgNewTok2" placeholder="Repete o token"/></div>'+
         '<button class="btn btn-danger" onclick="changeToken()"><i class="fa-solid fa-key"></i> Alterar Token</button></div>';
     }
+  },
+  referidos:{
+    icon:'fa-solid fa-users-between-lines',name:'Sistema de Referidos',
+    render:()=>{
+      const l=state.loja;
+      return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-users-between-lines"></i> Sistema de Referidos</div></div>'+
+        '<div class="info-box success"><i class="fa-solid fa-circle-info"></i> Quando um cliente partilha o link e alguém faz uma encomenda, ambos recebem um desconto configurável.</div>'+
+        '<div class="switch-row"><div><div class="switch-label">Referidos Activos</div><div class="switch-sub">Permite que clientes partilhem links de desconto</div></div><label class="switch"><input type="checkbox" id="cfgRefAtivo" '+(l.referidos_ativo?'checked':'')+'/><span class="switch-slider"></span></label></div>'+
+        '<div class="form-row" style="margin-top:12px">'+
+          '<div class="form-group"><label>Desconto para o novo cliente (Kz)</label><input class="form-input" type="number" id="cfgRefDescontoNovo" value="'+(l.referidos_desconto_novo||500)+'" min="0"/></div>'+
+          '<div class="form-group"><label>Desconto para o referidor (Kz)</label><input class="form-input" type="number" id="cfgRefDescontoRef" value="'+(l.referidos_desconto_ref||300)+'" min="0"/></div>'+
+        '</div>'+
+        '<div class="form-group"><label>Mínimo de encomenda para activar (Kz)</label><input class="form-input" type="number" id="cfgRefMin" value="'+(l.referidos_min||2000)+'" min="0"/></div>'+
+        '<div class="form-group"><label>Mensagem de partilha</label><input class="form-input" id="cfgRefMsg" value="'+esc(l.referidos_msg||'Usa o meu código e recebe desconto na tua primeira encomenda!')+'" placeholder="Mensagem quando o cliente partilha"/></div>'+
+        '</div>';
+    }
   }
 };
 
@@ -2946,6 +3027,10 @@ async function saveSettings(){
     campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null};
   }else if(section==='seo'){
     campos={meta_descricao:getVal('cfgMetaDesc')||null,palavras_chave:getVal('cfgKw')||null,politica:getVal('cfgPolitica')||null,termos:getVal('cfgTermos')||null};
+  }
+  
+  }else if(section==='referidos'){
+    campos={referidos_ativo:getChk('cfgRefAtivo')?1:0,referidos_desconto_novo:getNum('cfgRefDescontoNovo'),referidos_desconto_ref:getNum('cfgRefDescontoRef'),referidos_min:getNum('cfgRefMin'),referidos_msg:getVal('cfgRefMsg')||null};
   }
   
   if(!Object.keys(campos).length){toast('Nada para guardar','info');return;}
@@ -3334,8 +3419,167 @@ function autoSlug(input,targetId){
 /* ============================================================
    INIT
    ============================================================ */
+/* ============================================================
+   IMPRESSÃO DE RECIBO
+   ============================================================ */
+function imprimirRecibo(ref){
+  const enc=state.encomendas.find(e=>e.ref===ref);
+  if(!enc)return;
+  const l=state.loja;
+  const notasLimpas=(enc.notas||'').replace(/\[PEDIDO PERSONALIZADO\]/g,'').replace(/\[REF:[^\]]+\]/g,'').replace(/data:image\/[^\n]*/g,'').trim();
+  const itensHTML=(enc.itens||[]).map(i=>'<div class="print-item"><span>'+i.nome_produto+' × '+i.quantidade+'</span><span>'+kz((i.preco_unit||0)*i.quantidade,l.simbolo_moeda)+'</span></div>').join('');
+  const refCode=(enc.notas||'').match(/\[REF:([^\]]+)\]/);
+  document.getElementById('printArea').innerHTML=
+    '<div class="print-header">'+
+      '<div class="print-title">'+(l.nome||'Loja')+'</div>'+
+      (l.telefone?'<div class="print-sub">'+l.telefone+'</div>':'')+
+      (l.morada?'<div class="print-sub">'+l.morada+(l.cidade?', '+l.cidade:'')+'</div>':'')+
+    '</div>'+
+    '<div class="print-row"><span><strong>Referência</strong></span><span>'+enc.ref+'</span></div>'+
+    '<div class="print-row"><span>Data</span><span>'+fmtDate(enc.criado_em)+'</span></div>'+
+    '<div class="print-row"><span>Cliente</span><span>'+enc.nome_cliente+'</span></div>'+
+    (enc.telefone_cliente?'<div class="print-row"><span>Telefone</span><span>'+enc.telefone_cliente+'</span></div>':'')+
+    (enc.email_cliente?'<div class="print-row"><span>Email</span><span>'+enc.email_cliente+'</span></div>':'')+
+    '<div class="print-row"><span>Tipo entrega</span><span>'+(enc.tipo_entrega==='entrega'?'Entrega ao domicílio':'Levantamento na loja')+'</span></div>'+
+    (enc.morada_entrega?'<div class="print-row"><span>Morada</span><span>'+enc.morada_entrega+'</span></div>':'')+
+    '<div class="print-items">'+itensHTML+'</div>'+
+    (enc.preco_entrega>0?'<div class="print-row"><span>Entrega</span><span>'+kz(enc.preco_entrega,l.simbolo_moeda)+'</span></div>':'')+
+    (refCode?'<div class="print-row"><span>Ref. Código</span><span>'+refCode[1]+'</span></div>':'')+
+    '<div class="print-row print-total"><span>TOTAL</span><span>'+kz(enc.total,l.simbolo_moeda)+'</span></div>'+
+    '<div class="print-row"><span>Estado</span><span>'+estadoLabel(enc.estado)+'</span></div>'+
+    '<div class="print-row"><span>Pagamento</span><span>'+pagamentoLabel(enc.pagamento_estado)+'</span></div>'+
+    (notasLimpas?'<div style="margin-top:10px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:.78rem"><strong>Notas:</strong> '+notasLimpas+'</div>':'')+
+    '<div class="print-footer">'+new Date().toLocaleString('pt')+' · Gerado pelo sistema IMPERSILVA</div>';
+  setTimeout(function(){window.print();},100);
+}
+
+/* ============================================================
+   FAQ — PRODUTO MODAL
+   ============================================================ */
+function addFaq(pergunta,resposta){
+  const list=$('faqList');
+  const row=document.createElement('div');
+  row.className='var-row';
+  row.style.flexDirection='column';row.style.gap='6px';
+  row.innerHTML='<input placeholder="Pergunta (ex: Qual o prazo de entrega?)" value="'+esc(String(pergunta||''))+'" style="width:100%"/>'+
+    '<input placeholder="Resposta" value="'+esc(String(resposta||''))+'" style="width:100%"/>'+
+    '<button class="var-row-delete" onclick="this.parentElement.remove()" style="align-self:flex-end"><i class="fa-solid fa-xmark"></i></button>';
+  list.appendChild(row);
+}
+
+function getFaqs(){
+  const rows=document.querySelectorAll('#faqList .var-row');
+  const faqs=[];
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input');
+    const p=inputs[0]?.value.trim(),resp=inputs[1]?.value.trim();
+    if(p)faqs.push({p,r:resp||''});
+  });
+  return faqs;
+}
+
+/* ============================================================
+   NOTIFICAÇÕES PUSH (Browser Notification + SW polling)
+   ============================================================ */
+var _notifInterval=null;
+var _lastOrderCount=0;
+var _notifEnabled=false;
+
+async function toggleNotifications(){
+  if(_notifEnabled){
+    _notifEnabled=false;
+    if(_notifInterval)clearInterval(_notifInterval);
+    localStorage.setItem('adm_notif','0');
+    updateNotifBtn();
+    toast('Notificações desactivadas','info');
+    return;
+  }
+  if(!('Notification' in window)){toast('Browser não suporta notificações','error');return;}
+  const perm=await Notification.requestPermission();
+  if(perm!=='granted'){toast('Permissão negada pelo browser','error');return;}
+  _notifEnabled=true;
+  localStorage.setItem('adm_notif','1');
+  _lastOrderCount=state.encomendas.length;
+  iniciarPollingNotif();
+  updateNotifBtn();
+  toast('Notificações activadas! Serás avisado de novas encomendas.','success');
+}
+
+function updateNotifBtn(){
+  const btn=$('notifBtn'),ico=$('notifIcon');
+  if(!btn||!ico)return;
+  if(_notifEnabled){ico.className='fa-solid fa-bell';btn.style.color='var(--yellow)';}
+  else{ico.className='fa-solid fa-bell-slash';btn.style.color='';}
+}
+
+function iniciarPollingNotif(){
+  if(_notifInterval)clearInterval(_notifInterval);
+  _notifInterval=setInterval(async function(){
+    if(!_notifEnabled||!state.token)return;
+    try{
+      const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
+      if(!Array.isArray(encs))return;
+      const novas=encs.filter(e=>{
+        const jaConhecida=state.encomendas.find(x=>x.ref===e.ref);
+        return !jaConhecida&&e.estado==='pendente';
+      });
+      if(novas.length>0){
+        state.encomendas=encs;
+        state.filteredOrders=[...encs];
+        updateDashboardStats();
+        if(state.currentPanel==='dashboard')renderDashboard();
+        if(state.currentPanel==='orders')renderOrders();
+        novas.forEach(function(enc){
+          new Notification('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
+            body:enc.nome_cliente+' · '+kz(enc.total,state.loja.simbolo_moeda),
+            icon:state.loja.logo_url||'/Loja/favicon.svg',
+            tag:'enc-'+enc.ref
+          });
+        });
+      }
+    }catch(e){}
+  },45000); /* verifica a cada 45 segundos */
+}
+
+function initNotificacoes(){
+  const saved=localStorage.getItem('adm_notif');
+  if(saved==='1'&&'Notification' in window&&Notification.permission==='granted'){
+    _notifEnabled=true;
+    _lastOrderCount=state.encomendas.length;
+    iniciarPollingNotif();
+  }
+  updateNotifBtn();
+}
+
 applyTheme();
+
+/* Migração de token antigo do portal */
+(function(){
+  var portalToken=sessionStorage.getItem('admin_loja_token');
+  var portalLojaId=sessionStorage.getItem('admin_loja_id');
+  if(portalToken&&!localStorage.getItem('adm_tk')){
+    localStorage.setItem('adm_tk',portalToken);
+    localStorage.setItem('adm_loja_id',portalLojaId||'');
+    sessionStorage.removeItem('admin_loja_token');
+    sessionStorage.removeItem('admin_loja_id');
+  }
+})();
+
 autoLogin();
+</script>
+
+<script>
+/* IMPERSILVA AUTH — token via URL (?tok=) quando redireccionado do portal */
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var tok=params.get('tok');
+  if(tok){
+    sessionStorage.setItem('loja_admin_tok',tok);
+    localStorage.setItem('adm_tk',tok);
+    window.history.replaceState({},document.title,window.location.pathname);
+  }
+})();
+</script>
 
 (function(){
   const portalToken=sessionStorage.getItem('admin_loja_token');
@@ -3345,21 +3589,6 @@ autoLogin();
     localStorage.setItem('adm_loja_id',portalLojaId||'');
     sessionStorage.removeItem('admin_loja_token');
     sessionStorage.removeItem('admin_loja_id');
-  }
-})();
-</script>
-
-<script>
-// IMPERSILVA AUTH — Preenchimento automático do token
-(function(){
-  // Read token from URL (comes from admin-loja.html redirect)
-  var params = new URLSearchParams(window.location.search);
-  var tok = params.get('tok');
-  if(tok){
-    // Store and clean URL
-    sessionStorage.setItem('loja_admin_tok', tok);
-    localStorage.setItem('adm_tk', tok);
-    window.history.replaceState({}, document.title, window.location.pathname);
   }
 })();
 </script>
