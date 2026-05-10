@@ -3027,8 +3027,6 @@ async function saveSettings(){
     campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null};
   }else if(section==='seo'){
     campos={meta_descricao:getVal('cfgMetaDesc')||null,palavras_chave:getVal('cfgKw')||null,politica:getVal('cfgPolitica')||null,termos:getVal('cfgTermos')||null};
-  }
-  
   }else if(section==='referidos'){
     campos={referidos_ativo:getChk('cfgRefAtivo')?1:0,referidos_desconto_novo:getNum('cfgRefDescontoNovo'),referidos_desconto_ref:getNum('cfgRefDescontoRef'),referidos_min:getNum('cfgRefMin'),referidos_msg:getVal('cfgRefMsg')||null};
   }
