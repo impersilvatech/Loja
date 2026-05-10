@@ -3567,28 +3567,27 @@ autoLogin();
 </script>
 
 <script>
-/* IMPERSILVA AUTH — token via URL (?tok=) quando redireccionado do portal */
-(function(){
-  var params=new URLSearchParams(window.location.search);
-  var tok=params.get('tok');
-  if(tok){
-    sessionStorage.setItem('loja_admin_tok',tok);
-    localStorage.setItem('adm_tk',tok);
-    window.history.replaceState({},document.title,window.location.pathname);
-  }
-})();
-</script>
-
-(function(){
-  const portalToken=sessionStorage.getItem('admin_loja_token');
-  const portalLojaId=sessionStorage.getItem('admin_loja_id');
-  if(portalToken&&!localStorage.getItem('adm_tk')){
-    localStorage.setItem('adm_tk',portalToken);
-    localStorage.setItem('adm_loja_id',portalLojaId||'');
-    sessionStorage.removeItem('admin_loja_token');
-    sessionStorage.removeItem('admin_loja_id');
-  }
-})();
+  /* IMPERSILVA AUTH — token via URL (?tok=) e migração de sessão */
+  (function() {
+    // 1. Capturar token da URL
+    var params = new URLSearchParams(window.location.search);
+    var tok = params.get('tok');
+    if (tok) {
+      sessionStorage.setItem('loja_admin_tok', tok);
+      localStorage.setItem('adm_tk', tok);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // 2. Migrar token antigo do portal
+    var portalToken = sessionStorage.getItem('admin_loja_token');
+    var portalLojaId = sessionStorage.getItem('admin_loja_id');
+    if (portalToken && !localStorage.getItem('adm_tk')) {
+      localStorage.setItem('adm_tk', portalToken);
+      localStorage.setItem('adm_loja_id', portalLojaId || '');
+      sessionStorage.removeItem('admin_loja_token');
+      sessionStorage.removeItem('admin_loja_id');
+    }
+  })();
 </script>
 </body>
 </html>
