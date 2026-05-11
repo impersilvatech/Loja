@@ -1973,6 +1973,21 @@ async function login(){
     localStorage.setItem('adm_tk', token);
     state.loja = data;
 
+    // ⚠️ ENRIQUECER state.loja com dados GitHub do localStorage
+    //     Isto garante que os campos aparecem preenchidos sempre
+    if (!state.loja.github_token && localStorage.getItem('adm_gh')) {
+      state.loja.github_token = localStorage.getItem('adm_gh');
+    }
+    if (!state.loja.github_user && localStorage.getItem('adm_gh_user')) {
+      state.loja.github_user = localStorage.getItem('adm_gh_user');
+    }
+    if (!state.loja.github_repo && localStorage.getItem('adm_gh_repo')) {
+      state.loja.github_repo = localStorage.getItem('adm_gh_repo');
+    }
+    if (!state.loja.github_branch && localStorage.getItem('adm_gh_branch')) {
+      state.loja.github_branch = localStorage.getItem('adm_gh_branch');
+    }
+
     // Pequena pausa para mostrar o check verde
     setTimeout(function(){
       $('loginScreen').style.display = 'none';
@@ -3722,43 +3737,6 @@ applyTheme();
   sessionStorage.removeItem('gh_user');
   sessionStorage.removeItem('gh_repo');
   sessionStorage.removeItem('gh_branch');
-})();
-
-/* ============================================================
-   PREENCHER CAMPOS GITHUB AUTOMATICAMENTE
-   ============================================================ */
-(function(){
-  // Esperar a página carregar completamente
-  setTimeout(function(){
-    // Verificar se já temos dados GitHub guardados
-    var ghToken = localStorage.getItem('adm_gh');
-    var ghUser = localStorage.getItem('adm_gh_user');
-    var ghRepo = localStorage.getItem('adm_gh_repo');
-    var ghBranch = localStorage.getItem('adm_gh_branch');
-    
-    // Se tivermos dados, preencher os campos na página de configurações
-    if (ghToken || ghUser || ghRepo) {
-      // Os campos só existem quando a secção "Visual & GitHub" é aberta
-      // Vamos preenchê-los assim que forem renderizados
-      var checkInterval = setInterval(function(){
-        var tokenField = document.getElementById('cfgGhTk');
-        var userField = document.getElementById('cfgGhUser');
-        var repoField = document.getElementById('cfgGhRepo');
-        var branchField = document.getElementById('cfgGhBranch');
-        
-        if (tokenField || userField || repoField) {
-          if (ghToken && tokenField) tokenField.value = ghToken;
-          if (ghUser && userField) userField.value = ghUser;
-          if (ghRepo && repoField) repoField.value = ghRepo;
-          if (ghBranch && branchField) branchField.value = ghBranch || 'main';
-          clearInterval(checkInterval);
-        }
-      }, 300);
-      
-      // Parar de verificar após 5 segundos
-      setTimeout(function(){ clearInterval(checkInterval); }, 5000);
-    }
-  }, 1000);
 })();
 
 autoLogin();
