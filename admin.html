@@ -3724,31 +3724,45 @@ applyTheme();
   sessionStorage.removeItem('gh_branch');
 })();
 
+/* ============================================================
+   PREENCHER CAMPOS GITHUB AUTOMATICAMENTE
+   ============================================================ */
+(function(){
+  // Esperar a página carregar completamente
+  setTimeout(function(){
+    // Verificar se já temos dados GitHub guardados
+    var ghToken = localStorage.getItem('adm_gh');
+    var ghUser = localStorage.getItem('adm_gh_user');
+    var ghRepo = localStorage.getItem('adm_gh_repo');
+    var ghBranch = localStorage.getItem('adm_gh_branch');
+    
+    // Se tivermos dados, preencher os campos na página de configurações
+    if (ghToken || ghUser || ghRepo) {
+      // Os campos só existem quando a secção "Visual & GitHub" é aberta
+      // Vamos preenchê-los assim que forem renderizados
+      var checkInterval = setInterval(function(){
+        var tokenField = document.getElementById('cfgGhTk');
+        var userField = document.getElementById('cfgGhUser');
+        var repoField = document.getElementById('cfgGhRepo');
+        var branchField = document.getElementById('cfgGhBranch');
+        
+        if (tokenField || userField || repoField) {
+          if (ghToken && tokenField) tokenField.value = ghToken;
+          if (ghUser && userField) userField.value = ghUser;
+          if (ghRepo && repoField) repoField.value = ghRepo;
+          if (ghBranch && branchField) branchField.value = ghBranch || 'main';
+          clearInterval(checkInterval);
+        }
+      }, 300);
+      
+      // Parar de verificar após 5 segundos
+      setTimeout(function(){ clearInterval(checkInterval); }, 5000);
+    }
+  }, 1000);
+})();
+
 autoLogin();
 </script>
 
-<script>
-  /* IMPERSILVA AUTH — token via URL (?tok=) e migração de sessão */
-  (function() {
-    // 1. Capturar token da URL
-    var params = new URLSearchParams(window.location.search);
-    var tok = params.get('tok');
-    if (tok) {
-      sessionStorage.setItem('loja_admin_tok', tok);
-      localStorage.setItem('adm_tk', tok);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
-    // 2. Migrar token antigo do portal
-    var portalToken = sessionStorage.getItem('admin_loja_token');
-    var portalLojaId = sessionStorage.getItem('admin_loja_id');
-    if (portalToken && !localStorage.getItem('adm_tk')) {
-      localStorage.setItem('adm_tk', portalToken);
-      localStorage.setItem('adm_loja_id', portalLojaId || '');
-      sessionStorage.removeItem('admin_loja_token');
-      sessionStorage.removeItem('admin_loja_id');
-    }
-  })();
-</script>
 </body>
 </html>
