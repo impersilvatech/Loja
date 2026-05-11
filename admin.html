@@ -934,50 +934,43 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;padding:24px">
-  <div style="width:100%;max-width:360px;text-align:center">
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
+  <div style="text-align:center;max-width:380px;width:100%">
 
-    <!-- Logo (sempre visível) -->
-    <div style="font-size:2rem;font-weight:900;letter-spacing:.01em;margin-bottom:5px;font-family:'Nunito',sans-serif;line-height:1">
-      <span style="color:#ffffff">IMPERSILV</span><span style="color:#e63946">A</span>
+    <div style="font-family:var(--ft);font-size:2.2rem;font-weight:900;margin-bottom:4px;letter-spacing:.01em">
+      <span style="color:#f0f0ff">IMPERSIL</span><span style="color:#e63946">V</span><span style="color:#4a90ff">A</span>
     </div>
-    <div id="loginSubtitle" style="font-size:.54rem;letter-spacing:.26em;color:#555577;text-transform:uppercase;margin-bottom:36px">Painel de Gestão</div>
+    <div style="font-size:.65rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:28px">Painel de Gestão</div>
 
-    <!-- ESTADO LOADING: spinner + texto (sem card) -->
-    <div id="loginSpinner" style="width:48px;height:48px;border:3px solid #222233;border-top-color:#e63946;border-radius:50%;animation:spinL .75s linear infinite;margin:0 auto 22px"></div>
-    <div id="loginMsg" style="font-family:'Nunito',sans-serif;font-weight:400;font-size:.88rem;color:#888899;margin-bottom:0">A verificar acesso...</div>
-    <div id="loginSubMsg" style="font-size:.74rem;color:#555566;line-height:1.6;margin-top:4px"></div>
+    <!-- Ícone cadeado -->
+    <div id="loginIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(255,107,157,.08);border:2px solid rgba(255,107,157,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;color:var(--pink);transition:all .3s">
+      <i class="fa-solid fa-lock-open"></i>
+    </div>
 
-    <!-- CARD: só visível em erro/sucesso -->
-    <div id="loginCard" style="display:none;margin-top:32px;background:#141420;border:1px solid #252535;border-radius:20px;padding:32px 24px">
+    <!-- Spinner -->
+    <div id="loginSpinner" style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 20px"></div>
 
-      <!-- Ícone (muda conforme estado) -->
-      <div id="loginIcon" style="width:88px;height:88px;border-radius:50%;background:rgba(230,57,70,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:2.2rem;color:#e63946;transition:background .3s,color .3s">
-        <i class="fa-solid fa-lock"></i>
+    <!-- Mensagem -->
+    <div id="loginMsg" style="font-family:var(--ft);font-size:1rem;color:var(--white);margin-bottom:8px">A verificar acesso...</div>
+    <div id="loginSubMsg" style="font-size:.78rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Aguarda enquanto validamos as tuas credenciais.</div>
+
+    <!-- Erro -->
+    <div id="loginError" style="display:none;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.2);border-radius:var(--r2);padding:16px;text-align:center;margin-bottom:20px">
+      <div style="font-size:2rem;margin-bottom:10px;color:var(--red)">
+        <i class="fa-solid fa-circle-exclamation"></i>
       </div>
+      <div id="loginErrorTitle" style="font-family:var(--ft);font-size:.95rem;color:var(--red);margin-bottom:6px">Acesso Restrito</div>
+      <div id="loginErrorMsg" style="font-size:.78rem;color:var(--muted);line-height:1.5;white-space:pre-line"></div>
+    </div>
 
-      <!-- Mensagem principal no card -->
-      <div id="loginCardTitle" style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;color:#ffffff;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Acesso Restrito</div>
-
-      <!-- Erro -->
-      <div id="loginError" style="display:none">
-        <div id="loginErrorTitle" style="display:none"></div>
-        <div id="loginErrorMsg" style="font-size:.76rem;color:#7777aa;line-height:1.7;white-space:pre-line"></div>
-      </div>
-
-      <!-- Botão voltar -->
-      <div id="loginActions" style="display:none;margin-top:22px">
-        <a id="loginBack" href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html"
-           style="display:block;font-family:'Nunito',sans-serif;font-weight:800;font-size:.73rem;color:#9999bb;text-decoration:none;padding:13px 20px;background:#0d0d1a;border:1px solid #252535;border-radius:10px;letter-spacing:.08em;text-transform:uppercase">
-          ← Voltar à Área de Cliente
-        </a>
-      </div>
-
-    </div><!-- /loginCard -->
+    <!-- Botão voltar -->
+    <a id="loginBack" href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html" style="display:none;font-family:var(--ft);font-size:.78rem;color:var(--pink);text-decoration:none;padding:10px 20px;border:2px solid var(--pink);border-radius:50px;transition:all .2s">
+      <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal IMPERSILVA
+    </a>
 
   </div>
   <input type="hidden" id="loginToken" value="">
-  <style>@keyframes spinL{to{transform:rotate(360deg)}}</style>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
 </div>
 
@@ -1883,41 +1876,31 @@ function setLoginMsg(msg, subMsg){
 }
 
 function showLoginError(title, msg){
-  // Esconder loading (spinner + texto soltos)
   var spinner = $('loginSpinner');
   var msgEl = $('loginMsg');
   var subMsgEl = $('loginSubMsg');
+  var errEl = $('loginError');
+  var errTitle = $('loginErrorTitle');
+  var errMsg = $('loginErrorMsg');
+  var backEl = $('loginBack');
+  var iconEl = $('loginIcon');
+
   if(spinner) spinner.style.display = 'none';
   if(msgEl) msgEl.style.display = 'none';
   if(subMsgEl) subMsgEl.style.display = 'none';
 
-  // Ícone: cadeado vermelho
-  var iconEl = $('loginIcon');
   if(iconEl){
     iconEl.innerHTML = '<i class="fa-solid fa-lock"></i>';
-    iconEl.style.background = 'rgba(230,57,70,.15)';
-    iconEl.style.color = '#e63946';
+    iconEl.style.background = 'rgba(255,71,87,.08)';
+    iconEl.style.borderColor = 'rgba(255,71,87,.2)';
+    iconEl.style.color = 'var(--red)';
   }
 
-  // Título do card
-  var cardTitle = $('loginCardTitle');
-  if(cardTitle) cardTitle.textContent = title || 'Acesso Restrito';
-
-  // Mensagem de erro
-  var errEl = $('loginError');
-  var errMsg = $('loginErrorMsg');
   if(errEl) errEl.style.display = 'block';
+  if(errTitle) errTitle.textContent = title || 'Acesso Restrito';
   if(errMsg) errMsg.textContent = msg || 'Não foi possível verificar o teu acesso.';
+  if(backEl) backEl.style.display = 'inline-block';
 
-  // Mostrar botão voltar
-  var actionsEl = $('loginActions');
-  if(actionsEl) actionsEl.style.display = 'block';
-
-  // Mostrar card
-  var cardEl = $('loginCard');
-  if(cardEl) cardEl.style.display = 'block';
-
-  // ⚠️ GARANTIR que o app NUNCA aparece
   $('app').classList.remove('active');
   $('app').style.display = 'none';
   $('loginScreen').style.display = 'flex';
@@ -1926,21 +1909,32 @@ function showLoginError(title, msg){
 async function login(){
   const token = $('loginToken').value.trim();
 
-  // Sem token → erro
+  // ⚠️ SEM TOKEN = NÃO ABRIR
   if(!token){
     showLoginError(
       'Sem Autenticação',
       'Não foi encontrado nenhum token de acesso válido.\n\nPara aceder a este painel, faz login na Área de Cliente IMPERSILVA e clica em "Gerir Loja".'
     );
-    return;
+    return; // ⚠️ NUNCA AVANÇA
   }
 
-  // Mostrar loading (spinner solto, sem card)
-  $('loginCard').style.display = 'none';
+  // Mostrar loading
   $('loginSpinner').style.display = 'block';
   $('loginMsg').style.display = 'block';
   $('loginSubMsg').style.display = 'block';
-  setLoginMsg('A verificar acesso...', '');
+  $('loginError').style.display = 'none';
+  $('loginBack').style.display = 'none';
+  
+  // Reset ícone para cadeado aberto
+  var iconEl = $('loginIcon');
+  if(iconEl){
+    iconEl.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+    iconEl.style.background = 'rgba(255,107,157,.08)';
+    iconEl.style.borderColor = 'rgba(255,107,157,.2)';
+    iconEl.style.color = 'var(--pink)';
+  }
+  
+  setLoginMsg('A verificar acesso...', 'A validar as tuas credenciais junto do servidor.');
 
   try{
     const res = await fetch(API+'/api/loja',{
@@ -1948,46 +1942,47 @@ async function login(){
     });
     const data = await res.json();
 
-    // ⚠️ Token inválido → ERRO, NÃO ABRIR
+    // ⚠️ TOKEN INVÁLIDO = NÃO ABRIR
     if(data.erro || !res.ok){
       localStorage.removeItem('adm_tk');
       sessionStorage.removeItem('loja_admin_tok');
-      $('loginToken').value = '';
+      $('loginToken').value = ''; // Limpar token inválido
       showLoginError(
         'Acesso Negado',
         'O token de acesso é inválido ou expirou.\n\nCertifica-te de que acedes através do portal IMPERSILVA:\n1. Faz login na Área de Cliente\n2. Clica em "Gerir Loja"'
       );
-      return;
+      return; // ⚠️ NUNCA AVANÇA
     }
 
-    // ✅ Sucesso — esconder spinner, mostrar card com check verde
-    $('loginSpinner').style.display = 'none';
-    $('loginMsg').style.display = 'none';
-    $('loginSubMsg').style.display = 'none';
-
-    var iconEl = $('loginIcon');
+    // ✅ SUCESSO — mudar ícone para check verde
     if(iconEl){
       iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
-      iconEl.style.background = 'rgba(6,214,160,.18)';
-      iconEl.style.color = '#06d6a0';
+      iconEl.style.background = 'rgba(6,214,160,.06)';
+      iconEl.style.borderColor = 'rgba(6,214,160,.2)';
+      iconEl.style.color = 'var(--teal)';
     }
-    var cardTitle = $('loginCardTitle');
-    if(cardTitle) cardTitle.textContent = 'Acesso Confirmado';
+    
+    // Esconder loading
+    $('loginSpinner').style.display = 'none';
     $('loginError').style.display = 'none';
-    $('loginActions').style.display = 'none';
-    $('loginCard').style.display = 'block';
+    $('loginBack').style.display = 'none';
+    setLoginMsg('Acesso Confirmado', 'Painel carregado com sucesso!');
 
+    // Guardar token
     state.token = token;
     localStorage.setItem('adm_tk', token);
     state.loja = data;
 
+    // Pequena pausa para mostrar o check verde
     setTimeout(function(){
       $('loginScreen').style.display = 'none';
+      $('app').style.display = 'flex'; // ⚠️ SÓ AQUI O APP APARECE
       $('app').classList.add('active');
       initApp();
     }, 800);
 
   } catch(e) {
+    // ⚠️ ERRO DE REDE = NÃO ABRIR
     showLoginError(
       'Erro de Ligação',
       'Não foi possível contactar o servidor.\n\nVerifica a tua ligação à internet e tenta novamente.'
@@ -2018,14 +2013,13 @@ function logout(){
   $('app').classList.remove('active');
   $('loginScreen').style.display='flex';
   $('loginToken').value='';
-  // Repor estado loading: card oculto, spinner visível
-  $('loginCard').style.display='none';
-  $('loginError').style.display='none';
-  $('loginActions').style.display='none';
-  $('loginSpinner').style.display='block';
-  var msgEl=$('loginMsg'),subMsgEl=$('loginSubMsg');
+  var errEl=$('loginError'),spinner=$('loginSpinner'),msgEl=$('loginMsg'),subMsgEl=$('loginSubMsg'),backEl=$('loginBack'),iconEl=$('loginIcon');
+  if(errEl)errEl.style.display='none';
+  if(spinner)spinner.style.display='block';
   if(msgEl){msgEl.textContent='A verificar acesso...';msgEl.style.display='block';}
-  if(subMsgEl){subMsgEl.textContent='';subMsgEl.style.display='block';}
+  if(subMsgEl){subMsgEl.textContent='Aguarda enquanto validamos as tuas credenciais.';subMsgEl.style.display='block';}
+  if(backEl)backEl.style.display='none';
+  if(iconEl){iconEl.innerHTML='<i class="fa-solid fa-lock-open"></i>';iconEl.style.background='rgba(255,107,157,.08)';iconEl.style.borderColor='rgba(255,107,157,.2)';iconEl.style.color='var(--pink)';}
   if(state.refreshInterval)clearInterval(state.refreshInterval);
 }
 
