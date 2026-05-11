@@ -934,12 +934,41 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);flex-direction:column;gap:1rem">
-  <div style="text-align:center">
-    <div id="loginSpinner" style="width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem"></div>
-    <div id="loginMsg" style="font-size:.85rem;color:var(--muted)">A verificar acesso...</div>
-    <div id="loginError" style="font-size:.78rem;color:var(--red);margin-top:.5rem;display:none"></div>
-    <a id="loginBack" href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html" style="display:none;margin-top:1.2rem;color:var(--pink);font-size:.82rem;text-decoration:none"><i class="fa-solid fa-arrow-left"></i> Voltar ao Portal</a>
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
+  <div style="text-align:center;max-width:380px;width:100%">
+    
+    <!-- Logo IMPERSILVA -->
+    <div style="font-family:var(--ft);font-size:2.2rem;margin-bottom:4px">
+      <span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">IMPERSILVA</span>
+    </div>
+    <div style="font-size:.65rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:28px">Painel de Gestão</div>
+    
+    <!-- Ícone cadeado -->
+    <div id="loginIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(255,107,157,.08);border:2px solid rgba(255,107,157,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;color:var(--pink)">
+      <i class="fa-solid fa-lock-open"></i>
+    </div>
+    
+    <!-- Spinner -->
+    <div id="loginSpinner" style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 20px"></div>
+    
+    <!-- Mensagem -->
+    <div id="loginMsg" style="font-family:var(--ft);font-size:1rem;color:var(--white);margin-bottom:8px">A verificar acesso...</div>
+    <div id="loginSubMsg" style="font-size:.78rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Aguarda enquanto validamos as tuas credenciais.</div>
+    
+    <!-- Erro -->
+    <div id="loginError" style="display:none;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.2);border-radius:var(--r2);padding:16px;text-align:center;margin-bottom:20px">
+      <div id="loginErrorIcon" style="font-size:2rem;margin-bottom:10px;color:var(--red)">
+        <i class="fa-solid fa-circle-exclamation"></i>
+      </div>
+      <div id="loginErrorTitle" style="font-family:var(--ft);font-size:.95rem;color:var(--red);margin-bottom:6px">Acesso Restrito</div>
+      <div id="loginErrorMsg" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
+    </div>
+    
+    <!-- Botão voltar -->
+    <a id="loginBack" href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html" style="display:none;font-family:var(--ft);font-size:.78rem;color:var(--pink);text-decoration:none;padding:10px 20px;border:2px solid var(--pink);border-radius:50px;transition:all .2s">
+      <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal IMPERSILVA
+    </a>
+    
   </div>
   <input type="hidden" id="loginToken" value="">
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -1840,41 +1869,110 @@ function showSpinner(id){$(id).innerHTML='<div class="spinner"></div>';}
 /* ============================================================
    AUTH
    ============================================================ */
+function setLoginMsg(msg, subMsg){
+  var el = $('loginMsg');
+  var subEl = $('loginSubMsg');
+  if(el) el.textContent = msg;
+  if(subEl) subEl.textContent = subMsg || '';
+}
+
+function showLoginError(title, msg){
+  var spinner = $('loginSpinner');
+  var msgEl = $('loginMsg');
+  var subMsgEl = $('loginSubMsg');
+  var errEl = $('loginError');
+  var errTitle = $('loginErrorTitle');
+  var errMsg = $('loginErrorMsg');
+  var backEl = $('loginBack');
+  var iconEl = $('loginIcon');
+  
+  if(spinner) spinner.style.display = 'none';
+  if(msgEl) msgEl.style.display = 'none';
+  if(subMsgEl) subMsgEl.style.display = 'none';
+  
+  if(iconEl){
+    iconEl.innerHTML = '<i class="fa-solid fa-lock"></i>';
+    iconEl.style.background = 'rgba(255,71,87,.08)';
+    iconEl.style.borderColor = 'rgba(255,71,87,.2)';
+    iconEl.style.color = 'var(--red)';
+  }
+  
+  if(errEl) errEl.style.display = 'block';
+  if(errTitle) errTitle.textContent = title || 'Acesso Restrito';
+  if(errMsg) errMsg.textContent = msg || 'Não foi possível verificar o teu acesso.';
+  if(backEl) backEl.style.display = 'inline-block';
+}
+
 async function login(){
-  const token=$('loginToken').value.trim();
-  if(!token){showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');return;}
-  setLoginMsg('A verificar credenciais...');
+  const token = $('loginToken').value.trim();
+  if(!token){
+    showLoginError(
+      'Sem Autenticação',
+      'Não foi encontrado nenhum token de acesso. Faz login no portal IMPERSILVA e clica em "Gerir Loja" para aceder a este painel.'
+    );
+    return;
+  }
+  
+  setLoginMsg('A verificar acesso...', 'A validar as tuas credenciais junto do servidor.');
+  
   try{
-    const data=await fetch(API+'/api/loja',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
+    const data = await fetch(API+'/api/loja',{
+      headers:{'Authorization':'Bearer '+token}
+    }).then(r=>r.json());
+    
     if(data.erro){
       localStorage.removeItem('adm_tk');
       sessionStorage.removeItem('loja_admin_tok');
-      showLoginError('Sessão expirada. Volta ao portal e tenta novamente.');
+      showLoginError(
+        'Acesso Negado',
+        'O token de acesso é inválido ou expirou. Certifica-te de que acedes através do portal IMPERSILVA: 1. Faz login na Área de Cliente 2. Clica em "Gerir Loja"'
+      );
       return;
     }
-    state.token=token;
-    localStorage.setItem('adm_tk',token);
-    state.loja=data;
-    $('loginScreen').style.display='none';
-    $('app').classList.add('active');
-    await initApp();
-  }catch(e){showLoginError('Erro de ligação. Verifica a tua ligação à internet.');}
-}
-
-function setLoginMsg(msg){var el=$('loginMsg');if(el)el.textContent=msg;}
-
-function showLoginError(msg){
-  var spinner=$('loginSpinner'),msgEl=$('loginMsg'),errEl=$('loginError'),backEl=$('loginBack');
-  if(spinner)spinner.style.display='none';
-  if(msgEl)msgEl.style.display='none';
-  if(errEl){errEl.textContent=msg;errEl.style.display='block';}
-  if(backEl)backEl.style.display='inline-block';
+    
+    // Sucesso
+    var iconEl = $('loginIcon');
+    if(iconEl){
+      iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+      iconEl.style.background = 'rgba(6,214,160,.08)';
+      iconEl.style.borderColor = 'rgba(6,214,160,.2)';
+      iconEl.style.color = 'var(--teal)';
+    }
+    $('loginSpinner').style.display = 'none';
+    setLoginMsg('Acesso Confirmado', 'Painel carregado com sucesso!');
+    
+    state.token = token;
+    localStorage.setItem('adm_tk', token);
+    state.loja = data;
+    
+    setTimeout(function(){
+      $('loginScreen').style.display = 'none';
+      $('app').classList.add('active');
+      initApp();
+    }, 800);
+    
+  } catch(e) {
+    showLoginError(
+      'Erro de Ligação',
+      'Não foi possível contactar o servidor. Verifica a tua ligação à internet e tenta novamente.'
+    );
+  }
 }
 
 function autoLogin(){
-  var token=sessionStorage.getItem('loja_admin_tok')||localStorage.getItem('adm_tk');
-  if(token){$('loginToken').value=token;login();}
-  else{showLoginError('Acesso apenas disponível através do portal IMPERSILVA.');}
+  var token = sessionStorage.getItem('loja_admin_tok') || 
+              localStorage.getItem('adm_tk') ||
+              sessionStorage.getItem('admin_loja_token');
+  
+  if(token){
+    $('loginToken').value = token;
+    login();
+  } else {
+    showLoginError(
+      'Acesso Restrito',
+      'Este painel é exclusivo para administradores da loja. Para aceder, faz login na Área de Cliente IMPERSILVA e clica em "Gerir Loja".'
+    );
+  }
 }
 
 function logout(){
@@ -1884,11 +1982,13 @@ function logout(){
   $('app').classList.remove('active');
   $('loginScreen').style.display='flex';
   $('loginToken').value='';
-  var errEl=$('loginError'),spinner=$('loginSpinner'),msgEl=$('loginMsg'),backEl=$('loginBack');
-  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  var errEl=$('loginError'),spinner=$('loginSpinner'),msgEl=$('loginMsg'),subMsgEl=$('loginSubMsg'),backEl=$('loginBack'),iconEl=$('loginIcon');
+  if(errEl)errEl.style.display='none';
   if(spinner)spinner.style.display='block';
   if(msgEl){msgEl.textContent='A verificar acesso...';msgEl.style.display='block';}
+  if(subMsgEl){subMsgEl.textContent='Aguarda enquanto validamos as tuas credenciais.';subMsgEl.style.display='block';}
   if(backEl)backEl.style.display='none';
+  if(iconEl){iconEl.innerHTML='<i class="fa-solid fa-lock-open"></i>';iconEl.style.background='rgba(255,107,157,.08)';iconEl.style.borderColor='rgba(255,107,157,.2)';iconEl.style.color='var(--pink)';}
   if(state.refreshInterval)clearInterval(state.refreshInterval);
 }
 
