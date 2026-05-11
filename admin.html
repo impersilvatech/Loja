@@ -1766,8 +1766,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
    CONFIGURAÇÃO
    ============================================================ */
 const API = 'https://impersilva-d1work.3miliosilva.workers.dev';
-const GH_DEFAULT_USER = 'impersilvatech';
-const GH_DEFAULT_REPO = 'Meu-site.ao';
+const GH_DEFAULT_USER = '';
+const GH_DEFAULT_REPO = '';
 
 let state = {
   token: '',
@@ -1974,19 +1974,16 @@ async function login(){
     state.loja = data;
 
     // ⚠️ ENRIQUECER state.loja com dados GitHub do localStorage
-    //     Isto garante que os campos aparecem preenchidos sempre
-    if (!state.loja.github_token && localStorage.getItem('adm_gh')) {
-      state.loja.github_token = localStorage.getItem('adm_gh');
-    }
-    if (!state.loja.github_user && localStorage.getItem('adm_gh_user')) {
-      state.loja.github_user = localStorage.getItem('adm_gh_user');
-    }
-    if (!state.loja.github_repo && localStorage.getItem('adm_gh_repo')) {
-      state.loja.github_repo = localStorage.getItem('adm_gh_repo');
-    }
-    if (!state.loja.github_branch && localStorage.getItem('adm_gh_branch')) {
-      state.loja.github_branch = localStorage.getItem('adm_gh_branch');
-    }
+    //     Agora SEMPRE sobrescreve se houver dados no localStorage
+    var ghToken = localStorage.getItem('adm_gh');
+    var ghUser = localStorage.getItem('adm_gh_user');
+    var ghRepo = localStorage.getItem('adm_gh_repo');
+    var ghBranch = localStorage.getItem('adm_gh_branch');
+
+    if (ghToken !== null) state.loja.github_token = ghToken || '';
+    if (ghUser !== null) state.loja.github_user = ghUser || '';
+    if (ghRepo !== null) state.loja.github_repo = ghRepo || '';
+    if (ghBranch !== null) state.loja.github_branch = ghBranch || 'main';
 
     // Pequena pausa para mostrar o check verde
     setTimeout(function(){
@@ -3713,26 +3710,17 @@ applyTheme();
    CAPTURAR DADOS GITHUB DA SESSÃO
    ============================================================ */
 (function(){
-  // Carregar dados GitHub do sessionStorage (passados pelo admin-loja.html)
   var ghToken = sessionStorage.getItem('gh_token');
   var ghUser = sessionStorage.getItem('gh_user');
   var ghRepo = sessionStorage.getItem('gh_repo');
   var ghBranch = sessionStorage.getItem('gh_branch');
   
-  if (ghToken) {
-    localStorage.setItem('adm_gh', ghToken);
-  }
-  if (ghUser) {
-    localStorage.setItem('adm_gh_user', ghUser);
-  }
-  if (ghRepo) {
-    localStorage.setItem('adm_gh_repo', ghRepo);
-  }
-  if (ghBranch) {
-    localStorage.setItem('adm_gh_branch', ghBranch);
-  }
+  // Sempre guarda, mesmo que seja vazio (permite "limpar" campos)
+  if (ghToken !== null) localStorage.setItem('adm_gh', ghToken);
+  if (ghUser !== null) localStorage.setItem('adm_gh_user', ghUser);
+  if (ghRepo !== null) localStorage.setItem('adm_gh_repo', ghRepo);
+  if (ghBranch !== null) localStorage.setItem('adm_gh_branch', ghBranch);
   
-  // Limpar do sessionStorage por segurança
   sessionStorage.removeItem('gh_token');
   sessionStorage.removeItem('gh_user');
   sessionStorage.removeItem('gh_repo');
