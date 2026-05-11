@@ -3694,6 +3694,36 @@ applyTheme();
   }
 })();
 
+/* ============================================================
+   CAPTURAR DADOS GITHUB DA SESSÃO
+   ============================================================ */
+(function(){
+  // Carregar dados GitHub do sessionStorage (passados pelo admin-loja.html)
+  var ghToken = sessionStorage.getItem('gh_token');
+  var ghUser = sessionStorage.getItem('gh_user');
+  var ghRepo = sessionStorage.getItem('gh_repo');
+  var ghBranch = sessionStorage.getItem('gh_branch');
+  
+  if (ghToken) {
+    localStorage.setItem('adm_gh', ghToken);
+  }
+  if (ghUser) {
+    localStorage.setItem('adm_gh_user', ghUser);
+  }
+  if (ghRepo) {
+    localStorage.setItem('adm_gh_repo', ghRepo);
+  }
+  if (ghBranch) {
+    localStorage.setItem('adm_gh_branch', ghBranch);
+  }
+  
+  // Limpar do sessionStorage por segurança
+  sessionStorage.removeItem('gh_token');
+  sessionStorage.removeItem('gh_user');
+  sessionStorage.removeItem('gh_repo');
+  sessionStorage.removeItem('gh_branch');
+})();
+
 autoLogin();
 </script>
 
