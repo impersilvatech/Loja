@@ -38,7 +38,7 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
+html{height:100%;}body{height:100%;overflow:hidden;}
 body{
   font-family:var(--fb); background:var(--bg); color:var(--white);
   display:flex; flex-direction:column;
@@ -940,6 +940,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     OneSignal.init({
       appId: "28d74020-c173-4107-915f-ae48ef166118",
       allowLocalhostAsSecureOrigin: true,
+      serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/Loja/" },
       notifyButton: {
         enable: true,
         position: 'bottom-right',
