@@ -3693,17 +3693,16 @@ function updateNotifBtn(){
 
 function iniciarPollingNotif(){
   if(_notifInterval)clearInterval(_notifInterval);
-  _firstPoll=true;
+  // Regista imediatamente as encomendas existentes, depois inicia o polling
+  fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
+    .then(r=>r.json()).then(function(encs){
+      if(Array.isArray(encs))encs.forEach(e=>_notifiedRefs.add(e.ref));
+    }).catch(function(){});
   _notifInterval=setInterval(async function(){
     if(!_notifEnabled||!state.token)return;
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
       if(!Array.isArray(encs))return;
-      if(_firstPoll){
-        encs.forEach(e=>_notifiedRefs.add(e.ref));
-        _firstPoll=false;
-        return;
-      }
       const novas=encs.filter(e=>{
         return !_notifiedRefs.has(e.ref)&&e.estado==='pendente';
       });
@@ -3733,7 +3732,7 @@ function iniciarPollingNotif(){
         });
       }
     }catch(e){}
-  },45000); /* verifica a cada 45 segundos */
+  },20000); /* verifica a cada 20 segundos */
 }
 
 function initNotificacoes(){
