@@ -267,7 +267,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 
 <div class="nav">
   <a href="index.html" class="btn-home-nav"><i class="fa-solid fa-house"></i></a>
-  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> <span id="navCatTxt">Ver Catálogo</span></a>
+  <a href="catalogo.html" class="btn-cat-nav"><i class="fa-solid fa-store"></i> <span id="ver catálogo">Ver Catálogo</span></a>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -647,7 +647,7 @@ async function submeter(){
   if(estado.notas)descParts.push('Detalhes: '+estado.notas);
   var urg=urgencias().find(function(u){return u.id===estado.urgencia;})||{lbl:'Normal',sub:''};
   var notasBase='[PEDIDO PERSONALIZADO]\n'+descParts.join('\n')+'\nUrgência: '+urg.lbl+' ('+urg.sub+')';
-  var notasComImg=notasBase+(estado.refImg?'\n\xA7IMG\xA7'+estado.refImg:'');
+  var notasComImg=notasBase+(estado.refImg?'\n'+estado.refImg:'');
   var payload={
     nome_cliente:estado.nome,email_cliente:estado.email||'',
     telefone_cliente:estado.telefone,whatsapp_cliente:estado.telefone,

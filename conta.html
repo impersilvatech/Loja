@@ -99,17 +99,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .avatar-opt:hover{border-color:var(--pink);color:var(--pink)}
 .avatar-opt.sel{border-color:var(--pink);background:rgba(255,107,157,.1);color:var(--pink);box-shadow:0 0 0 3px rgba(255,107,157,.15)}
 
-/* Modal Instalar App */
-.modal-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
-.modal-overlay.on{opacity:1;pointer-events:all}
-.modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px 20px;max-width:360px;width:90%;text-align:center}
-.modal-box h3{font-family:var(--ft);font-size:1.1rem;margin-bottom:6px;color:var(--pink)}
-.modal-box p{font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.4}
-.modal-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
-.modal-step{display:flex;align-items:center;gap:10px;text-align:left}
-.modal-step-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,107,157,.12);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--pink);flex-shrink:0}
-.modal-step-txt{font-size:.74rem;color:var(--white);line-height:1.3}
-.modal-close{width:100%;padding:12px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.82rem;color:#fff;cursor:pointer}
+/* Tema toggle */
+.tema-toggle{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer}
+.tema-toggle i{font-size:1.2rem;color:var(--yellow)}
 
 /* Logout */
 .btn-sair{width:100%;padding:13px;background:none;border:1.5px solid rgba(255,71,87,.2);border-radius:50px;font-family:var(--ft);font-size:.88rem;color:var(--red);cursor:pointer;transition:all .2s;margin-top:6px}
@@ -123,12 +115,11 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}.toast.err{border-color:var(--red);color:var(--red)}
 .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin-anim .8s linear infinite;margin:28px auto}
 @keyframes spin-anim{to{transform:rotate(360deg)}}
-.loading-center{display:flex;align-items:center;justify-content:center;padding:60px 20px}
 </style>
 </head>
 <body>
 
-<div class="offline-bar" id="offlineBar"><i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…</div>
+<div class="offline-bar" id="offlineBar">📡 Sem ligação à internet — a tentar reconectar…</div>
 
 <header class="hdr">
   <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -136,30 +127,94 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <div style="width:34px"></div>
 </header>
 
-<div class="ctn" id="conteudoConta">
-  <div class="loading-center"><div class="spin"></div></div>
-</div>
-
-<!-- Modal Instalar App -->
-<div class="modal-overlay" id="modalInstalar" onclick="fecharModalInstalar()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <h3><i class="fa-solid fa-mobile-screen-button"></i> Instalar App</h3>
-    <p>Adicione esta loja ao ecrã principal para acesso rápido, mesmo sem internet!</p>
-    <div class="modal-steps">
-      <div class="modal-step">
-        <div class="modal-step-icon"><i class="fa-solid fa-1"></i></div>
-        <div class="modal-step-txt"><strong>Android (Chrome):</strong> Toque no menu ⋮ e selecione <em>"Adicionar ao ecrã principal"</em></div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-icon"><i class="fa-solid fa-2"></i></div>
-        <div class="modal-step-txt"><strong>iPhone (Safari):</strong> Toque no ícone <i class="fa-solid fa-arrow-up-from-bracket"></i> e selecione <em>"Adicionar ao Ecrã Principal"</em></div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-icon"><i class="fa-solid fa-3"></i></div>
-        <div class="modal-step-txt"><strong>Computador:</strong> Clique no ícone de instalar na barra de endereço</div>
+<div class="ctn">
+  <!-- BOTÃO PARA O PAINEL ADMIN (visível apenas na área de login) -->
+  <div id="authBox">
+    <div class="card" style="margin-bottom:12px; background:rgba(177,74,232,0.05); border:1px solid rgba(177,74,232,0.2); cursor:pointer;" 
+         onclick="window.open('https://impersilvatech.github.io/IMPERSILVA/verificar-site.html', '_blank')">
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; text-decoration:none; color:var(--white);">
+        <span style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#b14ae8,#ff6b9d);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0">
+          <i class="fa-solid fa-shield-halved"></i>
+        </span>
+        <span style="flex:1;font-family:var(--ft);font-size:.85rem;">Aceder ao Painel Admin</span>
+        <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--muted);font-size:.7rem"></i>
       </div>
     </div>
-    <button class="modal-close" onclick="fecharModalInstalar()">Entendi <i class="fa-solid fa-check"></i></button>
+
+    <div class="tabs">
+      <button class="tab on" id="tabL" onclick="mudarTab('login')" id="tabLogin">Entrar</button>
+      <button class="tab" id="tabR" onclick="mudarTab('registar')" id="tabReg">Criar Conta</button>
+    </div>
+    <div class="card" id="fLogin">
+      <div class="fg"><label id="lContactLbl">Email ou Telefone</label><input class="fi" type="text" id="lContact" placeholder="email@... ou +244..."></div>
+      <div class="fg"><label id="lPassLbl">Password</label><input class="fi" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn-sub" onclick="login()"><i class="fa-solid fa-arrow-right-to-bracket"></i> <span id="loginBtn">Entrar</span></button>
+      <p class="msg" id="lMsg"></p>
+    </div>
+    <div class="card hidden" id="fReg">
+      <div class="fg"><label id="rNomeLbl">Nome completo *</label><input class="fi" type="text" id="rNome" placeholder="O seu nome"></div>
+      <div class="fg"><label id="rEmailLbl">Email <span class="opc">(opcional)</span></label><input class="fi" type="email" id="rEmail" placeholder="email@..."></div>
+      <div class="fg"><label id="rTelLbl">Telefone (+244) *</label><input class="fi" type="tel" id="rTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
+      <div class="fg"><label id="rPassLbl">Password *</label><input class="fi" type="password" id="rPass" placeholder="Mínimo 6 caracteres"></div>
+      <button class="btn-sub" onclick="registar()"><i class="fa-solid fa-user-plus"></i> <span id="registerBtn">Criar Conta</span></button>
+      <p class="msg" id="rMsg"></p>
+    </div>
+  </div>
+
+  <!-- LOGADO -->
+  <div id="perfilBox" style="display:none">
+    <div class="perfil-card perfil-anim" id="perfilCard"></div>
+
+    <!-- Menu rápido -->
+    <div class="card" style="padding:8px">
+      <a href="rastrear.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background='rgba(255,107,157,.05)'" onmouseout="this.style.background='none'">
+        <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <span style="flex:1;font-family:var(--ft);font-size:.82rem" id="menuTrack">Rastrear Encomenda</span>
+        <i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>
+      </a>
+      <a href="catalogo.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background='rgba(255,107,157,.05)'" onmouseout="this.style.background='none'">
+        <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-store"></i></span>
+        <span style="flex:1;font-family:var(--ft);font-size:.82rem" id="menuCatalog">Ver Catálogo</span>
+        <i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>
+      </a>
+    </div>
+
+    <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px;padding:0 4px"><i class="fa-solid fa-clock-rotate-left"></i> <span id="myOrdersTxt">As Minhas Encomendas</span></div>
+    <div id="encLista"><div class="spin"></div></div>
+
+    <!-- Editar Perfil -->
+    <div class="card" id="editPerfilCard" style="display:none">
+      <div style="font-family:var(--ft);font-size:.9rem;color:var(--pink);margin-bottom:12px"><i class="fa-solid fa-user-pen"></i> <span id="editProfileTitle">Editar Perfil</span></div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px" id="avatarLbl">Avatar</label>
+        <div class="avatar-grid" id="avatarGrid"></div>
+      </div>
+      <div class="fg"><label id="editNomeLbl">Nome</label><input class="fi" type="text" id="editNome" placeholder="O seu nome"></div>
+      <div class="fg"><label id="editEmailLbl">Email</label><input class="fi" type="email" id="editEmail" placeholder="email@..."></div>
+      <div class="fg"><label id="editTelLbl">Telefone</label><input class="fi" type="tel" id="editTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-outline" onclick="cancelarEdicao()" style="flex:1"><i class="fa-solid fa-xmark"></i> <span id="cancelBtn">Cancelar</span></button>
+        <button class="btn-sub" onclick="salvarPerfil()" style="flex:1;padding:12px;font-size:.82rem"><i class="fa-solid fa-floppy-disk"></i> <span id="saveBtn">Guardar</span></button>
+      </div>
+      <p class="msg" id="editMsg"></p>
+    </div>
+
+    <!-- Referidos -->
+    <div class="card" id="referidosCard" style="display:none;padding:16px;background:linear-gradient(135deg,rgba(255,107,157,.07),rgba(177,74,232,.07));border:1px solid rgba(255,107,157,.2);border-radius:16px;margin-bottom:8px">
+      <div style="font-family:var(--ft);font-size:.9rem;color:var(--pink);margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="fa-solid fa-users-between-lines"></i> <span id="refTitle">Programa de Referidos</span></div>
+      <p id="refDesc" style="font-size:.75rem;color:var(--muted);margin-bottom:12px;line-height:1.5">Partilha o teu link e tu e o teu amigo recebem desconto.</p>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <div id="refLink" style="flex:1;font-size:.7rem;color:var(--muted);word-break:break-all;font-family:monospace"></div>
+        <button onclick="copiarRefLink()" style="flex-shrink:0;padding:6px 12px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.68rem;color:#fff;cursor:pointer"><i class="fa-solid fa-copy"></i> <span id="copyRefBtn">Copiar</span></button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="partilharRef()" style="flex:1;padding:10px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.75rem;color:#fff;cursor:pointer"><i class="fa-brands fa-whatsapp"></i> <span id="shareWhatsapp">Partilhar no WhatsApp</span></button>
+      </div>
+      <div id="refStats" style="margin-top:10px;font-size:.7rem;color:var(--muted);text-align:center"></div>
+    </div>
+
+    <button class="btn-outline" onclick="abrirEdicao()"><i class="fa-solid fa-user-pen"></i> <span id="editProfileBtn">Editar Perfil</span></button>
+    <button class="btn-sair" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i> <span id="logoutBtn">Terminar Sessão</span></button>
   </div>
 </div>
 
@@ -175,6 +230,7 @@ var idioma = localStorage.getItem('idioma') || 'pt';
 
 var i18n = {
   pt:{pageTitle:'A Minha Conta',hdrNome:'A Minha Conta',
+      trackTitle:'Rastrear Encomenda',trackDesc:'Acompanhe o estado do seu pedido em tempo real.',trackBtn:'Ver Estado da Encomenda',
       tabLogin:'Entrar',tabReg:'Criar Conta',
       lContactLbl:'Email ou Telefone',lPassLbl:'Password',loginBtn:'Entrar',
       rNomeLbl:'Nome completo *',rEmailLbl:'Email',rPassLbl:'Password *',rTelLbl:'Telefone (+244) *',registerBtn:'Criar Conta',
@@ -190,10 +246,13 @@ var i18n = {
       reordered:'Produtos adicionados ao carrinho!',reorderErr:'Erro ao reencomendar.',
       noOrders:'Ainda não tens encomendas.',loadErr:'Erro ao carregar encomendas.',
       noItems:'Encomenda sem itens.',
+      refTitle:'Programa de Referidos',refDesc:'Partilha o teu link e tu e o teu amigo recebem desconto na próxima encomenda.',
+      copyRefBtn:'Copiar',copied:'Copiado!',shareWhatsapp:'Partilhar no WhatsApp',
       statusLabels:{pendente:'Pendente',confirmada:'Confirmada',pronta:'Pronta',entregue:'Entregue',cancelada:'Cancelada'},
       seeOrder:'Ver',reorder:'Reencomendar',
-      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> Sem ligação à internet — a tentar reconectar…'},
+      offlineMsg:'📡 Sem ligação à internet — a tentar reconectar…'},
   en:{pageTitle:'My Account',hdrNome:'My Account',
+      trackTitle:'Track Order',trackDesc:'Track your order status in real time.',trackBtn:'Check Order Status',
       tabLogin:'Sign In',tabReg:'Create Account',
       lContactLbl:'Email or Phone',lPassLbl:'Password',loginBtn:'Sign In',
       rNomeLbl:'Full name *',rEmailLbl:'Email',rPassLbl:'Password *',rTelLbl:'Phone (+244) *',registerBtn:'Create Account',
@@ -209,17 +268,49 @@ var i18n = {
       reordered:'Products added to cart!',reorderErr:'Error re-ordering.',
       noOrders:'You have no orders yet.',loadErr:'Error loading orders.',
       noItems:'Order has no items.',
+      refTitle:'Referral Program',refDesc:'Share your link and both you and your friend get a discount on your next order.',
+      copyRefBtn:'Copy',copied:'Copied!',shareWhatsapp:'Share on WhatsApp',
       statusLabels:{pendente:'Pending',confirmada:'Confirmed',pronta:'Ready',entregue:'Delivered',cancelada:'Cancelled'},
       seeOrder:'View',reorder:'Re-order',
-      offlineMsg:'<i class="fa-solid fa-wifi-slash"></i> No internet connection — trying to reconnect…'}
+      offlineMsg:'📡 No internet connection — trying to reconnect…'}
 };
 function t(k){return(i18n[idioma]||i18n.pt)[k]||(i18n.pt)[k]||k;}
 
 /* Offline */
-function setOnline(on){var bar=document.getElementById('offlineBar');bar.innerHTML=t('offlineMsg');bar.classList.toggle('show',!on);}
+function setOnline(on){var bar=document.getElementById('offlineBar');bar.textContent=t('offlineMsg');bar.classList.toggle('show',!on);}
 window.addEventListener('offline',function(){setOnline(false);});
 window.addEventListener('online',function(){setOnline(true);});
 setOnline(navigator.onLine);
+
+/* Apply i18n to static UI */
+function aplicarIdioma(){
+  document.title=t('pageTitle');
+  document.getElementById('hdrNome').textContent=t('hdrNome');
+  document.getElementById('tabL').textContent=t('tabLogin');
+  document.getElementById('tabR').textContent=t('tabReg');
+  document.getElementById('lContactLbl').textContent=t('lContactLbl');
+  document.getElementById('lPassLbl').textContent=t('lPassLbl');
+  document.getElementById('loginBtn').textContent=t('loginBtn');
+  document.getElementById('rNomeLbl').textContent=t('rNomeLbl');
+  document.getElementById('rPassLbl').textContent=t('rPassLbl');
+  document.getElementById('rTelLbl').textContent=t('rTelLbl');
+  document.getElementById('registerBtn').textContent=t('registerBtn');
+  document.getElementById('menuTrack').textContent=t('menuTrack');
+  document.getElementById('menuCatalog').textContent=t('menuCatalog');
+  document.getElementById('myOrdersTxt').textContent=t('myOrdersTxt');
+  document.getElementById('editProfileTitle').textContent=t('editProfileTitle');
+  document.getElementById('avatarLbl').textContent=t('avatarLbl');
+  document.getElementById('editNomeLbl').textContent=t('editNomeLbl');
+  document.getElementById('editEmailLbl').textContent=t('editEmailLbl');
+  document.getElementById('editTelLbl').textContent=t('editTelLbl');
+  document.getElementById('cancelBtn').textContent=t('cancelBtn');
+  document.getElementById('saveBtn').textContent=t('saveBtn');
+  document.getElementById('editProfileBtn').textContent=t('editProfileBtn');
+  document.getElementById('logoutBtn').textContent=t('logoutBtn');
+  document.getElementById('btnCatTxt').textContent=t('btnCat');
+  var rEmailLbl=document.getElementById('rEmailLbl');
+  if(rEmailLbl)rEmailLbl.innerHTML=t('rEmailLbl')+' <span class="opc">('+( idioma==='en'?'optional':'opcional')+')</span>';
+}
 
 var avatares = [
   'fa-solid fa-crown','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-gem',
@@ -285,47 +376,12 @@ async function registar(){
 }
 
 function mostrarPerfil(cli){
-  document.getElementById('conteudoConta').innerHTML=
-    '<div id="perfilBox">'+
-      '<div class="perfil-card perfil-anim" id="perfilCard"></div>'+
-      '<div class="card" style="padding:8px">'+
-        '<a href="rastrear.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background=\'rgba(255,107,157,.05)\'" onmouseout="this.style.background=\'none\'">'+
-          '<span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-magnifying-glass"></i></span>'+
-          '<span style="flex:1;font-family:var(--ft);font-size:.82rem">'+t('menuTrack')+'</span>'+
-          '<i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>'+
-        '</a>'+
-        '<a href="catalogo.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s" onmouseover="this.style.background=\'rgba(255,107,157,.05)\'" onmouseout="this.style.background=\'none\'">'+
-          '<span style="width:34px;height:34px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;color:var(--pink)"><i class="fa-solid fa-store"></i></span>'+
-          '<span style="flex:1;font-family:var(--ft);font-size:.82rem">'+t('menuCatalog')+'</span>'+
-          '<i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>'+
-        '</a>'+
-        '<div onclick="abrirModalInstalar()" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--white);transition:all .2s;cursor:pointer" onmouseover="this.style.background=\'rgba(255,107,157,.05)\'" onmouseout="this.style.background=\'none\'">'+
-          '<span style="width:34px;height:34px;border-radius:10px;background:rgba(6,214,160,.12);display:flex;align-items:center;justify-content:center;color:var(--teal)"><i class="fa-solid fa-download"></i></span>'+
-          '<span style="flex:1;font-family:var(--ft);font-size:.82rem;color:var(--teal)"><i class="fa-solid fa-mobile-screen-button"></i> Instalar App</span>'+
-          '<i class="fa-solid fa-chevron-right" style="color:var(--muted);font-size:.7rem"></i>'+
-        '</div>'+
-      '</div>'+
-      '<div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px;padding:0 4px"><i class="fa-solid fa-clock-rotate-left"></i> '+t('myOrdersTxt')+'</div>'+
-      '<div id="encLista"><div class="spin"></div></div>'+
-      '<div class="card" id="editPerfilCard" style="display:none">'+
-        '<div style="font-family:var(--ft);font-size:.9rem;color:var(--pink);margin-bottom:12px"><i class="fa-solid fa-user-pen"></i> '+t('editProfileTitle')+'</div>'+
-        '<div style="margin-bottom:12px"><label style="font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px">'+t('avatarLbl')+'</label><div class="avatar-grid" id="avatarGrid"></div></div>'+
-        '<div class="fg"><label>'+t('editNomeLbl')+'</label><input class="fi" type="text" id="editNome" placeholder="O seu nome"></div>'+
-        '<div class="fg"><label>'+t('editEmailLbl')+'</label><input class="fi" type="email" id="editEmail" placeholder="email@..."></div>'+
-        '<div class="fg"><label>'+t('editTelLbl')+'</label><input class="fi" type="tel" id="editTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>'+
-        '<div style="display:flex;gap:8px">'+
-          '<button class="btn-outline" onclick="cancelarEdicao()" style="flex:1"><i class="fa-solid fa-xmark"></i> '+t('cancelBtn')+'</button>'+
-          '<button class="btn-sub" onclick="salvarPerfil()" style="flex:1;padding:12px;font-size:.82rem"><i class="fa-solid fa-floppy-disk"></i> '+t('saveBtn')+'</button>'+
-        '</div>'+
-        '<p class="msg" id="editMsg"></p>'+
-      '</div>'+
-      '<button class="btn-outline" onclick="abrirEdicao()"><i class="fa-solid fa-user-pen"></i> '+t('editProfileBtn')+'</button>'+
-      '<button class="btn-sair" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i> '+t('logoutBtn')+'</button>'+
-    '</div>';
-  
+  document.getElementById('authBox').style.display='none';
+  document.getElementById('perfilBox').style.display='block';
   atualizarPerfilCard(cli);
   carregarEncs();
   setInterval(carregarEncs,30000);
+  mostrarReferidos();
 }
 
 function atualizarPerfilCard(cli){
@@ -437,42 +493,96 @@ function logout(){
   location.reload();
 }
 
-function abrirModalInstalar(){document.getElementById('modalInstalar').classList.add('on');}
-function fecharModalInstalar(){document.getElementById('modalInstalar').classList.remove('on');}
+aplicarIdioma();
+var cli=getCliente();if(cli)mostrarPerfil(cli);
 
-/* Init — mostra spinner e depois decide o que mostrar */
-document.addEventListener('DOMContentLoaded',async function(){
-  document.title=t('pageTitle');
-  document.getElementById('hdrNome').textContent=t('hdrNome');
-  document.getElementById('btnCatTxt').textContent=t('btnCat');
-  
-  var cli=getCliente();
-  if(cli){
-    mostrarPerfil(cli);
-  }else{
-    document.getElementById('conteudoConta').innerHTML=
-      '<div id="authBox">'+
-        '<div class="tabs">'+
-          '<button class="tab on" id="tabL" onclick="mudarTab(\'login\')">'+t('tabLogin')+'</button>'+
-          '<button class="tab" id="tabR" onclick="mudarTab(\'registar\')">'+t('tabReg')+'</button>'+
-        '</div>'+
-        '<div class="card" id="fLogin">'+
-          '<div class="fg"><label>'+t('lContactLbl')+'</label><input class="fi" type="text" id="lContact" placeholder="email@... ou +244..."></div>'+
-          '<div class="fg"><label>'+t('lPassLbl')+'</label><input class="fi" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')login()"></div>'+
-          '<button class="btn-sub" onclick="login()"><i class="fa-solid fa-arrow-right-to-bracket"></i> '+t('loginBtn')+'</button>'+
-          '<p class="msg" id="lMsg"></p>'+
-        '</div>'+
-        '<div class="card hidden" id="fReg">'+
-          '<div class="fg"><label>'+t('rNomeLbl')+'</label><input class="fi" type="text" id="rNome" placeholder="O seu nome"></div>'+
-          '<div class="fg"><label>'+t('rEmailLbl')+' <span class="opc">('+(idioma==='en'?'optional':'opcional')+')</span></label><input class="fi" type="email" id="rEmail" placeholder="email@..."></div>'+
-          '<div class="fg"><label>'+t('rTelLbl')+'</label><input class="fi" type="tel" id="rTel" placeholder="+244 9XX XXX XXX" oninput="formatarTel(this)"></div>'+
-          '<div class="fg"><label>'+t('rPassLbl')+'</label><input class="fi" type="password" id="rPass" placeholder="Mínimo 6 caracteres"></div>'+
-          '<button class="btn-sub" onclick="registar()"><i class="fa-solid fa-user-plus"></i> '+t('registerBtn')+'</button>'+
-          '<p class="msg" id="rMsg"></p>'+
-        '</div>'+
-      '</div>';
-  }
-});
+var avatares = [
+  'fa-solid fa-crown','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-gem',
+  'fa-solid fa-bolt','fa-solid fa-fire','fa-solid fa-sun','fa-solid fa-moon',
+  'fa-solid fa-ghost','fa-solid fa-dragon','fa-solid fa-fish','fa-solid fa-cat',
+  'fa-solid fa-dog','fa-solid fa-kiwi-bird','fa-solid fa-otter','fa-solid fa-hippo',
+  'fa-solid fa-feather','fa-solid fa-leaf','fa-solid fa-seedling','fa-solid fa-tree'
+];
+
+function getParam(n){ return new URLSearchParams(window.location.search).get(n); }
+function toast(msg,t){ var el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(t||'ok');setTimeout(function(){el.classList.remove('show');},3000); }
+function kz(v){ if(v==null)return'—';return'Kz '+Number(v).toLocaleString('pt'); }
+function fmtData(d){ if(!d)return'';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric'}); }
+function formatarTel(inp){ var v=inp.value.replace(/[^0-9+]/g,'');if(v.startsWith('+244')){var r=v.slice(4);if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.startsWith('9')){var r=v.replace(/[^0-9]/g,'');if(r.length>9)r=r.slice(0,9);inp.value='+244 '+r;}else if(v.length>0){inp.value='+244 ';} }
+function validarTel(t){ return /^(\+244)?\s?9\d{8}$/.test(t.replace(/\s+/g,'')); }
+function validarEmail(e){ return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function getCliente(){ try{return JSON.parse(localStorage.getItem('cf_cliente')||'null');}catch(e){return null;} }
+function getClienteTel(){ return localStorage.getItem('cf_cliente_tel') || ''; }
+function getAvatar(){ return localStorage.getItem('cf_avatar') || avatares[0]; }
+
+function irRastrear(){
+  var ref=document.getElementById('rastrearRef').value.trim().toUpperCase();
+  if(!ref){toast('Insira uma referência','err');return;}
+  if(!/^ENC-\d{8,}$/.test(ref)){toast('Formato inválido: ENC-XXXXXXXXXXXXXXX','err');return;}
+  window.location.href='rastrear.html?ref='+encodeURIComponent(ref);
+}
+
+function mudarTab(t){
+  document.getElementById('tabL').classList.toggle('on',t==='login');
+  document.getElementById('tabR').classList.toggle('on',t==='registar');
+  document.getElementById('fLogin').classList.toggle('hidden',t!=='login');
+  document.getElementById('fReg').classList.toggle('hidden',t!=='registar');
+}
+
+aplicarIdioma();
+var cli=getCliente();if(cli)mostrarPerfil(cli);
+
+/* Capturar ref code da URL */
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var ref=params.get('ref');
+  if(ref){localStorage.setItem('cf_ref_code',ref);window.history.replaceState({},document.title,window.location.pathname);}
+})();
+
+function gerarRefCode(){
+  var tel=localStorage.getItem('cf_cliente_tel')||'';
+  var base=tel.replace(/\D/g,'').slice(-6);
+  return base?'REF-'+base:null;
+}
+
+async function mostrarReferidos(){
+  var card=document.getElementById('referidosCard');
+  if(!card)return;
+  try{
+    var r=await fetch(API+'/api/loja');var lojaData=await r.json();
+    if(!lojaData.referidos_ativo){card.style.display='none';return;}
+    card.style.display='block';
+    var descontoNovo=lojaData.referidos_desconto_novo||500;
+    var descontoRef=lojaData.referidos_desconto_ref||300;
+    document.getElementById('refTitle').textContent=t('refTitle');
+    document.getElementById('refDesc').textContent=(lojaData.referidos_msg||t('refDesc'))+' (+Kz '+descontoNovo+' novo cliente, +Kz '+descontoRef+' para ti)';
+    document.getElementById('copyRefBtn').textContent=t('copyRefBtn');
+    document.getElementById('shareWhatsapp').textContent=t('shareWhatsapp');
+    var code=gerarRefCode();
+    if(!code){card.style.display='none';return;}
+    var baseUrl=window.location.href.replace('conta.html','');
+    var link=baseUrl+'index.html?ref='+code;
+    document.getElementById('refLink').textContent=link;
+    var uses=localStorage.getItem('cf_ref_uses')||'0';
+    document.getElementById('refStats').textContent=idioma==='en'?uses+' friends referred':uses+' amigos referidos';
+  }catch(e){card.style.display='none';}
+}
+
+function copiarRefLink(){
+  var link=document.getElementById('refLink').textContent;
+  navigator.clipboard.writeText(link).then(function(){
+    var btn=document.getElementById('copyRefBtn');
+    btn.textContent=t('copied');
+    setTimeout(function(){btn.textContent=t('copyRefBtn');},2500);
+  });
+}
+
+function partilharRef(){
+  var link=document.getElementById('refLink').textContent;
+  var msg=t('refDesc')+'\n\n'+link;
+  if(navigator.share){navigator.share({title:'Desconto especial!',text:msg,url:link});}
+  else{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
+}
 </script>
 </body>
 </html>

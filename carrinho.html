@@ -203,7 +203,7 @@ document.getElementById('confirmOkBtn').onclick=function(){if(_confirmCallback)_
 document.getElementById('confirmOverlay').addEventListener('click',function(e){if(e.target===this)fecharConfirm();});
 
 async function carregar(){
-  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+  try{var r=await fetch(API + '/api/loja/publica');loja=await r.json();}catch(e){loja={};}
   document.title=t('title')+' — '+(loja.nome||'Loja');
   render();
 

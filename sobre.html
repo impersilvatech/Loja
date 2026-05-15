@@ -140,9 +140,8 @@ function abrirLightbox(url){document.getElementById('lightboxImg').src=url;docum
 
 async function carregar(){
   try{
-    var r=await fetch(API+'/api/loja');
+    var r=await fetch(API + '/api/loja/publica');
     var l=await r.json();
-
     var nome=idioma==='en'&&l.nome_en?l.nome_en:l.nome;
     var slogan=idioma==='en'&&l.slogan_en?l.slogan_en:l.slogan;
     var descricao=idioma==='en'&&l.descricao_en?l.descricao_en:l.descricao;

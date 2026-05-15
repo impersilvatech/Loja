@@ -24,7 +24,7 @@
 [data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
 [data-theme="light"] .nav{background:rgba(255,245,248,.97)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:70px}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:56px}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
 .hb,.btn-bk{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;cursor:pointer;color:var(--white);text-decoration:none}
 .hdr-nome{font-family:var(--ft);font-size:.85rem;color:var(--muted);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -107,12 +107,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .aval-form .btn-enviar:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
 .aval-msg{font-size:.7rem;text-align:center;margin-top:6px;min-height:16px}
 .aval-msg.ok{color:var(--teal)}.aval-msg.err{color:var(--red)}
-.relacionados{padding:0 16px;margin-bottom:20px}
+.relacionados{padding:0 16px;margin-bottom:6px}
 .relacionados-titulo{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
-.relacionados-scroll{display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:4px}
-.relacionados-scroll::-webkit-scrollbar{display:none}
-.relacionado-card{min-width:140px;max-width:140px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:all .2s;flex-shrink:0}
-.relacionado-card:hover{transform:translateY(-2px);border-color:rgba(255,107,157,.3)}
+/* overflow:hidden no wrapper — o scroll é feito via transform, não scrollLeft */
+.relacionados-scroll-wrap{overflow:hidden;width:100%}
+.relacionados-scroll{display:flex;gap:10px;padding-bottom:4px;will-change:transform;width:max-content}
+.relacionado-card{min-width:140px;max-width:140px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:border-color .2s;flex-shrink:0}
+.relacionado-card:hover{border-color:rgba(255,107,157,.3)}
 .relacionado-img{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
 .relacionado-img img{width:100%;height:100%;object-fit:cover}
 .relacionado-body{padding:8px 10px 10px}
@@ -165,6 +166,8 @@ var estrelasSelecionadas=0;
 var todosProdutos=[];
 var refImgData=null;
 var idioma=localStorage.getItem('idioma')||'pt';
+/* handle do loop de scroll — guardado para cancelar se a página mudar */
+var _scrollLoopId=null;
 
 var i18n={
   pt:{addToCart:'Adicionar ao Carrinho',viewCart:'Ver Carrinho',requestQuote:'Pedir Orçamento',
@@ -234,7 +237,6 @@ async function mostrarRefImg(input){
   var file=input.files[0];
   if(!file)return;
   if(file.size>10*1024*1024){toast(t('imgTooBig'),'err');return;}
-  /* Comprimir imagem via canvas antes de armazenar */
   var base64Compressed=await comprimirImagem(file,900,0.72);
   refImgData=base64Compressed;
   localStorage.setItem('cf_ref_img',base64Compressed);
@@ -267,7 +269,6 @@ function comprimirImagem(file,maxPx,qualidade){
 async function carregar(){
   var id=getParam('id');if(!id){window.location.href='/Loja/catalogo.html';return;}
   try{
-    /* Fetches em paralelo: produto + loja + todos os produtos */
     var [rP,rL,rTodos]=await Promise.all([
       fetch(API+'/api/produtos/'+id),
       fetch(API+'/api/loja'),
@@ -321,6 +322,14 @@ async function carregar(){
   var origHtml=pct>0?'<div class="pd-orig-row"><span class="pd-orig">'+kz(produto.preco_original)+'</span><span class="pd-pct">-'+pct+'%</span></div>':'';
   var specs=[];try{specs=JSON.parse(produto.specs||'[]');}catch(e){}
   var descricao=idioma==='en'&&produto.descricao_en?produto.descricao_en:produto.descricao;
+  var faqs=[];try{faqs=JSON.parse(produto.faq||'[]');}catch(e){}
+  var faqHtml=faqs.length?'<div style="padding:14px 16px"><div class="sec-t" style="margin-bottom:10px"><i class="fa-solid fa-circle-question"></i> '+(idioma==='en'?'FAQ':'Perguntas Frequentes')+'</div>'+
+    faqs.map(function(f,i){return'<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:7px;overflow:hidden">'+
+      '<div onclick="toggleFaq('+i+')" style="padding:11px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:.84rem;font-weight:700">'+
+        '<span>'+f.p+'</span><i class="fa-solid fa-chevron-down" id="faqico'+i+'" style="font-size:.7rem;color:var(--muted);transition:transform .25s"></i>'+
+      '</div>'+
+      '<div id="faqbody'+i+'" style="display:none;padding:0 14px 12px;font-size:.8rem;color:var(--muted);line-height:1.6">'+f.r+'</div>'+
+    '</div>';}).join('')+'</div>':'';
 
   var conteudoHtml=carrosselHtml+
     '<div class="pd"><div class="pd-nome">'+nomeProd+'</div><div class="'+precoCls+'">'+precoHtml+'</div>'+origHtml+(descricao?'<p class="pd-desc">'+descricao+'</p>':'')+featsHtml+'</div>'+
@@ -334,6 +343,7 @@ async function carregar(){
       '<img id="refImgPreview" class="ref-upload-preview" src="" alt=""/>'+
     '</div></div>'+
     '<div class="avaliacoes" id="avaliacoesContainer"><div class="spin" style="width:20px;height:20px;margin:16px auto"></div></div>'+
+    faqHtml+
     '<div class="relacionados" id="relacionadosContainer"></div>';
 
   document.getElementById('conteudo').innerHTML=conteudoHtml;
@@ -353,7 +363,7 @@ async function carregar(){
     };
   }
 
-  /* Auto-refresh a cada 30s: produto (preço/disponibilidade) + avaliações */
+  /* ─── REFRESH AUTOMÁTICO — preserva sempre o formulário ─── */
   setInterval(async function(){
     try{
       var rAtt=await fetch(API+'/api/produtos/'+id);
@@ -364,7 +374,9 @@ async function carregar(){
         produto=prodAtual;
         if(precoMudou||dispMudou)atualizarBtnAdd();
       }
-      carregarAvaliacoes();
+      /* Avaliações: sempre atualiza, mas o estado do form é preservado
+         dentro de carregarAvaliacoes() antes de reescrever o HTML */
+      await carregarAvaliacoes();
     }catch(e){}
   },30000);
 }
@@ -399,11 +411,35 @@ function addCarrinho(){
 
 function removerDoCarrinho(){var cart=getCarrinho();var idx=cart.findIndex(function(i){return i.produto_id===produto.id;});if(idx>=0){cart.splice(idx,1);salvarCarrinho(cart);toast(t('removed'),'err');}qty=0;document.getElementById('qtyVal').textContent='0';document.getElementById('totalQty').textContent='Kz 0';atualizarBtnAdd();}
 function toggleWish(){var wl=getWishlist();var idx=wl.indexOf(String(produto.id));var adding=idx<0;if(adding){wl.push(String(produto.id));}else{wl.splice(idx,1);}localStorage.setItem('cf_wl',JSON.stringify(wl));atualizarWishBtn();toast(adding?t('wlAdded'):t('wlRemoved'));}
-function partilhar(){if(navigator.share){navigator.share({title:produto.nome,text:produto.descricao||'',url:window.location.href});}else{navigator.clipboard.writeText(window.location.href);toast(t('linkCopied'));}}
+function partilhar(){
+  var nomeProd=idioma==='en'&&produto.nome_en?produto.nome_en:produto.nome;
+  var descricao=idioma==='en'&&produto.descricao_en?produto.descricao_en:produto.descricao;
+  /* URL de partilha passa pelo Worker para que os crawlers (WhatsApp, FB…)
+     vejam as OG tags com imagem e preço. Humanos são redirecionados para cá. */
+  var shareUrl=API+'/share?id='+produto.id;
+  var precoTxt=produto.preco_base>0?(' — '+kz(produto.preco_base)):'';
+  var texto=nomeProd+precoTxt+(descricao?'\n'+descricao.slice(0,120)+(descricao.length>120?'…':''):'');
+  if(navigator.share){
+    navigator.share({title:nomeProd,text:texto,url:shareUrl});
+  }else{
+    navigator.clipboard.writeText(shareUrl);
+    toast(t('linkCopied'));
+  }
+}
 
+/* ─────────────────────────────────────────────────────────────
+   AVALIAÇÕES — guarda e restaura o estado do formulário para
+   que o refresh automático não apague o que o cliente já escreveu
+   ───────────────────────────────────────────────────────────── */
 async function carregarAvaliacoes(){
   var container=document.getElementById('avaliacoesContainer');
   if(!container)return;
+
+  /* 1. Guardar estado actual do formulário (pode estar vazio na 1ª vez) */
+  var savedNome       = document.getElementById('avalNome')?.value        || '';
+  var savedComentario = document.getElementById('avalComentario')?.value  || '';
+  var savedEstrelas   = estrelasSelecionadas;
+
   try{
     var r=await fetch(API+'/api/avaliacoes/'+produto.id);
     var avals=await r.json();
@@ -417,7 +453,25 @@ async function carregarAvaliacoes(){
     var formHtml='<div class="aval-form"><div class="aval-form-titulo">'+t('leaveReview')+'</div><div class="aval-stars-input" id="avalStars">';
     for(var i=1;i<=5;i++){formHtml+='<i class="fa-solid fa-star" data-star="'+i+'" onclick="setEstrelas('+i+')"></i>';}
     formHtml+='</div><input type="text" id="avalNome" placeholder="'+t('yourName')+'" maxlength="50" oninput="atualizarBtnEnviar()"/><textarea id="avalComentario" placeholder="'+t('comment')+'" rows="2" maxlength="500"></textarea><button class="btn-enviar" id="btnEnviarAval" onclick="enviarAvaliacao()" disabled>'+t('submitReview')+'</button><div class="aval-msg" id="avalMsg"></div></div>';
+
     container.innerHTML='<div class="aval-header"><div class="aval-titulo"><i class="fa-solid fa-star" style="color:var(--yellow)"></i> '+t('reviews')+' ('+total+')</div><div class="aval-media">'+estrelasHtml+' '+media+'</div></div>'+listaHtml+formHtml;
+
+    /* 2. Restaurar o que o cliente tinha escrito */
+    if(savedNome){
+      document.getElementById('avalNome').value=savedNome;
+    }
+    if(savedComentario){
+      document.getElementById('avalComentario').value=savedComentario;
+    }
+    if(savedEstrelas>0){
+      /* Repor estrelas sem resetar a variável global */
+      estrelasSelecionadas=savedEstrelas;
+      document.querySelectorAll('#avalStars i').forEach(function(el,i){
+        el.classList.toggle('ativa',i<savedEstrelas);
+      });
+    }
+    atualizarBtnEnviar();
+
   }catch(e){container.innerHTML='<div class="aval-vazia">'+t('reviewsErr')+'</div>';}
 }
 
@@ -449,20 +503,70 @@ function carregarRelacionados(){
   if(relacionados.length===0){container.innerHTML='';return;}
   var cardsHtml=relacionados.map(function(p){
     var nome=idioma==='en'&&p.nome_en?p.nome_en:p.nome;
-    var img=p.imagem_url?'<img src="'+p.imagem_url+'" alt="" loading="lazy" onerror="this.innerHTML=\'<i class=fa-solid fa-image style=font-size:1.5rem;color:var(--muted)></i>\'">':'<i class="fa-solid fa-image" style="font-size:1.5rem;color:var(--muted)"></i>';
+    var img=p.imagem_url?'<img src="'+p.imagem_url+'" alt="" loading="lazy">':'<i class="fa-solid fa-image" style="font-size:1.5rem;color:var(--muted)"></i>';
     var preco=p.preco_base>0?kz(p.preco_base):t('quote');
     return '<a href="/Loja/produto.html?id='+p.id+'" class="relacionado-card"><div class="relacionado-img">'+img+'</div><div class="relacionado-body"><div class="relacionado-nome">'+nome+'</div><div class="relacionado-preco">'+preco+'</div></div></a>';
   }).join('');
-  container.innerHTML='<div class="relacionados-titulo"><i class="fa-solid fa-link"></i> '+t('youMayLike')+'</div><div class="relacionados-scroll" id="relacionadosScroll">'+cardsHtml+'</div>';
+  /* Envolve o scroll numa div com overflow:hidden para esconder os clones */
+  container.innerHTML=
+    '<div class="relacionados-titulo"><i class="fa-solid fa-link"></i> '+t('youMayLike')+'</div>'+
+    '<div class="relacionados-scroll-wrap">'+
+      '<div class="relacionados-scroll" id="relacionadosScroll">'+cardsHtml+'</div>'+
+    '</div>';
   iniciarAutoScroll();
 }
 
+function toggleFaq(i){
+  var b=document.getElementById('faqbody'+i);
+  var ico=document.getElementById('faqico'+i);
+  if(!b)return;
+  var open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(ico)ico.style.transform=open?'':'rotate(180deg)';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLL INFINITO — duplica os cards e faz loop sem salto
+   Pausa só quando o dedo/rato está ACTIVAMENTE pressionado.
+   Retoma imediatamente ao soltar — ouve no window para não perder eventos.
+   ───────────────────────────────────────────────────────────── */
 function iniciarAutoScroll(){
-  var scroll=document.getElementById('relacionadosScroll');if(!scroll)return;
-  var scrollAmount=0,maxScroll=scroll.scrollWidth-scroll.clientWidth,direction=1,paused=false;
-  scroll.addEventListener('mouseenter',function(){paused=true;});scroll.addEventListener('mouseleave',function(){paused=false;});
-  scroll.addEventListener('touchstart',function(){paused=true;});scroll.addEventListener('touchend',function(){paused=false;});
-  setInterval(function(){if(paused||maxScroll<=0)return;if(scrollAmount>=maxScroll){direction=-1;}if(scrollAmount<=0){direction=1;}scrollAmount+=direction;scroll.scrollLeft=scrollAmount;},50);
+  if(_scrollLoopId){clearInterval(_scrollLoopId);_scrollLoopId=null;}
+
+  var scroll=document.getElementById('relacionadosScroll');
+  if(!scroll)return;
+
+  /* Duplicar cards para o loop contínuo */
+  var originais=Array.from(scroll.querySelectorAll('.relacionado-card'));
+  if(originais.length===0)return;
+  originais.forEach(function(card){ scroll.appendChild(card.cloneNode(true)); });
+
+  var paused=false;
+  var pos=0;
+  var vel=0.5;
+
+  /* Pausa quando o dedo/rato toca no scroll */
+  scroll.addEventListener('pointerdown', function(){ paused=true; }, {passive:true});
+
+  /* Retoma ao soltar — ouve no window para não perder o evento
+     mesmo que o dedo saia do elemento ou navegue para um card */
+  window.addEventListener('pointerup',     function(){ paused=false; }, {passive:true});
+  window.addEventListener('pointercancel', function(){ paused=false; }, {passive:true});
+
+  /* Aguarda 200 ms para as imagens afectarem o scrollWidth antes de medir */
+  setTimeout(function(){
+    var halfWidth=scroll.scrollWidth/2;
+    if(halfWidth<=0)return;
+
+    _scrollLoopId=setInterval(function(){
+      if(paused)return;
+      pos+=vel;
+      if(pos>=halfWidth){pos-=halfWidth;}
+      scroll.style.transform='translateX(-'+pos+'px)';
+    },16);
+
+    window.addEventListener('beforeunload',function(){ clearInterval(_scrollLoopId); });
+  },200);
 }
 
 carregar();

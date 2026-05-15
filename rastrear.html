@@ -466,7 +466,7 @@ async function iniciar(){
 }
 
 async function carregarLoja(){
-  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+  try{var r=await fetch(API + '/api/loja/publica');loja=await r.json();}catch(e){loja={};}
 }
 
 async function rastrear(refInput){

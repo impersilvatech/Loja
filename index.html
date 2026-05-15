@@ -68,6 +68,18 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .section-top a{font-size:.72rem;color:var(--pink);text-decoration:none}
 .cats{overflow:hidden;padding:0 0 12px;position:relative;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 10%,#000 90%,transparent 100%);mask-image:linear-gradient(to right,transparent 0%,#000 10%,#000 90%,transparent 100%)}
 .cats-track{display:flex;gap:8px;width:max-content;will-change:transform}
+.cats-track.no-anim{justify-content:flex-start;width:100%;flex-wrap:wrap}
+/* Quick access */
+.quick-access{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 4px}
+.qa-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 16px;border-radius:16px;text-decoration:none;transition:transform .2s;position:relative;overflow:hidden}
+.qa-btn:active{transform:scale(.97)}
+.qa-btn i{font-size:1.1rem;margin-bottom:4px}
+.qa-btn span:not(.qa-sub){font-family:var(--ft);font-size:.88rem;color:#fff}
+.qa-sub{font-size:.62rem;color:rgba(255,255,255,.7)}
+.qa-promo{background:linear-gradient(135deg,#ff4757 0%,#ffd166 100%);box-shadow:0 4px 16px rgba(255,71,87,.25)}
+.qa-promo i{color:#fff}
+.qa-wish{background:var(--grad);box-shadow:0 4px 16px rgba(255,107,157,.25)}
+.qa-wish i{color:#fff}
 .cat{padding:8px 16px;border-radius:50px;font-size:.8rem;color:#fff;text-decoration:none;white-space:nowrap;flex-shrink:0;font-family:var(--ft);border:none}
 .produtos-scroll{overflow:hidden;padding:0 0 8px;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%);mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%)}
 .produtos-track{display:flex;gap:10px;width:max-content;will-change:transform}
@@ -149,13 +161,27 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
   <span class="hero-tag" data-i18n="welcome">Bem-vindo</span>
   <h1 id="heroTitulo">Bem-vindo!</h1>
   <p id="heroSub"></p>
-  <a href="/Loja/catalogo.html" class="hero-btn" data-i18n="viewCatalog"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
+  <a href="catalogo.html" class="hero-btn" data-i18n="viewCatalog"><i class="fa-solid fa-store"></i> Ver Catálogo</a>
 </div>
 
 <div class="auth-strip" id="authStrip">
   <span class="as-ico"><i class="fa-solid fa-user-plus"></i></span>
   <div class="as-txt"><h4 data-i18n="createAccount">Cria a tua conta</h4><p data-i18n="trackOrders">Acompanha as tuas encomendas em tempo real</p></div>
   <a href="/Loja/conta.html" class="as-btn" data-i18n="login">Entrar</a>
+</div>
+
+<!-- Acesso rápido: Promoções + Wishlist -->
+<div class="quick-access">
+  <a href="promocoes.html" class="qa-btn qa-promo">
+    <i class="fa-solid fa-percent"></i>
+    <span id="promoCardTitle">Promoções</span>
+    <span class="qa-sub" id="promoCardSub">Ver descontos</span>
+  </a>
+  <a href="wishlist.html" class="qa-btn qa-wish">
+    <i class="fa-solid fa-heart"></i>
+    <span id="wishCardTitle">Wishlist</span>
+    <span class="qa-sub" id="wishCardSub">0 favoritos</span>
+  </a>
 </div>
 
 <div class="section-top">
@@ -204,7 +230,7 @@ var loja,cats,prods;
 var idioma=localStorage.getItem('idioma')||'pt';
 var pwaPrompt=null;
 
-var catCores=['#ff6b9d','#b14ae8','#06d6a0','#ffd166','#ff4757','#4ecdc4','#ff9f43','#a29bfe','#fd79a8','#00cec9','#fab1a0','#81ecec'];
+var catCores=['#ff6b9d','#b14ae8'];
 
 var i18n={
   pt:{welcome:'Bem-vindo',viewCatalog:'Ver Catálogo',createAccount:'Cria a tua conta',trackOrders:'Acompanha as tuas encomendas em tempo real',login:'Entrar',categories:'Categorias',featured:'Em Destaque',news:'Novidades',delivery:'Entrega ao domicílio',catalog:'Catálogo',track:'Rastrear',about:'Sobre',account:'Conta',cart:'Carrinho',noFeatured:'Sem produtos em destaque.',noProducts:'Sem produtos ainda.'},
@@ -244,7 +270,7 @@ function atualizarBtnCart(){var q=qtdCarrinho();var nlN=document.getElementById(
 function toggleWish(id,btn){var wl=getWishlist();var added=!wl.includes(String(id));if(added){wl.push(String(id));btn.classList.add('active');btn.innerHTML='<i class="fa-solid fa-heart"></i>';toast(idioma==='en'?'Added to wishlist!':'Adicionado à wishlist!');}else{wl=wl.filter(function(x){return x!==String(id);});btn.classList.remove('active');btn.innerHTML='<i class="fa-regular fa-heart"></i>';toast(idioma==='en'?'Removed from wishlist':'Removido da wishlist');}localStorage.setItem('cf_wl',JSON.stringify(wl));}
 
 async function carregar(){
-  try{var rL=await fetch(API+'/api/loja');loja=await rL.json();var rC=await fetch(API+'/api/categorias');cats=await rC.json();var rP=await fetch(API+'/api/produtos');prods=await rP.json();}catch(e){loja={};cats=[];prods=[];}
+  try{var rL=await fetch(API + '/api/loja/publica');loja=await rL.json();var rC=await fetch(API+'/api/categorias');cats=await rC.json();var rP=await fetch(API+'/api/produtos');prods=await rP.json();}catch(e){loja={};cats=[];prods=[];}
   var siteUrl='https://impersilvatech.github.io/Loja/';
   document.getElementById('pageTitle').textContent=loja.nome||'Loja';document.title=loja.nome||'Loja';
   if(loja.meta_descricao){document.getElementById('metaDesc').setAttribute('content',loja.meta_descricao);document.getElementById('ogDesc').setAttribute('content',loja.meta_descricao);document.getElementById('twDesc').setAttribute('content',loja.meta_descricao);}
@@ -259,6 +285,14 @@ async function carregar(){
   /* og:image dinâmica: usa imagem do 1.º produto em destaque */
   var destImg=prods.find(function(p){return(p.destaque==1||p.destaque===true)&&p.imagem_url;});
   if(destImg)document.querySelector('meta[property="og:image"]').setAttribute('content',destImg.imagem_url);
+  /* Atualizar cards de acesso rápido */
+  var wlCount=JSON.parse(localStorage.getItem('cf_wl')||'[]').length;
+  var wishSub=document.getElementById('wishCardSub');
+  if(wishSub)wishSub.textContent=idioma==='en'?wlCount+' favourites':wlCount+' favoritos';
+  var promoCount=prods.filter(function(p){return p.preco_original>p.preco_base&&p.disponivel!==0;}).length;
+  var promoSub=document.getElementById('promoCardSub');
+  if(promoSub)promoSub.textContent=promoCount>0?(promoCount+(idioma==='en'?' active deals':' ofertas activas')):(idioma==='en'?'See discounts':'Ver descontos');
+  if(document.getElementById('promoCardTitle'))document.getElementById('promoCardTitle').textContent=idioma==='en'?'Promotions':'Promoções';
 
   setInterval(async function(){
     try {
@@ -277,9 +311,17 @@ async function carregar(){
 function buildCats(){
   var row=document.getElementById('catsRow');
   if(!cats.length){row.innerHTML='';return;}
-  var html=cats.map(function(c,i){var cor=catCores[i%catCores.length];return'<a href="/Loja/catalogo.html?cat='+c.slug+'" class="cat" style="background:'+cor+'">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';}).join('');
-  row.innerHTML=html+html;
-  /* offsetLeft dá a distância exata entre o início da cópia 1 e o início da cópia 2 */
+  var html1=cats.map(function(c,i){
+    var cor=catCores[i%catCores.length];
+    return'<a href="catalogo.html?cat='+c.slug+'" class="cat" style="background:'+cor+'">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';
+  }).join('');
+  /* Offset da 2ª cópia para continuar a alternância sem repetir cor no ponto de junção */
+  var offset=cats.length%catCores.length;
+  var html2=cats.map(function(c,i){
+    var cor=catCores[(i+offset)%catCores.length];
+    return'<a href="catalogo.html?cat='+c.slug+'" class="cat" style="background:'+cor+'">'+(idioma==='en'&&c.nome_en?c.nome_en:c.nome)+'</a>';
+  }).join('');
+  row.innerHTML=html1+html2;
   var n=row.children.length;
   _mq.catsRow.half=n>=2?row.children[Math.floor(n/2)].offsetLeft-row.children[0].offsetLeft:0;
   _mq.catsRow.pos=0;
@@ -369,6 +411,19 @@ setOnline(navigator.onLine);
 
 /* ── Voltar ao topo ── */
 window.addEventListener('scroll',function(){document.getElementById('btnTop').classList.toggle('show',window.scrollY>220);},{passive:true});
+
+/* Capturar código de referido da URL */
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var ref=params.get('ref');
+  if(ref){
+    localStorage.setItem('cf_ref_code',ref);
+    /* Incrementar contador do referidor */
+    var uses=parseInt(localStorage.getItem('cf_ref_uses')||'0');
+    localStorage.setItem('cf_ref_uses',String(uses+1));
+    window.history.replaceState({},document.title,window.location.pathname);
+  }
+})();
 
 carregar();
 </script>

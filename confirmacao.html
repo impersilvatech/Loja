@@ -187,7 +187,7 @@ async function carregar(){
   }
 
   try{
-    var r=await fetch(API+'/api/loja');var loja=await r.json();
+    var r=await fetch(API + '/api/loja/publica');var loja=await r.json();
     var waNum=(loja.whatsapp||'').replace(/\D/g,'');
     if(waNum){
       var msg=t('waMsg').replace('%ref%',ref).replace('%total%',kz(Number(total)));

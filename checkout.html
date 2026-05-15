@@ -222,7 +222,7 @@ function render(){
 async function carregar(){
   var c=getCarrinho();
   if(!c.length){window.location.href='carrinho.html';return;}
-  try{var r=await fetch(API+'/api/loja');loja=await r.json();}catch(e){loja={};}
+  try{var r=await fetch(API + '/api/loja/publica');loja=await r.json();}catch(e){loja={};}
   document.title=t('pageTitle')+' — '+(loja.nome||'Loja');
   render();
 }
@@ -273,9 +273,10 @@ async function submeter(){
   /* Ler ref_img no momento do submit — apanha imagens adicionadas depois de carregar a página */
   refImgDataLocal=localStorage.getItem('cf_ref_img')||null;
 
-  /* Embutir imagem nas notas com marcador — o campo ref_img não existe no schema da API */
+  var refCode=localStorage.getItem('cf_ref_code')||null;
   var notasComImg=notas;
-  if(refImgDataLocal){notasComImg=(notasComImg?notasComImg+'\n':'')+'\xA7IMG\xA7'+refImgDataLocal;}
+  if(refImgDataLocal){notasComImg=(notasComImg?notasComImg+'\n':'')+refImgDataLocal;}
+  if(refCode){notasComImg=(notasComImg?notasComImg+'\n':'')+'[REF:'+refCode+']';}
 
   var btn=document.querySelector('.btn-final');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> '+t('processing');
 

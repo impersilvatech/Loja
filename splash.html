@@ -92,7 +92,7 @@ setTimeout(function(){
 
 // Vai buscar o nome da loja
 try{
-  fetch('https://impersilva-d1work.3miliosilva.workers.dev/api/loja')
+  fetch('https://impersilva-d1work.3miliosilva.workers.dev/api/loja/publica')
     .then(function(r){return r.json();})
     .then(function(d){
       if(d.nome)document.getElementById('splashNome').textContent=d.nome;
