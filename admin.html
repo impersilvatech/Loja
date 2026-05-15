@@ -38,7 +38,7 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;}body{height:100%;overflow:hidden;}
+html,body{height:100%;overflow:hidden}
 body{
   font-family:var(--fb); background:var(--bg); color:var(--white);
   display:flex; flex-direction:column;
@@ -940,8 +940,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     OneSignal.init({
       appId: "28d74020-c173-4107-915f-ae48ef166118",
       allowLocalhostAsSecureOrigin: true,
-      serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/Loja/" },
       notifyButton: {
         enable: true,
         position: 'bottom-right',
@@ -3709,11 +3707,21 @@ function iniciarPollingNotif(){
         if(state.currentPanel==='dashboard')renderDashboard();
         if(state.currentPanel==='orders')renderOrders();
         novas.forEach(function(enc){
-          new Notification('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
+          var notifTitle='🛍️ Nova Encomenda — '+(state.loja.nome||'Loja');
+          var notifOpts={
             body:enc.nome_cliente+' · '+kz(enc.total,state.loja.simbolo_moeda),
             icon:state.loja.logo_url||'/Loja/favicon.svg',
-            tag:'enc-'+enc.ref
-          });
+            tag:'enc-'+enc.ref,
+            vibrate:[200,100,200],
+            data:{url:'/Loja/admin.html'}
+          };
+          if('serviceWorker' in navigator){
+            navigator.serviceWorker.ready.then(function(reg){
+              reg.showNotification(notifTitle,notifOpts);
+            });
+          } else {
+            new Notification(notifTitle,notifOpts);
+          }
         });
       }
     }catch(e){}
