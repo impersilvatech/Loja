@@ -1003,6 +1003,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
     <div class="topbar-actions">
       <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
+      <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:11px;padding:4px 8px">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="refreshData()" title="Actualizar dados"><i class="fa-solid fa-rotate"></i></button>
       <button class="topbar-btn" onclick="openDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -3689,6 +3690,17 @@ function updateNotifBtn(){
   if(!btn||!ico)return;
   if(_notifEnabled){ico.className='fa-solid fa-bell';btn.style.color='var(--yellow)';}
   else{ico.className='fa-solid fa-bell-slash';btn.style.color='';}
+}
+
+function testarNotificacao(){
+  if(Notification.permission!=='granted'){alert('Permissão de notificação não concedida');return;}
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification('🧪 Teste OK',{body:'Notificações a funcionar!',icon:'/Loja/favicon.svg',vibrate:[200,100,200]});
+    }).catch(function(e){alert('Erro serviceWorker: '+e);});
+  } else {
+    new Notification('🧪 Teste OK',{body:'Notificações a funcionar!'});
+  }
 }
 
 function iniciarPollingNotif(){
