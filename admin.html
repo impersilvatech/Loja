@@ -3662,6 +3662,7 @@ var _notifInterval=null;
 var _lastOrderCount=0;
 var _notifEnabled=false;
 var _notifiedRefs=new Set();
+var _firstPoll=true;
 
 async function toggleNotifications(){
   if(_notifEnabled){
@@ -3692,11 +3693,17 @@ function updateNotifBtn(){
 
 function iniciarPollingNotif(){
   if(_notifInterval)clearInterval(_notifInterval);
+  _firstPoll=true;
   _notifInterval=setInterval(async function(){
     if(!_notifEnabled||!state.token)return;
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
       if(!Array.isArray(encs))return;
+      if(_firstPoll){
+        encs.forEach(e=>_notifiedRefs.add(e.ref));
+        _firstPoll=false;
+        return;
+      }
       const novas=encs.filter(e=>{
         return !_notifiedRefs.has(e.ref)&&e.estado==='pendente';
       });
@@ -3734,7 +3741,6 @@ function initNotificacoes(){
   if(saved==='1'&&'Notification' in window&&Notification.permission==='granted'){
     _notifEnabled=true;
     _lastOrderCount=state.encomendas.length;
-    state.encomendas.forEach(function(e){_notifiedRefs.add(e.ref);});
     iniciarPollingNotif();
   }
   updateNotifBtn();
