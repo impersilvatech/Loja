@@ -940,6 +940,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     OneSignal.init({
       appId: "28d74020-c173-4107-915f-ae48ef166118",
       allowLocalhostAsSecureOrigin: true,
+      serviceWorkerPath: "/Loja/sw.js",
+      serviceWorkerParam: { scope: "/Loja/" },
       notifyButton: {
         enable: true,
         position: 'bottom-right',
@@ -3714,12 +3716,15 @@ function updateNotifBtn(){
 
 function iniciarPollingNotif(){
   if(_notifInterval)clearInterval(_notifInterval);
-  // Regista imediatamente as encomendas existentes
+  // Regista as encomendas existentes ANTES de iniciar o polling
   fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
     .then(r=>r.json()).then(function(encs){
       if(Array.isArray(encs))encs.forEach(e=>_notifiedRefs.add(e.ref));
-    }).catch(function(){});
-  _notifInterval=setInterval(async function(){
+    }).catch(function(){})
+    .finally(function(){
+      // Só inicia o polling DEPOIS do registo inicial estar completo
+      if(_notifInterval)clearInterval(_notifInterval);
+      _notifInterval=setInterval(async function(){
     if(!_notifEnabled||!state.token)return;
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
@@ -3743,7 +3748,8 @@ function iniciarPollingNotif(){
         });
       }
     }catch(e){}
-  },20000); /* verifica a cada 20 segundos */
+      },20000); /* verifica a cada 20 segundos */
+    });
 }
 
 function initNotificacoes(){
