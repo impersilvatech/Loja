@@ -3670,7 +3670,14 @@ function getFaqs(){
 var _notifInterval=null;
 var _lastOrderCount=0;
 var _notifEnabled=false;
-var _notifiedRefs=new Set();
+// Carrega refs já notificados do localStorage para persistir entre sessões
+var _notifiedRefs=new Set(JSON.parse(localStorage.getItem('adm_notified_refs')||'[]'));
+
+function salvarNotifiedRefs(){
+  // Guarda apenas os últimos 200 refs para não encher o localStorage
+  const arr=Array.from(_notifiedRefs);
+  localStorage.setItem('adm_notified_refs',JSON.stringify(arr.slice(-200)));
+}
 
 function mostrarNotificacao(titulo,opcoes){
   if('serviceWorker' in navigator){
@@ -3719,7 +3726,7 @@ function iniciarPollingNotif(){
   // Regista as encomendas existentes ANTES de iniciar o polling
   fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
     .then(r=>r.json()).then(function(encs){
-      if(Array.isArray(encs))encs.forEach(e=>_notifiedRefs.add(e.ref));
+      if(Array.isArray(encs)){encs.forEach(e=>_notifiedRefs.add(e.ref));salvarNotifiedRefs();}
     }).catch(function(){})
     .finally(function(){
       // Só inicia o polling DEPOIS do registo inicial estar completo
@@ -3731,6 +3738,7 @@ function iniciarPollingNotif(){
       if(!Array.isArray(encs))return;
       const novas=encs.filter(e=>!_notifiedRefs.has(e.ref));
       encs.forEach(e=>_notifiedRefs.add(e.ref));
+      salvarNotifiedRefs();
       if(novas.length>0){
         state.encomendas=encs;
         state.filteredOrders=[...encs];
