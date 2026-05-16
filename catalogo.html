@@ -70,8 +70,8 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .sort-btn{display:flex;align-items:center;gap:3px;padding:5px 10px;background:none;border:1px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.6rem;color:var(--muted);cursor:pointer;transition:var(--tr)}
 .sort-btn:hover,.sort-btn.on{border-color:var(--pink);color:var(--pink)}
 /* Grid com padding inferior para não colar na borda */
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px 12px 12px}
-.grid.list{display:flex;flex-direction:column;gap:8px;padding-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px 12px 24px}
+.grid.list{display:flex;flex-direction:column;gap:8px;padding-bottom:24px}
 @media(min-width:520px){.grid:not(.list){grid-template-columns:repeat(3,1fr)}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;text-decoration:none;color:inherit;display:block;position:relative;animation:cardIn .4s ease both}
 .card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(255,107,157,.18);border-color:rgba(255,107,157,.4)}
