@@ -3715,9 +3715,7 @@ function iniciarPollingNotif(){
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
       if(!Array.isArray(encs))return;
-      const novas=encs.filter(e=>{
-        return !_notifiedRefs.has(e.ref)&&e.estado==='pendente';
-      });
+      const novas=encs.filter(e=>!_notifiedRefs.has(e.ref));
       encs.forEach(e=>_notifiedRefs.add(e.ref));
       if(novas.length>0){
         state.encomendas=encs;
