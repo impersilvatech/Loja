@@ -1003,7 +1003,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
     <div class="topbar-actions">
       <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
-      <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:11px;padding:4px 8px">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="refreshData()" title="Actualizar dados"><i class="fa-solid fa-rotate"></i></button>
       <button class="topbar-btn" onclick="openDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -3130,7 +3129,13 @@ const settingsSections={
         '<div class="form-group"><label>CallMeBot API Key</label><input class="form-input" id="cfgCmb" value="'+esc(l.callmebot_apikey||'')+'"/></div>'+
         '<div class="form-row"><div class="form-group"><label>EmailJS Service ID</label><input class="form-input" id="cfgEjsS" value="'+esc(l.emailjs_service||'')+'"/></div>'+
         '<div class="form-group"><label>EmailJS Template ID</label><input class="form-input" id="cfgEjsT" value="'+esc(l.emailjs_template||'')+'"/></div></div>'+
-        '<div class="form-group"><label>EmailJS Public Key</label><input class="form-input" id="cfgEjsK" value="'+esc(l.emailjs_pubkey||'')+'"/></div></div>';
+        '<div class="form-group"><label>EmailJS Public Key</label><input class="form-input" id="cfgEjsK" value="'+esc(l.emailjs_pubkey||'')+'"/></div>'+
+        '<div style="height:1px;background:var(--border);margin:14px 0"></div>'+
+        '<div class="cfg-section-label" style="margin-bottom:10px"><i class="fa-solid fa-bell" style="color:var(--purple)"></i><span style="color:var(--purple)">OneSignal Push (Admin)</span></div>'+
+        '<div class="info-box success" style="margin-bottom:10px"><i class="fa-solid fa-circle-info"></i> Notificações push automáticas mesmo com o admin fechado. Obtém a REST API Key em OneSignal → Chaves e Identificações.</div>'+
+        '<div class="form-group"><label>App ID</label><input class="form-input" id="cfgOsAppId" value="'+esc(l.onesignal_app_id||'')+'"/></div>'+
+        '<div class="form-group"><label>REST API Key</label><input class="form-input" type="password" id="cfgOsApiKey" value="'+esc(l.onesignal_api_key||'')+'"/></div>'+
+        '<div class="form-group"><label>Tag do Admin <span class="optional">(padrão: admin)</span></label><input class="form-input" id="cfgOsTag" value="'+esc(l.onesignal_admin_tag||'admin')+'"/></div></div>';
     }
   },
   seo:{
@@ -3204,7 +3209,7 @@ async function saveSettings(){
   }else if(section==='visual'){
     campos={cor_primaria:getVal('cfgCorPT')||'#ff6b9d',cor_secundaria:getVal('cfgCorST')||'#b14ae8',logo_url:getVal('cfgLogo')||null,banner_url:getVal('cfgBanner')||null,favicon_url:getVal('cfgFavicon')||null};
   }else if(section==='notifications'){
-    campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null};
+    campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null,onesignal_app_id:getVal('cfgOsAppId')||null,onesignal_api_key:getVal('cfgOsApiKey')||null,onesignal_admin_tag:getVal('cfgOsTag')||'admin'};
   }else if(section==='seo'){
     campos={meta_descricao:getVal('cfgMetaDesc')||null,palavras_chave:getVal('cfgKw')||null,politica:getVal('cfgPolitica')||null,termos:getVal('cfgTermos')||null};
   }else if(section==='referidos'){
@@ -3662,8 +3667,6 @@ function getFaqs(){
 var _notifInterval=null;
 var _lastOrderCount=0;
 var _notifEnabled=false;
-var _notifiedRefs=new Set();
-var _firstPoll=true;
 
 async function toggleNotifications(){
   if(_notifEnabled){
@@ -3692,31 +3695,17 @@ function updateNotifBtn(){
   else{ico.className='fa-solid fa-bell-slash';btn.style.color='';}
 }
 
-function testarNotificacao(){
-  if(Notification.permission!=='granted'){alert('Permissão de notificação não concedida');return;}
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(function(reg){
-      reg.showNotification('🧪 Teste OK',{body:'Notificações a funcionar!',icon:'/Loja/favicon.svg',vibrate:[200,100,200]});
-    }).catch(function(e){alert('Erro serviceWorker: '+e);});
-  } else {
-    new Notification('🧪 Teste OK',{body:'Notificações a funcionar!'});
-  }
-}
-
 function iniciarPollingNotif(){
   if(_notifInterval)clearInterval(_notifInterval);
-  // Regista imediatamente as encomendas existentes, depois inicia o polling
-  fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
-    .then(r=>r.json()).then(function(encs){
-      if(Array.isArray(encs))encs.forEach(e=>_notifiedRefs.add(e.ref));
-    }).catch(function(){});
   _notifInterval=setInterval(async function(){
     if(!_notifEnabled||!state.token)return;
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
       if(!Array.isArray(encs))return;
-      const novas=encs.filter(e=>!_notifiedRefs.has(e.ref));
-      encs.forEach(e=>_notifiedRefs.add(e.ref));
+      const novas=encs.filter(e=>{
+        const jaConhecida=state.encomendas.find(x=>x.ref===e.ref);
+        return !jaConhecida&&e.estado==='pendente';
+      });
       if(novas.length>0){
         state.encomendas=encs;
         state.filteredOrders=[...encs];
@@ -3724,25 +3713,15 @@ function iniciarPollingNotif(){
         if(state.currentPanel==='dashboard')renderDashboard();
         if(state.currentPanel==='orders')renderOrders();
         novas.forEach(function(enc){
-          var notifTitle='🛍️ Nova Encomenda — '+(state.loja.nome||'Loja');
-          var notifOpts={
+          new Notification('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
             body:enc.nome_cliente+' · '+kz(enc.total,state.loja.simbolo_moeda),
             icon:state.loja.logo_url||'/Loja/favicon.svg',
-            tag:'enc-'+enc.ref,
-            vibrate:[200,100,200],
-            data:{url:'/Loja/admin.html'}
-          };
-          if('serviceWorker' in navigator){
-            navigator.serviceWorker.ready.then(function(reg){
-              reg.showNotification(notifTitle,notifOpts);
-            });
-          } else {
-            new Notification(notifTitle,notifOpts);
-          }
+            tag:'enc-'+enc.ref
+          });
         });
       }
     }catch(e){}
-  },20000); /* verifica a cada 20 segundos */
+  },45000); /* verifica a cada 45 segundos */
 }
 
 function initNotificacoes(){
