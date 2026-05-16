@@ -1003,6 +1003,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
     <div class="topbar-actions">
       <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
+      <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:11px;padding:4px 8px">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="refreshData()" title="Actualizar dados"><i class="fa-solid fa-rotate"></i></button>
       <button class="topbar-btn" onclick="openDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -3667,6 +3668,22 @@ function getFaqs(){
 var _notifInterval=null;
 var _lastOrderCount=0;
 var _notifEnabled=false;
+var _notifiedRefs=new Set();
+
+function mostrarNotificacao(titulo,opcoes){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification(titulo,opcoes);
+    }).catch(function(){new Notification(titulo,opcoes);});
+  } else {
+    new Notification(titulo,opcoes);
+  }
+}
+
+function testarNotificacao(){
+  if(Notification.permission!=='granted'){alert('Permissão de notificação não concedida');return;}
+  mostrarNotificacao('🧪 Teste OK',{body:'Notificações a funcionar!',icon:'/Loja/favicon.svg',vibrate:[200,100,200]});
+}
 
 async function toggleNotifications(){
   if(_notifEnabled){
@@ -3685,7 +3702,7 @@ async function toggleNotifications(){
   _lastOrderCount=state.encomendas.length;
   iniciarPollingNotif();
   updateNotifBtn();
-  toast('Notificações activadas! Serás avisado de novas encomendas.','success');
+  toast('Notificações activadas!','success');
 }
 
 function updateNotifBtn(){
@@ -3697,15 +3714,18 @@ function updateNotifBtn(){
 
 function iniciarPollingNotif(){
   if(_notifInterval)clearInterval(_notifInterval);
+  // Regista imediatamente as encomendas existentes
+  fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
+    .then(r=>r.json()).then(function(encs){
+      if(Array.isArray(encs))encs.forEach(e=>_notifiedRefs.add(e.ref));
+    }).catch(function(){});
   _notifInterval=setInterval(async function(){
     if(!_notifEnabled||!state.token)return;
     try{
       const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
       if(!Array.isArray(encs))return;
-      const novas=encs.filter(e=>{
-        const jaConhecida=state.encomendas.find(x=>x.ref===e.ref);
-        return !jaConhecida&&e.estado==='pendente';
-      });
+      const novas=encs.filter(e=>!_notifiedRefs.has(e.ref));
+      encs.forEach(e=>_notifiedRefs.add(e.ref));
       if(novas.length>0){
         state.encomendas=encs;
         state.filteredOrders=[...encs];
@@ -3713,15 +3733,17 @@ function iniciarPollingNotif(){
         if(state.currentPanel==='dashboard')renderDashboard();
         if(state.currentPanel==='orders')renderOrders();
         novas.forEach(function(enc){
-          new Notification('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
+          mostrarNotificacao('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
             body:enc.nome_cliente+' · '+kz(enc.total,state.loja.simbolo_moeda),
             icon:state.loja.logo_url||'/Loja/favicon.svg',
-            tag:'enc-'+enc.ref
+            tag:'enc-'+enc.ref,
+            vibrate:[200,100,200],
+            data:{url:'/Loja/admin.html'}
           });
         });
       }
     }catch(e){}
-  },45000); /* verifica a cada 45 segundos */
+  },20000); /* verifica a cada 20 segundos */
 }
 
 function initNotificacoes(){
