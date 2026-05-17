@@ -1789,19 +1789,17 @@ const API = 'https://impersilva-d1work.3miliosilva.workers.dev';
 const GH_DEFAULT_USER = '';
 const GH_DEFAULT_REPO = '';
 
-// Registar admin no OneSignal após login
+// Registar admin no OneSignal após login (API v16)
 async function registarAdminNoOneSignal() {
   try {
-    if (typeof OneSignal === 'undefined') {
-      setTimeout(registarAdminNoOneSignal, 1000);
+    // Aguardar SDK estar pronto
+    if (typeof OneSignal === 'undefined' || !OneSignal.User) {
+      setTimeout(registarAdminNoOneSignal, 1500);
       return;
     }
-    
-    const tags = await OneSignal.getTags();
-    if (tags.role !== 'admin') {
-      await OneSignal.sendTag('role', 'admin');
-      console.log('✅ Admin registado no OneSignal');
-    }
+    // API v16: OneSignal.User.addTag
+    await OneSignal.User.addTag('role', 'admin');
+    console.log('✅ Admin registado no OneSignal (v16)');
   } catch (e) {
     console.error('❌ Erro ao registar admin:', e);
   }
