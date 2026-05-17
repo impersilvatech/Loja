@@ -2072,6 +2072,10 @@ function logout(){
   if(backEl)backEl.style.display='none';
   if(iconEl){iconEl.innerHTML='<i class="fa-solid fa-lock-open"></i>';iconEl.style.background='rgba(255,107,157,.08)';iconEl.style.borderColor='rgba(255,107,157,.2)';iconEl.style.color='var(--pink)';}
   if(state.refreshInterval)clearInterval(state.refreshInterval);
+  if(_notifInterval)clearInterval(_notifInterval);
+  _notifEnabled=false;
+  _notifiedRefs=new Set();
+  localStorage.removeItem('adm_notified_refs');
 }
 
 /* ============================================================
