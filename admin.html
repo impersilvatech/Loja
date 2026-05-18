@@ -1789,17 +1789,19 @@ const API = 'https://impersilva-d1work.3miliosilva.workers.dev';
 const GH_DEFAULT_USER = '';
 const GH_DEFAULT_REPO = '';
 
-// Registar admin no OneSignal após login (API v16)
+// Registar admin no OneSignal após login
 async function registarAdminNoOneSignal() {
   try {
-    // Aguardar SDK estar pronto
-    if (typeof OneSignal === 'undefined' || !OneSignal.User) {
-      setTimeout(registarAdminNoOneSignal, 1500);
+    if (typeof OneSignal === 'undefined') {
+      setTimeout(registarAdminNoOneSignal, 1000);
       return;
     }
-    // API v16: OneSignal.User.addTag
-    await OneSignal.User.addTag('role', 'admin');
-    console.log('✅ Admin registado no OneSignal (v16)');
+    
+    const tags = await OneSignal.getTags();
+    if (tags.role !== 'admin') {
+      await OneSignal.sendTag('role', 'admin');
+      console.log('✅ Admin registado no OneSignal');
+    }
   } catch (e) {
     console.error('❌ Erro ao registar admin:', e);
   }
@@ -2070,10 +2072,6 @@ function logout(){
   if(backEl)backEl.style.display='none';
   if(iconEl){iconEl.innerHTML='<i class="fa-solid fa-lock-open"></i>';iconEl.style.background='rgba(255,107,157,.08)';iconEl.style.borderColor='rgba(255,107,157,.2)';iconEl.style.color='var(--pink)';}
   if(state.refreshInterval)clearInterval(state.refreshInterval);
-  if(_notifInterval)clearInterval(_notifInterval);
-  _notifEnabled=false;
-  _notifiedRefs=new Set();
-  localStorage.removeItem('adm_notified_refs');
 }
 
 /* ============================================================
@@ -3127,6 +3125,9 @@ const settingsSections={
     icon:'fa-solid fa-bell',name:'Notificações',
     render:()=>{
       const l=state.loja;
+      const osSubscrito=window.OneSignal?.User?.PushSubscription?.optedIn||false;
+      const temRestKey=!!(l.onesignal_api_key||localStorage.getItem('adm_onesignal_rest')||'');
+      const statusOk=osSubscrito&&temRestKey;
       return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i> Notificações</div></div>'+
         '<div class="switch-row"><div><div class="switch-label">Email (EmailJS)</div></div><label class="switch"><input type="checkbox" id="cfgNotEmail" '+(l.notif_email?'checked':'')+'/><span class="switch-slider"></span></label></div>'+
         '<div class="switch-row"><div><div class="switch-label">WhatsApp (CallMeBot)</div></div><label class="switch"><input type="checkbox" id="cfgNotWa" '+(l.notif_whatsapp?'checked':'')+'/><span class="switch-slider"></span></label></div>'+
@@ -3136,11 +3137,48 @@ const settingsSections={
         '<div class="form-group"><label>EmailJS Template ID</label><input class="form-input" id="cfgEjsT" value="'+esc(l.emailjs_template||'')+'"/></div></div>'+
         '<div class="form-group"><label>EmailJS Public Key</label><input class="form-input" id="cfgEjsK" value="'+esc(l.emailjs_pubkey||'')+'"/></div>'+
         '<div style="height:1px;background:var(--border);margin:14px 0"></div>'+
-        '<div class="cfg-section-label" style="margin-bottom:10px"><i class="fa-solid fa-bell" style="color:var(--purple)"></i><span style="color:var(--purple)">OneSignal Push (Admin)</span></div>'+
-        '<div class="info-box success" style="margin-bottom:10px"><i class="fa-solid fa-circle-info"></i> Notificações push automáticas mesmo com o admin fechado. Obtém a REST API Key em OneSignal → Chaves e Identificações.</div>'+
-        '<div class="form-group"><label>App ID</label><input class="form-input" id="cfgOsAppId" value="'+esc(l.onesignal_app_id||'')+'"/></div>'+
-        '<div class="form-group"><label>REST API Key</label><input class="form-input" type="password" id="cfgOsApiKey" value="'+esc(l.onesignal_api_key||'')+'"/></div>'+
-        '<div class="form-group"><label>Tag do Admin <span class="optional">(padrão: admin)</span></label><input class="form-input" id="cfgOsTag" value="'+esc(l.onesignal_admin_tag||'admin')+'"/></div></div>';
+
+        /* ── OneSignal Push ── */
+        '<div class="cfg-section-label" style="margin-bottom:12px"><i class="fa-brands fa-chrome" style="color:var(--purple)"></i><span style="color:var(--purple)">OneSignal Push (Admin)</span></div>'+
+
+        /* Estado atual */
+        '<div class="info-box '+(statusOk?'success':osSubscrito?'warning':'danger')+'" style="margin-bottom:12px">'+
+          '<i class="fa-solid fa-'+(statusOk?'circle-check':osSubscrito?'triangle-exclamation':'circle-xmark')+'"></i> '+
+          (statusOk
+            ? '✅ Push ativo — este dispositivo está subscrito e a REST Key está configurada.'
+            : osSubscrito
+              ? '⚠️ Subscrito mas sem REST API Key — as notificações <strong>não serão enviadas</strong>. Preenche a chave abaixo e guarda.'
+              : '❌ Push <strong>não ativo</strong> neste dispositivo. Clica em "Ativar Push" abaixo.')+
+        '</div>'+
+
+        /* Botões de ação push */
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
+          '<button class="btn '+(osSubscrito?'btn-danger':'btn-success')+'" onclick="toggleNotifications().then(()=>{settingsSection(\'notifications\');renderSettingsForm();})">'+
+            '<i class="fa-solid fa-bell'+(osSubscrito?'-slash':'')+'"></i> '+(osSubscrito?'Desativar push neste dispositivo':'Ativar push neste dispositivo')+
+          '</button>'+
+          '<button class="btn btn-outline" onclick="testarNotificacao()">'+
+            '<i class="fa-solid fa-paper-plane"></i> Enviar teste'+
+          '</button>'+
+        '</div>'+
+
+        /* Campos OneSignal */
+        '<div class="form-group"><label>App ID <span class="optional">(já configurado automaticamente)</span></label>'+
+          '<input class="form-input" id="cfgOsAppId" value="'+esc(l.onesignal_app_id||'28d74020-c173-4107-915f-ae48ef166118')+'"/></div>'+
+        '<div class="form-group"><label>REST API Key <span class="optional">— OneSignal → Settings → Keys & IDs</span></label>'+
+          '<input class="form-input" type="password" id="cfgOsApiKey" placeholder="Colar REST API Key aqui..." value="'+esc(l.onesignal_api_key||'')+'"/></div>'+
+        '<div class="form-group"><label>Tag do Admin <span class="optional">(padrão: admin — não alterar)</span></label>'+
+          '<input class="form-input" id="cfgOsTag" value="'+esc(l.onesignal_admin_tag||'admin')+'"/></div>'+
+
+        /* Tipos de notificação */
+        '<div style="height:1px;background:var(--border);margin:14px 0"></div>'+
+        '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Tipos de notificação push</div>'+
+        _renderNotifPrefs()+
+
+        '<div style="margin-top:12px;font-size:.65rem;color:var(--muted);line-height:1.6">'+
+          '<i class="fa-solid fa-circle-info" style="color:var(--blue)"></i> '+
+          'As notificações chegam ao teu telemóvel/browser mesmo com o admin fechado. '+
+          'Podes ativar em múltiplos dispositivos — todos receberão as notificações em simultâneo.'+
+        '</div></div>';
     }
   },
   seo:{
@@ -3215,6 +3253,9 @@ async function saveSettings(){
     campos={cor_primaria:getVal('cfgCorPT')||'#ff6b9d',cor_secundaria:getVal('cfgCorST')||'#b14ae8',logo_url:getVal('cfgLogo')||null,banner_url:getVal('cfgBanner')||null,favicon_url:getVal('cfgFavicon')||null};
   }else if(section==='notifications'){
     campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null,onesignal_app_id:getVal('cfgOsAppId')||null,onesignal_api_key:getVal('cfgOsApiKey')||null,onesignal_admin_tag:getVal('cfgOsTag')||'admin'};
+    /* Guardar REST Key também no localStorage para uso imediato */
+    if(campos.onesignal_api_key) localStorage.setItem('adm_onesignal_rest', campos.onesignal_api_key);
+    if(campos.onesignal_app_id) localStorage.setItem('adm_onesignal_appid', campos.onesignal_app_id);
   }else if(section==='seo'){
     campos={meta_descricao:getVal('cfgMetaDesc')||null,palavras_chave:getVal('cfgKw')||null,politica:getVal('cfgPolitica')||null,termos:getVal('cfgTermos')||null};
   }else if(section==='referidos'){
@@ -3666,110 +3707,301 @@ function getFaqs(){
   return faqs;
 }
 
+/* ── Preferências de tipos de notificação ── */
+function _getNotifPref(tipo){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); return p[tipo]!==false; }
+function _setNotifPref(tipo,val){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); p[tipo]=val; localStorage.setItem('adm_notif_prefs',JSON.stringify(p)); }
+function _renderNotifPrefs(){
+  const prefs=[
+    ['enc','🛒 Novas Encomendas','Quando um cliente faz uma nova encomenda'],
+    ['rev','💬 Novas Avaliações','Avaliações pendentes de aprovação'],
+    ['cpn','🎟️ Uso de Cupões','Quando um cupão é aplicado a uma encomenda'],
+    ['cli','👤 Novos Clientes','Quando um novo cliente se regista']
+  ];
+  return prefs.map(([k,lbl,sub])=>
+    '<div class="switch-row">'+
+      '<div><div class="switch-label">'+lbl+'</div><div class="switch-sub">'+sub+'</div></div>'+
+      '<label class="switch"><input type="checkbox" '+(
+        _getNotifPref(k)?'checked':''
+      )+' onchange="_setNotifPref(\''+k+'\',this.checked)"/><span class="switch-slider"></span></label>'+
+    '</div>'
+  ).join('');
+}
+
 /* ============================================================
-   NOTIFICAÇÕES PUSH (Browser Notification + SW polling)
+   NOTIFICAÇÕES PUSH — OneSignal v16
    ============================================================ */
-var _notifInterval=null;
-var _lastOrderCount=0;
-var _notifEnabled=false;
-// Carrega refs já notificados do localStorage para persistir entre sessões
-var _notifiedRefs=new Set(JSON.parse(localStorage.getItem('adm_notified_refs')||'[]'));
+var _notifInterval = null;
+var _notifEnabled  = false;
+var _notifiedRefs  = new Set(JSON.parse(localStorage.getItem('adm_notified_refs') || '[]'));
+var _lastRevCount  = 0;
 
-function salvarNotifiedRefs(){
-  // Guarda apenas os últimos 200 refs para não encher o localStorage
-  const arr=Array.from(_notifiedRefs);
-  localStorage.setItem('adm_notified_refs',JSON.stringify(arr.slice(-200)));
+/* Persistência anti-duplicados */
+function salvarNotifiedRefs() {
+  localStorage.setItem('adm_notified_refs', JSON.stringify([..._notifiedRefs].slice(-300)));
 }
 
-function mostrarNotificacao(titulo,opcoes){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(function(reg){
-      reg.showNotification(titulo,opcoes);
-    }).catch(function(){new Notification(titulo,opcoes);});
-  } else {
-    new Notification(titulo,opcoes);
+/* Lê chave de prioridade: state.loja (BD) > localStorage */
+function _osRestKey() {
+  return state.loja.onesignal_api_key
+    || localStorage.getItem('adm_onesignal_rest')
+    || '';
+}
+function _osAppId() {
+  return state.loja.onesignal_app_id
+    || localStorage.getItem('adm_onesignal_appid')
+    || '28d74020-c173-4107-915f-ae48ef166118';
+}
+
+/* ── Motor de envio OneSignal REST API ── */
+async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
+  const restKey = _osRestKey();
+  if (!restKey) { console.warn('[OneSignal] REST API Key não configurada.'); return null; }
+
+  const corpo = {
+    app_id: _osAppId(),
+    filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }],
+    headings: { pt: titulo, en: titulo },
+    contents: { pt: mensagem, en: mensagem },
+    url: url || location.href,
+    data: dados || {}
+  };
+  if (icone) { corpo.chrome_web_icon = icone; corpo.firefox_icon = icone; }
+
+  try {
+    const res = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + restKey },
+      body: JSON.stringify(corpo)
+    });
+    const r = await res.json();
+    console.log('[OneSignal] ✅', titulo, r);
+    return r;
+  } catch (err) {
+    console.error('[OneSignal] ❌', err);
+    return null;
   }
 }
 
-function testarNotificacao(){
-  if(Notification.permission!=='granted'){alert('Permissão de notificação não concedida');return;}
-  mostrarNotificacao('🧪 Teste OK',{body:'Notificações a funcionar!',icon:'/Loja/favicon.svg',vibrate:[200,100,200]});
+/* ── Gatilhos específicos ── */
+function notificarNovaEncomenda(enc) {
+  const ref = enc.ref || enc.id || '';
+  if (!ref || _notifiedRefs.has('ord_' + ref)) return;
+  _notifiedRefs.add('ord_' + ref); salvarNotifiedRefs();
+  const nome  = enc.nome_cliente || 'Cliente';
+  const total = enc.total != null ? kz(enc.total, state.loja.simbolo_moeda) : '—';
+  const nitens = Array.isArray(enc.itens) ? enc.itens.length : '?';
+  return enviarNotificacaoAdmin({
+    titulo: '🛒 Nova Encomenda!',
+    mensagem: nome + ' · ' + nitens + ' item(ns) · ' + total,
+    url: location.href.split('?')[0] + '#orders',
+    dados: { tipo: 'encomenda', ref, cliente: nome }
+  });
 }
 
-async function toggleNotifications(){
-  if(_notifEnabled){
-    _notifEnabled=false;
-    if(_notifInterval)clearInterval(_notifInterval);
-    localStorage.setItem('adm_notif','0');
-    updateNotifBtn();
-    toast('Notificações desactivadas','info');
-    return;
-  }
-  if(!('Notification' in window)){toast('Browser não suporta notificações','error');return;}
-  const perm=await Notification.requestPermission();
-  if(perm!=='granted'){toast('Permissão negada pelo browser','error');return;}
-  _notifEnabled=true;
-  localStorage.setItem('adm_notif','1');
-  _lastOrderCount=state.encomendas.length;
-  iniciarPollingNotif();
-  updateNotifBtn();
-  toast('Notificações activadas!','success');
+function notificarNovaAvaliacao(av) {
+  const id = String(av.id || (av.produto_id + '_' + av.criado_em));
+  if (_notifiedRefs.has('rev_' + id)) return;
+  _notifiedRefs.add('rev_' + id); salvarNotifiedRefs();
+  const estrelas = '★'.repeat(av.estrelas || 0) + '☆'.repeat(5 - (av.estrelas || 0));
+  const prodMap = {}; state.produtos.forEach(p => { prodMap[p.id] = p.nome; });
+  const produto = prodMap[av.produto_id] || 'produto';
+  const nome    = av.cliente_nome || 'Anónimo';
+  return enviarNotificacaoAdmin({
+    titulo: '💬 Nova Avaliação!',
+    mensagem: nome + ' avaliou "' + produto + '" — ' + estrelas,
+    url: location.href.split('?')[0] + '#reviews',
+    dados: { tipo: 'avaliacao', produto, estrelas: av.estrelas }
+  });
 }
 
-function updateNotifBtn(){
-  const btn=$('notifBtn'),ico=$('notifIcon');
-  if(!btn||!ico)return;
-  if(_notifEnabled){ico.className='fa-solid fa-bell';btn.style.color='var(--yellow)';}
-  else{ico.className='fa-solid fa-bell-slash';btn.style.color='';}
+function notificarUsoCupom(enc) {
+  if (!enc.cupao_codigo) return;
+  const chave = 'cpn_' + enc.cupao_codigo + '_' + (enc.ref || enc.id);
+  if (_notifiedRefs.has(chave)) return;
+  _notifiedRefs.add(chave); salvarNotifiedRefs();
+  const nome = enc.nome_cliente || 'Cliente';
+  const desc = enc.cupao_desconto != null
+    ? (enc.cupao_tipo === 'percentagem' ? enc.cupao_desconto + '%' : kz(enc.cupao_desconto, state.loja.simbolo_moeda))
+    : '?';
+  return enviarNotificacaoAdmin({
+    titulo: '🎟️ Cupão Utilizado!',
+    mensagem: nome + ' usou "' + enc.cupao_codigo + '" — Desconto: ' + desc,
+    url: location.href.split('?')[0] + '#coupons',
+    dados: { tipo: 'cupom', codigo: enc.cupao_codigo }
+  });
 }
 
-function iniciarPollingNotif(){
-  if(_notifInterval)clearInterval(_notifInterval);
-  // Regista as encomendas existentes ANTES de iniciar o polling
-  fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}})
-    .then(r=>r.json()).then(function(encs){
-      if(Array.isArray(encs)){encs.forEach(e=>_notifiedRefs.add(e.ref));salvarNotifiedRefs();}
-    }).catch(function(){})
-    .finally(function(){
-      // Só inicia o polling DEPOIS do registo inicial estar completo
-      if(_notifInterval)clearInterval(_notifInterval);
-      _notifInterval=setInterval(async function(){
-    if(!_notifEnabled||!state.token)return;
-    try{
-      const encs=await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(r=>r.json());
-      if(!Array.isArray(encs))return;
-      const novas=encs.filter(e=>!_notifiedRefs.has(e.ref));
-      encs.forEach(e=>_notifiedRefs.add(e.ref));
-      salvarNotifiedRefs();
-      if(novas.length>0){
-        state.encomendas=encs;
-        state.filteredOrders=[...encs];
+function notificarNovoCliente(cliente) {
+  const id = cliente.email || cliente.tel || '';
+  if (!id || _notifiedRefs.has('cli_' + id)) return;
+  _notifiedRefs.add('cli_' + id); salvarNotifiedRefs();
+  const nome = cliente.nome || 'Novo cliente';
+  return enviarNotificacaoAdmin({
+    titulo: '👤 Novo Cliente!',
+    mensagem: nome + (cliente.tel ? ' · ' + cliente.tel : '') + ' registou-se',
+    url: location.href.split('?')[0] + '#clients',
+    dados: { tipo: 'cliente', nome }
+  });
+}
+
+/* ── Polling — detecta novidades a cada 25s ── */
+async function _pollNotificacoes() {
+  if (!_notifEnabled || !state.token) return;
+  try {
+    /* Novas encomendas */
+    const encs = await fetch(API + '/api/admin/encomendas', {
+      headers: { 'Authorization': 'Bearer ' + state.token }
+    }).then(r => r.json());
+
+    if (Array.isArray(encs)) {
+      const novas = encs.filter(e => !_notifiedRefs.has('ord_' + e.ref));
+      if (novas.length > 0) {
+        state.encomendas = encs;
+        state.filteredOrders = [...encs];
         updateDashboardStats();
-        if(state.currentPanel==='dashboard')renderDashboard();
-        if(state.currentPanel==='orders')renderOrders();
-        novas.forEach(function(enc){
-          mostrarNotificacao('🛍️ Nova Encomenda — '+(state.loja.nome||'Loja'),{
-            body:enc.nome_cliente+' · '+kz(enc.total,state.loja.simbolo_moeda),
-            icon:state.loja.logo_url||'/Loja/favicon.svg',
-            tag:'enc-'+enc.ref,
-            vibrate:[200,100,200],
-            data:{url:'/Loja/admin.html'}
-          });
+        if (state.currentPanel === 'dashboard') renderDashboard();
+        if (state.currentPanel === 'orders') renderOrders();
+        novas.forEach(enc => {
+          notificarNovaEncomenda(enc);
+          /* Cupões usados */
+          if (enc.cupao_codigo) notificarUsoCupom(enc);
         });
       }
-    }catch(e){}
-      },20000); /* verifica a cada 20 segundos */
+      encs.forEach(e => _notifiedRefs.add('ord_' + e.ref));
+      salvarNotifiedRefs();
+    }
+
+    /* Novas avaliações pendentes */
+    try {
+      const revs = await api('/api/admin/avaliacoes');
+      const pendentes = revs.filter(r => !r.aprovada);
+      if (pendentes.length > _lastRevCount && _lastRevCount > 0) {
+        pendentes.slice(_lastRevCount).forEach(av => notificarNovaAvaliacao(av));
+      }
+      _lastRevCount = pendentes.length;
+    } catch(e) {}
+
+    /* Novos clientes */
+    try {
+      const clis = await api('/api/admin/clientes');
+      const visto = parseInt(localStorage.getItem('adm_clients_seen') || '0');
+      if (Array.isArray(clis) && clis.length > visto && visto > 0) {
+        clis.slice(visto).forEach(c => notificarNovoCliente(c));
+      }
+      if (Array.isArray(clis)) localStorage.setItem('adm_clients_seen', clis.length);
+    } catch(e) {}
+
+  } catch(e) { console.warn('[OneSignal] Erro polling:', e); }
+}
+
+function iniciarPollingNotif() {
+  if (_notifInterval) clearInterval(_notifInterval);
+  /* Snapshot inicial: marca tudo existente como já notificado */
+  fetch(API + '/api/admin/encomendas', { headers: { 'Authorization': 'Bearer ' + state.token } })
+    .then(r => r.json()).then(encs => {
+      if (Array.isArray(encs)) { encs.forEach(e => _notifiedRefs.add('ord_' + e.ref)); salvarNotifiedRefs(); }
+    }).catch(() => {})
+    .finally(() => {
+      _notifInterval = setInterval(_pollNotificacoes, 25000);
     });
 }
 
-function initNotificacoes(){
-  const saved=localStorage.getItem('adm_notif');
-  if(saved==='1'&&'Notification' in window&&Notification.permission==='granted'){
-    _notifEnabled=true;
-    _lastOrderCount=state.encomendas.length;
-    iniciarPollingNotif();
+/* ── Botão no topbar ── */
+function updateNotifBtn() {
+  const btn = $('notifBtn'), ico = $('notifIcon');
+  if (!btn || !ico) return;
+  if (_notifEnabled) {
+    ico.className = 'fa-solid fa-bell';
+    btn.style.borderColor = 'var(--teal)';
+    btn.style.color = 'var(--teal)';
+    btn.title = 'Notificações push ativas — clica para desativar';
+  } else {
+    ico.className = 'fa-solid fa-bell-slash';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    btn.title = 'Ativar notificações push';
   }
-  updateNotifBtn();
+}
+
+/* ── Toggle (botão 🔔 no topbar) ── */
+async function toggleNotifications() {
+  try {
+    const os = window.OneSignal;
+    if (!os) { toast('SDK OneSignal não carregado', 'error'); return; }
+
+    const subscrito = os.User?.PushSubscription?.optedIn;
+
+    if (subscrito || _notifEnabled) {
+      /* Desativar */
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
+      _notifEnabled = false;
+      if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
+      localStorage.setItem('adm_notif', '0');
+      updateNotifBtn();
+      toast('Notificações desativadas', 'info');
+    } else {
+      /* Ativar — pede permissão */
+      await os.Notifications.requestPermission();
+      const agora = os.User?.PushSubscription?.optedIn;
+      if (agora) {
+        try { await os.User.addTag('role', 'admin'); } catch(e) {}
+        _notifEnabled = true;
+        _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
+        localStorage.setItem('adm_clients_seen', (state.clientes || []).length);
+        iniciarPollingNotif();
+        localStorage.setItem('adm_notif', '1');
+        updateNotifBtn();
+        toast('✅ Notificações push ativadas!', 'success');
+      } else {
+        toast('Permissão negada ou bloqueada pelo browser', 'error');
+      }
+    }
+  } catch (err) {
+    console.error('[OneSignal] toggleNotifications:', err);
+    toast('Erro ao gerir notificações', 'error');
+  }
+}
+
+/* ── Botão TEST no topbar ── */
+async function testarNotificacao() {
+  if (!_osRestKey()) {
+    toast('Configura a REST API Key em Configurações → Notificações', 'error');
+    return;
+  }
+  const res = await enviarNotificacaoAdmin({
+    titulo: '🧪 Teste Admin',
+    mensagem: 'Sistema de notificações push a funcionar!',
+    url: location.href,
+    dados: { tipo: 'teste', ts: Date.now() }
+  });
+  if (res && !res.errors) {
+    toast('Notificação de teste enviada! Verifica o teu dispositivo.', 'success');
+  } else {
+    toast('Erro ao enviar — verifica a REST API Key', 'error');
+  }
+}
+
+/* ── Init (chamado em initApp) ── */
+async function initNotificacoes() {
+  try {
+    const os = window.OneSignal;
+    if (!os) { updateNotifBtn(); return; }
+
+    const subscrito = os.User?.PushSubscription?.optedIn;
+    const guardado  = localStorage.getItem('adm_notif') === '1';
+
+    if (subscrito || guardado) {
+      _notifEnabled = true;
+      try { await os.User.addTag('role', 'admin'); } catch(e) {}
+      _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
+      localStorage.setItem('adm_clients_seen', (state.clientes || []).length);
+      iniciarPollingNotif();
+    }
+    updateNotifBtn();
+  } catch(e) {
+    console.warn('[OneSignal] initNotificacoes:', e);
+    updateNotifBtn();
+  }
 }
 
 applyTheme();
