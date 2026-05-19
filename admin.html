@@ -933,18 +933,30 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </head>
 <body>
 <!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
 <script>
-  window._OS = null; // instância global acessível em todo o código
+  window._OS = null;
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
-      allowLocalhostAsSecureOrigin: true,
-      notifyButton: { enable: false } // usamos o nosso próprio botão
-    });
-    window._OS = OneSignal; // guardar instância para uso em toggleNotifications, etc.
-    console.log('[OneSignal] SDK pronto ✅');
+    // Detectar automaticamente o directório do admin.html para o Service Worker
+    var _swBase = location.pathname.replace(/\/[^\/]*$/, '') || '/';
+    var _swPath  = _swBase + '/OneSignalSDKWorker.js';
+    var _swScope = _swBase + '/';
+    try {
+      await OneSignal.init({
+        appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
+        allowLocalhostAsSecureOrigin: true,
+        serviceWorkerPath: _swPath,
+        serviceWorkerParam: { scope: _swScope },
+        notifyButton: { enable: false }
+      });
+      console.log('[OneSignal] Init OK — SW:', _swPath);
+    } catch(e) {
+      // Init pode falhar se SW não existir — mesmo assim guardar instância
+      console.warn('[OneSignal] Init warning (verifica OneSignalSDKWorker.js):', e.message || e);
+    }
+    window._OS = OneSignal; // SEMPRE definir, mesmo se init falhou parcialmente
+    console.log('[OneSignal] Instância disponível em window._OS');
   });
 </script>
 
@@ -3137,10 +3149,10 @@ const settingsSections={
         '<div class="info-box '+(statusOk?'success':osSubscrito?'warning':'danger')+'" style="margin-bottom:12px">'+
           '<i class="fa-solid fa-'+(statusOk?'circle-check':osSubscrito?'triangle-exclamation':'circle-xmark')+'"></i> '+
           (statusOk
-            ? '✅ Push ativo — este dispositivo está subscrito e a REST Key está configurada.'
+            ? 'Push ativo &mdash; este dispositivo esta subscrito e a REST Key esta configurada.'
             : osSubscrito
-              ? '⚠️ Subscrito mas sem REST API Key — as notificações <strong>não serão enviadas</strong>. Preenche a chave abaixo e guarda.'
-              : '❌ Push <strong>não ativo</strong> neste dispositivo. Clica em "Ativar Push" abaixo.')+
+              ? 'Subscrito mas sem REST API Key &mdash; as notificacoes <strong>nao serao enviadas</strong>. Preenche a chave abaixo e guarda.'
+              : 'Push <strong>nao ativo</strong> neste dispositivo. Clica em &ldquo;Ativar Push&rdquo; abaixo.')+
         '</div>'+
 
         /* Botões de ação push */
@@ -3704,10 +3716,10 @@ function _getNotifPref(tipo){ const p=JSON.parse(localStorage.getItem('adm_notif
 function _setNotifPref(tipo,val){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); p[tipo]=val; localStorage.setItem('adm_notif_prefs',JSON.stringify(p)); }
 function _renderNotifPrefs(){
   const prefs=[
-    ['enc','🛒 Novas Encomendas','Quando um cliente faz uma nova encomenda'],
-    ['rev','💬 Novas Avaliações','Avaliações pendentes de aprovação'],
-    ['cpn','🎟️ Uso de Cupões','Quando um cupão é aplicado a uma encomenda'],
-    ['cli','👤 Novos Clientes','Quando um novo cliente se regista']
+    ['enc','<i class="fa-solid fa-cart-shopping" style="color:var(--pink)"></i> Novas Encomendas','Quando um cliente faz uma nova encomenda'],
+    ['rev','<i class="fa-solid fa-comment-dots" style="color:var(--yellow)"></i> Novas Avaliacoes','Avaliacoes pendentes de aprovacao'],
+    ['cpn','<i class="fa-solid fa-ticket" style="color:var(--teal)"></i> Uso de Cupoes','Quando um cupao e aplicado a uma encomenda'],
+    ['cli','<i class="fa-solid fa-user-plus" style="color:var(--blue)"></i> Novos Clientes','Quando um novo cliente se regista']
   ];
   return prefs.map(([k,lbl,sub])=>
     '<div class="switch-row">'+
@@ -3783,7 +3795,7 @@ function notificarNovaEncomenda(enc) {
   const total = enc.total != null ? kz(enc.total, state.loja.simbolo_moeda) : '—';
   const nitens = Array.isArray(enc.itens) ? enc.itens.length : '?';
   return enviarNotificacaoAdmin({
-    titulo: '🛒 Nova Encomenda!',
+    titulo: 'Nova Encomenda',
     mensagem: nome + ' · ' + nitens + ' item(ns) · ' + total,
     url: location.href.split('?')[0] + '#orders',
     dados: { tipo: 'encomenda', ref, cliente: nome }
@@ -3794,12 +3806,12 @@ function notificarNovaAvaliacao(av) {
   const id = String(av.id || (av.produto_id + '_' + av.criado_em));
   if (_notifiedRefs.has('rev_' + id)) return;
   _notifiedRefs.add('rev_' + id); salvarNotifiedRefs();
-  const estrelas = '★'.repeat(av.estrelas || 0) + '☆'.repeat(5 - (av.estrelas || 0));
+  const estrelas = av.estrelas ? av.estrelas + '/5 estrelas' : '';
   const prodMap = {}; state.produtos.forEach(p => { prodMap[p.id] = p.nome; });
   const produto = prodMap[av.produto_id] || 'produto';
-  const nome    = av.cliente_nome || 'Anónimo';
+  const nome    = av.cliente_nome || 'Anonimo';
   return enviarNotificacaoAdmin({
-    titulo: '💬 Nova Avaliação!',
+    titulo: 'Nova Avaliacao',
     mensagem: nome + ' avaliou "' + produto + '" — ' + estrelas,
     url: location.href.split('?')[0] + '#reviews',
     dados: { tipo: 'avaliacao', produto, estrelas: av.estrelas }
@@ -3816,7 +3828,7 @@ function notificarUsoCupom(enc) {
     ? (enc.cupao_tipo === 'percentagem' ? enc.cupao_desconto + '%' : kz(enc.cupao_desconto, state.loja.simbolo_moeda))
     : '?';
   return enviarNotificacaoAdmin({
-    titulo: '🎟️ Cupão Utilizado!',
+    titulo: 'Cupao Utilizado',
     mensagem: nome + ' usou "' + enc.cupao_codigo + '" — Desconto: ' + desc,
     url: location.href.split('?')[0] + '#coupons',
     dados: { tipo: 'cupom', codigo: enc.cupao_codigo }
@@ -3829,7 +3841,7 @@ function notificarNovoCliente(cliente) {
   _notifiedRefs.add('cli_' + id); salvarNotifiedRefs();
   const nome = cliente.nome || 'Novo cliente';
   return enviarNotificacaoAdmin({
-    titulo: '👤 Novo Cliente!',
+    titulo: 'Novo Cliente',
     mensagem: nome + (cliente.tel ? ' · ' + cliente.tel : '') + ' registou-se',
     url: location.href.split('?')[0] + '#clients',
     dados: { tipo: 'cliente', nome }
@@ -3952,7 +3964,7 @@ async function toggleNotifications() {
         iniciarPollingNotif();
         localStorage.setItem('adm_notif', '1');
         updateNotifBtn();
-        toast('✅ Notificações push ativadas!', 'success');
+        toast('Notificacoes push ativadas!', 'success');
       } else {
         toast('Permissão negada — vai às definições do browser e permite notificações para este site', 'error');
       }
@@ -3970,8 +3982,8 @@ async function testarNotificacao() {
     return;
   }
   const res = await enviarNotificacaoAdmin({
-    titulo: '🧪 Teste Admin',
-    mensagem: 'Sistema de notificações push a funcionar!',
+    titulo: 'Teste Admin',
+    mensagem: 'Sistema de notificacoes push a funcionar!',
     url: location.href,
     dados: { tipo: 'teste', ts: Date.now() }
   });
