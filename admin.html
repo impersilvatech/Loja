@@ -933,22 +933,18 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </head>
 <body>
 <!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
+  window._OS = null; // instância global acessível em todo o código
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(function(OneSignal) {
-    OneSignal.init({
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
       appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
       allowLocalhostAsSecureOrigin: true,
-      serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/Loja/" },
-      notifyButton: {
-        enable: true,
-        position: 'bottom-right',
-        theme: 'dark',
-        size: 'medium'
-      }
+      notifyButton: { enable: false } // usamos o nosso próprio botão
     });
+    window._OS = OneSignal; // guardar instância para uso em toggleNotifications, etc.
+    console.log('[OneSignal] SDK pronto ✅');
   });
 </script>
 
@@ -1792,16 +1788,12 @@ const GH_DEFAULT_REPO = '';
 // Registar admin no OneSignal após login
 async function registarAdminNoOneSignal() {
   try {
-    if (typeof OneSignal === 'undefined') {
+    if (!window._OS) {
       setTimeout(registarAdminNoOneSignal, 1000);
       return;
     }
-    
-    const tags = await OneSignal.getTags();
-    if (tags.role !== 'admin') {
-      await OneSignal.sendTag('role', 'admin');
-      console.log('✅ Admin registado no OneSignal');
-    }
+    await window._OS.User.addTag('role', 'admin');
+    console.log('✅ Admin registado no OneSignal (tag role=admin)');
   } catch (e) {
     console.error('❌ Erro ao registar admin:', e);
   }
@@ -3125,7 +3117,7 @@ const settingsSections={
     icon:'fa-solid fa-bell',name:'Notificações',
     render:()=>{
       const l=state.loja;
-      const osSubscrito=window.OneSignal?.User?.PushSubscription?.optedIn||false;
+      const osSubscrito=window._OS?.User?.PushSubscription?.optedIn||false;
       const temRestKey=!!(l.onesignal_api_key||localStorage.getItem('adm_onesignal_rest')||'');
       const statusOk=osSubscrito&&temRestKey;
       return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i> Notificações</div></div>'+
@@ -3925,10 +3917,19 @@ function updateNotifBtn() {
 
 /* ── Toggle (botão 🔔 no topbar) ── */
 async function toggleNotifications() {
-  try {
-    const os = window.OneSignal;
-    if (!os) { toast('SDK OneSignal não carregado', 'error'); return; }
+  /* Aguardar SDK estar pronto (máx 5s) */
+  let tentativas = 0;
+  while (!window._OS && tentativas < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tentativas++;
+  }
+  const os = window._OS;
+  if (!os) {
+    toast('SDK OneSignal não carregado — recarrega a página', 'error');
+    return;
+  }
 
+  try {
     const subscrito = os.User?.PushSubscription?.optedIn;
 
     if (subscrito || _notifEnabled) {
@@ -3940,10 +3941,10 @@ async function toggleNotifications() {
       updateNotifBtn();
       toast('Notificações desativadas', 'info');
     } else {
-      /* Ativar — pede permissão */
-      await os.Notifications.requestPermission();
+      /* Ativar — pede permissão ao browser */
+      const permissao = await os.Notifications.requestPermission();
       const agora = os.User?.PushSubscription?.optedIn;
-      if (agora) {
+      if (agora || permissao) {
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
         _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
@@ -3953,12 +3954,12 @@ async function toggleNotifications() {
         updateNotifBtn();
         toast('✅ Notificações push ativadas!', 'success');
       } else {
-        toast('Permissão negada ou bloqueada pelo browser', 'error');
+        toast('Permissão negada — vai às definições do browser e permite notificações para este site', 'error');
       }
     }
   } catch (err) {
     console.error('[OneSignal] toggleNotifications:', err);
-    toast('Erro ao gerir notificações', 'error');
+    toast('Erro: ' + (err.message || err), 'error');
   }
 }
 
@@ -3984,7 +3985,11 @@ async function testarNotificacao() {
 /* ── Init (chamado em initApp) ── */
 async function initNotificacoes() {
   try {
-    const os = window.OneSignal;
+    /* Aguardar SDK (máx 6s) */
+    let t = 0;
+    while (!window._OS && t < 60) { await new Promise(r => setTimeout(r, 100)); t++; }
+
+    const os = window._OS;
     if (!os) { updateNotifBtn(); return; }
 
     const subscrito = os.User?.PushSubscription?.optedIn;
@@ -3998,6 +4003,7 @@ async function initNotificacoes() {
       iniciarPollingNotif();
     }
     updateNotifBtn();
+    console.log('[OneSignal] initNotificacoes — subscrito:', subscrito, '| ativo:', _notifEnabled);
   } catch(e) {
     console.warn('[OneSignal] initNotificacoes:', e);
     updateNotifBtn();
