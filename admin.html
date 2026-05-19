@@ -938,7 +938,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(function(OneSignal) {
     OneSignal.init({
-      appId: "28d74020-c173-4107-915f-ae48ef166118",
+      appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
       allowLocalhostAsSecureOrigin: true,
       serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
       serviceWorkerParam: { scope: "/Loja/" },
@@ -1792,14 +1792,16 @@ const GH_DEFAULT_REPO = '';
 // Registar admin no OneSignal após login
 async function registarAdminNoOneSignal() {
   try {
-    // Aguardar SDK v16 estar pronto
-    if (typeof OneSignal === 'undefined' || !OneSignal.User) {
-      setTimeout(registarAdminNoOneSignal, 1500);
+    if (typeof OneSignal === 'undefined') {
+      setTimeout(registarAdminNoOneSignal, 1000);
       return;
     }
-    // API v16
-    await OneSignal.User.addTag('role', 'admin');
-    console.log('✅ Admin registado no OneSignal (v16)');
+    
+    const tags = await OneSignal.getTags();
+    if (tags.role !== 'admin') {
+      await OneSignal.sendTag('role', 'admin');
+      console.log('✅ Admin registado no OneSignal');
+    }
   } catch (e) {
     console.error('❌ Erro ao registar admin:', e);
   }
@@ -3161,7 +3163,7 @@ const settingsSections={
 
         /* Campos OneSignal */
         '<div class="form-group"><label>App ID <span class="optional">(já configurado automaticamente)</span></label>'+
-          '<input class="form-input" id="cfgOsAppId" value="'+esc(l.onesignal_app_id||'28d74020-c173-4107-915f-ae48ef166118')+'"/></div>'+
+          '<input class="form-input" id="cfgOsAppId" value="'+esc(l.onesignal_app_id||'d3394241-a8cb-4c7e-9d1d-ac0fb9704591')+'"/></div>'+
         '<div class="form-group"><label>REST API Key <span class="optional">— OneSignal → Settings → Keys & IDs</span></label>'+
           '<input class="form-input" type="password" id="cfgOsApiKey" placeholder="Colar REST API Key aqui..." value="'+esc(l.onesignal_api_key||'')+'"/></div>'+
         '<div class="form-group"><label>Tag do Admin <span class="optional">(padrão: admin — não alterar)</span></label>'+
@@ -3747,7 +3749,7 @@ function _osRestKey() {
 function _osAppId() {
   return state.loja.onesignal_app_id
     || localStorage.getItem('adm_onesignal_appid')
-    || '28d74020-c173-4107-915f-ae48ef166118';
+    || 'd3394241-a8cb-4c7e-9d1d-ac0fb9704591';
 }
 
 /* ── Motor de envio OneSignal REST API ── */
