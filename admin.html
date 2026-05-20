@@ -3937,42 +3937,43 @@ function updateNotifBtn() {
 
 /* ── Toggle (botão 🔔 no topbar) ── */
 async function toggleNotifications() {
-  // Desactivar
-  if (_notifEnabled) {
-    _notifEnabled = false;
-    if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
-    localStorage.setItem('adm_notif', '0');
-    updateNotifBtn();
-    toast('Notificações desativadas', 'info');
-    return;
-  }
-  // Activar — pede permissão directamente ao browser
-  if (!('Notification' in window)) {
-    toast('Este browser não suporta notificações', 'error');
-    return;
-  }
-  let perm = Notification.permission;
-  if (perm === 'default') {
-    perm = await Notification.requestPermission();
-  }
-  if (perm !== 'granted') {
-    toast('Permissão negada — vai a Definições do Chrome e permite notificações para este site', 'error');
-    return;
-  }
-  // Registar tag no OneSignal (v16) em background
+  const btn = $('notifBtn'), ico = $('notifIcon');
+  const icoBak = ico ? ico.className : '';
+  if (ico) ico.className = 'fa-solid fa-spinner fa-spin';
   try {
-    await Promise.race([window._osReady, new Promise(r => setTimeout(r, 5000))]);
-    if (window._OS && window._OS.User) {
-      window._OS.User.addTag('role', 'admin').catch(() => {});
+    await window._osReady;
+    const os = window._OS;
+    if (!os) { toast('SDK nao carregado — aguarda e tenta novamente', 'error'); return; }
+    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+    if (subscrito || _notifEnabled) {
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
+      _notifEnabled = false;
+      if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
+      localStorage.setItem('adm_notif', '0');
+      updateNotifBtn();
+      toast('Notificacoes desativadas', 'info');
+    } else {
+      try { await os.Notifications.requestPermission(); } catch(e) { console.warn('[OS]', e); }
+      const agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+      if (agora) {
+        try { await os.User.addTag('role', 'admin'); } catch(e) {}
+        _notifEnabled = true;
+        _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
+        localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
+        iniciarPollingNotif();
+        localStorage.setItem('adm_notif', '1');
+        updateNotifBtn();
+        toast('Notificacoes push ativadas!', 'success');
+      } else {
+        toast('Permissao negada — permite notificacoes nas definicoes do Chrome para este site', 'error');
+        if (ico) ico.className = icoBak;
+      }
     }
-  } catch(e) {}
-  _notifEnabled = true;
-  _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
-  localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
-  iniciarPollingNotif();
-  localStorage.setItem('adm_notif', '1');
-  updateNotifBtn();
-  toast('Notificações push ativadas!', 'success');
+  } catch(err) {
+    console.error('[OneSignal] toggle:', err);
+    toast('Erro: ' + (err.message || String(err)), 'error');
+    if (ico) ico.className = icoBak;
+  }
 }
 
 /* ── Botão TEST no topbar ── */
