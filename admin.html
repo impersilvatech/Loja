@@ -932,37 +932,19 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </style>
 </head>
 <body>
-<!-- OneSignal: inline script PRIMEIRO, SDK a seguir -->
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" async></script>
 <script>
-  window._OS = null;
-  window._osReadyResolve = null;
-  window._osReady = new Promise(function(resolve) {
-    window._osReadyResolve = resolve;
-    setTimeout(resolve, 15000); // fallback 15s
-  });
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    var _swBase = location.pathname.replace(/\/[^\/]*$/, ''); // '' ou '/pasta'
-    var _swPath  = (_swBase || '') + '/OneSignalSDKWorker.js'; // '/OneSignalSDKWorker.js'
-    var _swScope = (_swBase || '') + '/';                      // '/' ou '/pasta/'  — SEM dupla barra
     try {
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
-        allowLocalhostAsSecureOrigin: true,
-        serviceWorkerPath: _swPath,
-        serviceWorkerParam: { scope: _swScope },
         notifyButton: { enable: false }
       });
-      console.log('[OneSignal] Init OK | SW:', _swPath, '| scope:', _swScope);
-    } catch(e) {
-      console.warn('[OneSignal] Init warning:', e.message || e);
-    }
-    window._OS = OneSignal;
-    window._osReadyResolve();
-    console.log('[OneSignal] Pronto. _OS definido, _osReady resolvido.');
+    } catch(e) { console.warn('[OS] init:', e.message); }
   });
 </script>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
@@ -3720,306 +3702,173 @@ function _getNotifPref(tipo){ const p=JSON.parse(localStorage.getItem('adm_notif
 function _setNotifPref(tipo,val){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); p[tipo]=val; localStorage.setItem('adm_notif_prefs',JSON.stringify(p)); }
 
 /* ── Promise que resolve quando o SDK OneSignal está pronto ── */
-/* _osReady e _osReadyResolve definidos no inline script no <head> */
-
-function _renderNotifPrefs(){
-  const prefs=[
-    ['enc','<i class="fa-solid fa-cart-shopping" style="color:var(--pink)"></i> Novas Encomendas','Quando um cliente faz uma nova encomenda'],
-    ['rev','<i class="fa-solid fa-comment-dots" style="color:var(--yellow)"></i> Novas Avaliacoes','Avaliacoes pendentes de aprovacao'],
-    ['cpn','<i class="fa-solid fa-ticket" style="color:var(--teal)"></i> Uso de Cupoes','Quando um cupao e aplicado a uma encomenda'],
-    ['cli','<i class="fa-solid fa-user-plus" style="color:var(--blue)"></i> Novos Clientes','Quando um novo cliente se regista']
-  ];
-  return prefs.map(([k,lbl,sub])=>
-    '<div class="switch-row">'+
-      '<div><div class="switch-label">'+lbl+'</div><div class="switch-sub">'+sub+'</div></div>'+
-      '<label class="switch"><input type="checkbox" '+(
-        _getNotifPref(k)?'checked':''
-      )+' onchange="_setNotifPref(\''+k+'\',this.checked)"/><span class="switch-slider"></span></label>'+
-    '</div>'
-  ).join('');
-}
-
 /* ============================================================
-   NOTIFICAÇÕES PUSH — OneSignal v16
+   ONESIGNAL — SISTEMA DE NOTIFICAÇÕES (versão simplificada)
    ============================================================ */
-var _notifInterval = null;
 var _notifEnabled  = false;
+var _notifInterval = null;
 var _notifiedRefs  = new Set(JSON.parse(localStorage.getItem('adm_notified_refs') || '[]'));
 var _lastRevCount  = 0;
 
-/* Persistência anti-duplicados */
 function salvarNotifiedRefs() {
   localStorage.setItem('adm_notified_refs', JSON.stringify([..._notifiedRefs].slice(-300)));
 }
 
-/* Lê chave de prioridade: state.loja (BD) > localStorage */
 function _osRestKey() {
-  return state.loja.onesignal_api_key
-    || localStorage.getItem('adm_onesignal_rest')
-    || '';
+  return (state.loja && state.loja.onesignal_api_key)
+    || localStorage.getItem('adm_onesignal_rest') || '';
 }
+
 function _osAppId() {
-  return state.loja.onesignal_app_id
-    || localStorage.getItem('adm_onesignal_appid')
+  return (state.loja && state.loja.onesignal_app_id)
     || 'd3394241-a8cb-4c7e-9d1d-ac0fb9704591';
 }
 
-/* ── Motor de envio OneSignal REST API ── */
-async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
-  const restKey = _osRestKey();
-  if (!restKey) { console.warn('[OneSignal] REST API Key não configurada.'); return null; }
-
-  const corpo = {
-    app_id: _osAppId(),
-    filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }],
-    headings: { pt: titulo, en: titulo },
-    contents: { pt: mensagem, en: mensagem },
-    url: url || location.href,
-    data: dados || {}
-  };
-  if (icone) { corpo.chrome_web_icon = icone; corpo.firefox_icon = icone; }
-
+/* ── Motor de envio REST ── */
+async function enviarNotificacaoAdmin(titulo, mensagem, urlDest) {
+  var key = _osRestKey();
+  if (!key) { console.warn('[OS] REST Key em falta'); return null; }
   try {
-    const res = await fetch('https://onesignal.com/api/v1/notifications', {
+    var res = await fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + restKey },
-      body: JSON.stringify(corpo)
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + key },
+      body: JSON.stringify({
+        app_id: _osAppId(),
+        filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }],
+        headings: { pt: titulo, en: titulo },
+        contents: { pt: mensagem, en: mensagem },
+        url: urlDest || location.href
+      })
     });
-    const r = await res.json();
-    console.log('[OneSignal] ✅', titulo, r);
+    var r = await res.json();
+    console.log('[OS] Enviado:', titulo, r);
     return r;
-  } catch (err) {
-    console.error('[OneSignal] ❌', err);
-    return null;
-  }
+  } catch(e) { console.error('[OS]', e); return null; }
 }
 
-/* ── Gatilhos específicos ── */
+/* ── Gatilhos ── */
 function notificarNovaEncomenda(enc) {
-  const ref = enc.ref || enc.id || '';
-  if (!ref || _notifiedRefs.has('ord_' + ref)) return;
-  _notifiedRefs.add('ord_' + ref); salvarNotifiedRefs();
-  const nome  = enc.nome_cliente || 'Cliente';
-  const total = enc.total != null ? kz(enc.total, state.loja.simbolo_moeda) : '—';
-  const nitens = Array.isArray(enc.itens) ? enc.itens.length : '?';
-  return enviarNotificacaoAdmin({
-    titulo: 'Nova Encomenda',
-    mensagem: nome + ' · ' + nitens + ' item(ns) · ' + total,
-    url: location.href.split('?')[0] + '#orders',
-    dados: { tipo: 'encomenda', ref, cliente: nome }
-  });
+  var ref = enc.ref || enc.id || '';
+  if (!ref || _notifiedRefs.has('ord_'+ref)) return;
+  _notifiedRefs.add('ord_'+ref); salvarNotifiedRefs();
+  var nome = enc.nome_cliente || 'Cliente';
+  var total = enc.total != null ? kz(enc.total, state.loja && state.loja.simbolo_moeda) : '?';
+  return enviarNotificacaoAdmin('Nova Encomenda', nome + ' | Total: ' + total, location.href.split('?')[0]+'#orders');
 }
-
 function notificarNovaAvaliacao(av) {
-  const id = String(av.id || (av.produto_id + '_' + av.criado_em));
-  if (_notifiedRefs.has('rev_' + id)) return;
-  _notifiedRefs.add('rev_' + id); salvarNotifiedRefs();
-  const estrelas = av.estrelas ? av.estrelas + '/5 estrelas' : '';
-  const prodMap = {}; state.produtos.forEach(p => { prodMap[p.id] = p.nome; });
-  const produto = prodMap[av.produto_id] || 'produto';
-  const nome    = av.cliente_nome || 'Anonimo';
-  return enviarNotificacaoAdmin({
-    titulo: 'Nova Avaliacao',
-    mensagem: nome + ' avaliou "' + produto + '" — ' + estrelas,
-    url: location.href.split('?')[0] + '#reviews',
-    dados: { tipo: 'avaliacao', produto, estrelas: av.estrelas }
-  });
+  var id = String(av.id || av.produto_id);
+  if (_notifiedRefs.has('rev_'+id)) return;
+  _notifiedRefs.add('rev_'+id); salvarNotifiedRefs();
+  var nome = av.cliente_nome || 'Anonimo';
+  var prod = av.produto_nome || 'produto';
+  return enviarNotificacaoAdmin('Nova Avaliacao', nome + ' avaliou "' + prod + '" com ' + (av.estrelas||'?') + '/5', location.href.split('?')[0]+'#reviews');
 }
-
 function notificarUsoCupom(enc) {
   if (!enc.cupao_codigo) return;
-  const chave = 'cpn_' + enc.cupao_codigo + '_' + (enc.ref || enc.id);
+  var chave = 'cpn_'+enc.cupao_codigo+'_'+(enc.ref||enc.id);
   if (_notifiedRefs.has(chave)) return;
   _notifiedRefs.add(chave); salvarNotifiedRefs();
-  const nome = enc.nome_cliente || 'Cliente';
-  const desc = enc.cupao_desconto != null
-    ? (enc.cupao_tipo === 'percentagem' ? enc.cupao_desconto + '%' : kz(enc.cupao_desconto, state.loja.simbolo_moeda))
-    : '?';
-  return enviarNotificacaoAdmin({
-    titulo: 'Cupao Utilizado',
-    mensagem: nome + ' usou "' + enc.cupao_codigo + '" — Desconto: ' + desc,
-    url: location.href.split('?')[0] + '#coupons',
-    dados: { tipo: 'cupom', codigo: enc.cupao_codigo }
-  });
+  return enviarNotificacaoAdmin('Cupao Utilizado', (enc.nome_cliente||'Cliente') + ' usou "' + enc.cupao_codigo + '"', location.href.split('?')[0]+'#coupons');
+}
+function notificarNovoCliente(cli) {
+  var id = cli.email || cli.telefone || '';
+  if (!id || _notifiedRefs.has('cli_'+id)) return;
+  _notifiedRefs.add('cli_'+id); salvarNotifiedRefs();
+  return enviarNotificacaoAdmin('Novo Cliente', (cli.nome||'Cliente') + (cli.telefone?' | '+cli.telefone:'') + ' registou-se', location.href.split('?')[0]+'#clients');
 }
 
-function notificarNovoCliente(cliente) {
-  const id = cliente.email || cliente.tel || '';
-  if (!id || _notifiedRefs.has('cli_' + id)) return;
-  _notifiedRefs.add('cli_' + id); salvarNotifiedRefs();
-  const nome = cliente.nome || 'Novo cliente';
-  return enviarNotificacaoAdmin({
-    titulo: 'Novo Cliente',
-    mensagem: nome + (cliente.tel ? ' · ' + cliente.tel : '') + ' registou-se',
-    url: location.href.split('?')[0] + '#clients',
-    dados: { tipo: 'cliente', nome }
-  });
-}
-
-/* ── Polling — detecta novidades a cada 25s ── */
+/* ── Polling ── */
 async function _pollNotificacoes() {
   if (!_notifEnabled || !state.token) return;
   try {
-    /* Novas encomendas */
-    const encs = await fetch(API + '/api/admin/encomendas', {
-      headers: { 'Authorization': 'Bearer ' + state.token }
-    }).then(r => r.json());
-
+    var encs = await fetch(API+'/api/admin/encomendas',{headers:{'Authorization':'Bearer '+state.token}}).then(function(r){return r.json();});
     if (Array.isArray(encs)) {
-      const novas = encs.filter(e => !_notifiedRefs.has('ord_' + e.ref));
-      if (novas.length > 0) {
-        state.encomendas = encs;
-        state.filteredOrders = [...encs];
-        updateDashboardStats();
-        if (state.currentPanel === 'dashboard') renderDashboard();
-        if (state.currentPanel === 'orders') renderOrders();
-        novas.forEach(enc => {
-          notificarNovaEncomenda(enc);
-          /* Cupões usados */
-          if (enc.cupao_codigo) notificarUsoCupom(enc);
-        });
-      }
-      encs.forEach(e => _notifiedRefs.add('ord_' + e.ref));
-      salvarNotifiedRefs();
+      encs.forEach(function(e){ if(!_notifiedRefs.has('ord_'+e.ref)) notificarNovaEncomenda(e); });
     }
-
-    /* Novas avaliações pendentes */
-    try {
-      const revs = await api('/api/admin/avaliacoes');
-      const pendentes = revs.filter(r => !r.aprovada);
-      if (pendentes.length > _lastRevCount && _lastRevCount > 0) {
-        pendentes.slice(_lastRevCount).forEach(av => notificarNovaAvaliacao(av));
-      }
-      _lastRevCount = pendentes.length;
-    } catch(e) {}
-
-    /* Novos clientes */
-    try {
-      const clis = await api('/api/admin/clientes');
-      const visto = parseInt(localStorage.getItem('adm_clients_seen') || '0');
-      if (Array.isArray(clis) && clis.length > visto && visto > 0) {
-        clis.slice(visto).forEach(c => notificarNovoCliente(c));
-      }
-      if (Array.isArray(clis)) localStorage.setItem('adm_clients_seen', clis.length);
-    } catch(e) {}
-
-  } catch(e) { console.warn('[OneSignal] Erro polling:', e); }
+    var revs = await api('/api/admin/avaliacoes');
+    if (Array.isArray(revs)) {
+      var pend = revs.filter(function(r){return !r.aprovada;});
+      if (pend.length > _lastRevCount && _lastRevCount > 0) pend.slice(_lastRevCount).forEach(function(av){notificarNovaAvaliacao(av);});
+      _lastRevCount = pend.length;
+    }
+  } catch(e){ console.warn('[OS] poll:', e); }
 }
 
 function iniciarPollingNotif() {
   if (_notifInterval) clearInterval(_notifInterval);
-  /* Snapshot inicial: marca tudo existente como já notificado */
-  fetch(API + '/api/admin/encomendas', { headers: { 'Authorization': 'Bearer ' + state.token } })
-    .then(r => r.json()).then(encs => {
-      if (Array.isArray(encs)) { encs.forEach(e => _notifiedRefs.add('ord_' + e.ref)); salvarNotifiedRefs(); }
-    }).catch(() => {})
-    .finally(() => {
-      _notifInterval = setInterval(_pollNotificacoes, 25000);
-    });
+  _notifInterval = setInterval(_pollNotificacoes, 30000);
 }
 
 /* ── Botão no topbar ── */
 function updateNotifBtn() {
-  const btn = $('notifBtn'), ico = $('notifIcon');
+  var btn = $('notifBtn'), ico = $('notifIcon');
   if (!btn || !ico) return;
   if (_notifEnabled) {
     ico.className = 'fa-solid fa-bell';
     btn.style.borderColor = 'var(--teal)';
     btn.style.color = 'var(--teal)';
-    btn.title = 'Notificações push ativas — clica para desativar';
   } else {
     ico.className = 'fa-solid fa-bell-slash';
     btn.style.borderColor = '';
     btn.style.color = '';
-    btn.title = 'Ativar notificações push';
   }
 }
 
-/* ── Toggle (botão 🔔 no topbar) ── */
-async function toggleNotifications() {
-  const btn = $('notifBtn'), ico = $('notifIcon');
-  const icoBak = ico ? ico.className : '';
-  if (ico) ico.className = 'fa-solid fa-spinner fa-spin';
-  try {
-    await window._osReady;
-    const os = window._OS;
-    if (!os) { toast('SDK nao carregado — aguarda e tenta novamente', 'error'); return; }
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    if (subscrito || _notifEnabled) {
-      try { await os.User.PushSubscription.optOut(); } catch(e) {}
-      _notifEnabled = false;
-      if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
-      localStorage.setItem('adm_notif', '0');
-      updateNotifBtn();
-      toast('Notificacoes desativadas', 'info');
-    } else {
-      try { await os.Notifications.requestPermission(); } catch(e) { console.warn('[OS]', e); }
-      const agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-      if (agora) {
-        try { await os.User.addTag('role', 'admin'); } catch(e) {}
-        _notifEnabled = true;
-        _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
-        localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
-        iniciarPollingNotif();
-        localStorage.setItem('adm_notif', '1');
+/* ── Toggle ── usando OneSignalDeferred para garantir que SDK está pronto ── */
+function toggleNotifications() {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async function(OneSignal) {
+    try {
+      var subscrito = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
+      if (subscrito || _notifEnabled) {
+        try { await OneSignal.User.PushSubscription.optOut(); } catch(e){}
+        _notifEnabled = false;
+        if (_notifInterval){ clearInterval(_notifInterval); _notifInterval = null; }
+        localStorage.setItem('adm_notif','0');
         updateNotifBtn();
-        toast('Notificacoes push ativadas!', 'success');
+        toast('Notificacoes desativadas','info');
       } else {
-        toast('Permissao negada — permite notificacoes nas definicoes do Chrome para este site', 'error');
-        if (ico) ico.className = icoBak;
+        await OneSignal.Notifications.requestPermission();
+        var agora = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
+        if (agora) {
+          try { await OneSignal.User.addTag('role','admin'); } catch(e){}
+          _notifEnabled = true;
+          _lastRevCount = (state.avaliacoes||[]).filter(function(a){return !a.aprovada;}).length;
+          localStorage.setItem('adm_clients_seen', String((state.clientes||[]).length));
+          iniciarPollingNotif();
+          localStorage.setItem('adm_notif','1');
+          updateNotifBtn();
+          toast('Notificacoes push ativadas!','success');
+        } else {
+          toast('Permissao negada pelo browser','error');
+        }
       }
+    } catch(err) {
+      console.error('[OS] toggle:', err);
+      toast('Erro: '+(err.message||String(err)),'error');
     }
-  } catch(err) {
-    console.error('[OneSignal] toggle:', err);
-    toast('Erro: ' + (err.message || String(err)), 'error');
-    if (ico) ico.className = icoBak;
-  }
-}
-
-/* ── Botão TEST no topbar ── */
-async function testarNotificacao() {
-  if (!_osRestKey()) {
-    toast('Configura a REST API Key em Configuracoes > Notificacoes', 'error');
-    return;
-  }
-  if (!_notifEnabled) {
-    toast('Ativa as notificacoes primeiro (clica no sino)', 'error');
-    return;
-  }
-  const res = await enviarNotificacaoAdmin({
-    titulo: 'Teste Admin',
-    mensagem: 'Sistema de notificacoes push a funcionar!',
-    url: location.href,
-    dados: { tipo: 'teste', ts: Date.now() }
   });
-  if (res && !res.errors) {
-    toast('Notificação de teste enviada! Verifica o teu dispositivo.', 'success');
-  } else {
-    toast('Erro ao enviar — verifica a REST API Key', 'error');
-  }
 }
 
-/* ── Init (chamado em initApp) ── */
+/* ── TEST ── */
+async function testarNotificacao() {
+  if (!_osRestKey()) { toast('Configura a REST API Key nas Configuracoes > Notificacoes','error'); return; }
+  if (!_notifEnabled) { toast('Ativa as notificacoes primeiro (clica no sino)','error'); return; }
+  var r = await enviarNotificacaoAdmin('Teste Admin', 'Push a funcionar!', location.href);
+  if (r && !r.errors) toast('Teste enviado! Verifica o dispositivo.','success');
+  else toast('Erro ao enviar — verifica a REST API Key','error');
+}
+
+/* ── Init ── */
 async function initNotificacoes() {
-  try {
-    await Promise.race([_osReady, new Promise(r => setTimeout(r, 10000))]);
-    const os = window._OS;
-    if (!os) { updateNotifBtn(); return; }
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    const guardado  = localStorage.getItem('adm_notif') === '1';
-    console.log('[OneSignal] init — subscrito:', subscrito, '| guardado:', guardado);
-    if (subscrito || guardado) {
-      _notifEnabled = true;
-      try { await os.User.addTag('role', 'admin'); } catch(e) {}
-      _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
-      localStorage.setItem('adm_clients_seen', (state.clientes || []).length);
-      iniciarPollingNotif();
-    }
-    updateNotifBtn();
-  } catch(e) {
-    console.warn('[OneSignal] initNotificacoes:', e);
-    updateNotifBtn();
+  var guardado = localStorage.getItem('adm_notif') === '1';
+  if (guardado) {
+    _notifEnabled = true;
+    _lastRevCount = (state.avaliacoes||[]).filter(function(a){return !a.aprovada;}).length;
+    localStorage.setItem('adm_clients_seen', String((state.clientes||[]).length));
+    iniciarPollingNotif();
   }
+  updateNotifBtn();
 }
 
 applyTheme();
