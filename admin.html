@@ -940,9 +940,62 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     try {
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
-        notifyButton: { enable: false }
+        notifyButton: {
+          enable: true,
+          position: 'bottom-right',
+          theme: 'default',
+          size: 'medium',
+          prenotify: true,
+          showCredit: false,
+          text: {
+            'tip.state.unsubscribed': 'Ativar notificacoes push',
+            'tip.state.subscribed': 'Notificacoes ativas',
+            'tip.state.blocked': 'Notificacoes bloqueadas',
+            'message.prenotify': 'Clica para ativar notificacoes do admin',
+            'message.action.subscribed': 'Notificacoes ativas!',
+            'message.action.resubscribed': 'Notificacoes reativadas!',
+            'message.action.unsubscribed': 'Notificacoes desativadas.',
+            'dialog.main.title': 'Notificacoes Admin',
+            'dialog.main.button.subscribe': 'ATIVAR',
+            'dialog.main.button.unsubscribe': 'DESATIVAR',
+            'dialog.blocked.title': 'Desbloquear Notificacoes',
+            'dialog.blocked.message': 'Segue as instrucoes para desbloquear.'
+          }
+        }
       });
-    } catch(e) { console.warn('[OS] init:', e.message); }
+
+      /* Quando o utilizador subscreve via bell nativo → marcar como admin */
+      OneSignal.User.PushSubscription.addEventListener('change', async function(event) {
+        if (event.current && event.current.optedIn) {
+          try {
+            await OneSignal.User.addTag('role', 'admin');
+            console.log('[OS] Tag admin adicionada apos subscricao');
+            _notifEnabled = true;
+            localStorage.setItem('adm_notif', '1');
+            updateNotifBtn();
+            if (typeof iniciarPollingNotif === 'function') iniciarPollingNotif();
+            if (typeof toast === 'function') toast('Notificacoes push ativas!', 'success');
+          } catch(e) { console.warn('[OS] addTag:', e); }
+        } else {
+          _notifEnabled = false;
+          localStorage.setItem('adm_notif', '0');
+          if (typeof updateNotifBtn === 'function') updateNotifBtn();
+        }
+      });
+
+      /* Se ja estava subscrito de sessoes anteriores */
+      var jaSubscrito = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
+      if (jaSubscrito) {
+        try { await OneSignal.User.addTag('role', 'admin'); } catch(e) {}
+        _notifEnabled = true;
+        localStorage.setItem('adm_notif', '1');
+        if (typeof updateNotifBtn === 'function') updateNotifBtn();
+        if (typeof iniciarPollingNotif === 'function') iniciarPollingNotif();
+        console.log('[OS] Ja subscrito — admin marcado.');
+      }
+
+      console.log('[OS] Init OK');
+    } catch(e) { console.warn('[OS] init erro:', e.message || e); }
   });
 </script>
 
