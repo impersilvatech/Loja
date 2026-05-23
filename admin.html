@@ -945,8 +945,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     try {
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
-        serviceWorkerPath: "/Loja/sw.js",
-        serviceWorkerParam: { scope: "/Loja/" },
+        serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
         notifyButton: { enable: false }
       });
       console.log('[OneSignal] Init OK');
@@ -4000,50 +3999,39 @@ async function toggleNotifications() {
       toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
       updateNotifBtn(); return;
     }
-
-    // Pedir permissao nativa primeiro
     if (permNativa === 'default') {
-      const result = await Notification.requestPermission();
-      if (result !== 'granted') {
-        toast('Permissao negada', 'error');
-        updateNotifBtn(); return;
-      }
+      const r = await Notification.requestPermission();
+      if (r !== 'granted') { toast('Permissao negada', 'error'); updateNotifBtn(); return; }
     }
 
-    // Registar listener para quando subscricao mudar
-    const subHandler = async function(event) {
-      os.User.PushSubscription.removeEventListener('change', subHandler);
-      if (event.current && event.current.optedIn) {
+    // Disparar optIn sem await — pode não resolver nunca
+    os.User.PushSubscription.optIn().catch(function(e) {
+      console.warn('[OS] optIn erro interno:', e);
+    });
+
+    // Fazer polling do estado a cada 500ms durante 30s
+    toast('A subscrever... aguarda', 'info');
+    var maxTentativas = 60; // 30 segundos
+    for (var i = 0; i < maxTentativas; i++) {
+      await new Promise(function(r) { setTimeout(r, 500); });
+      var agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+      if (agora) {
+        // Subscrito com sucesso!
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
-        _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
+        _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
         localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
         iniciarPollingNotif();
         localStorage.setItem('adm_notif', '1');
         updateNotifBtn();
         toast('Notificacoes push ativadas!', 'success');
-      } else {
-        updateNotifBtn();
-        toast('Subscricao nao concluida', 'error');
+        return;
       }
-    };
-    os.User.PushSubscription.addEventListener('change', subHandler);
-
-    // Tentar optIn com timeout de 20s
-    try {
-      await Promise.race([
-        os.User.PushSubscription.optIn(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000))
-      ]);
-    } catch(e) {
-      os.User.PushSubscription.removeEventListener('change', subHandler);
-      if (e.message === 'timeout') {
-        toast('Timeout — verifica se o sw.js foi actualizado no GitHub', 'error');
-      } else {
-        toast('Erro: ' + (e.message || e), 'error');
-      }
-      updateNotifBtn();
     }
+
+    // Timeout após 30s
+    toast('Nao foi possivel subscrever. Verifica o OneSignalSDKWorker.js em /Loja/', 'error');
+    updateNotifBtn();
 
   } catch(err) {
     console.error('[OS] toggle:', err);
