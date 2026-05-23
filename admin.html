@@ -2133,7 +2133,8 @@ async function initApp(){
           lines.push('id: ' + (sub.id || 'null'));
         }
         var perm = window._OS.Notifications && window._OS.Notifications.permission;
-        lines.push('Permissao browser: ' + (perm || 'desconhecida'));
+        lines.push('Perm OneSignal: ' + (perm || 'n/a'));
+        lines.push('Perm Browser Nativa: ' + (('Notification' in window) ? Notification.permission : 'sem suporte'));
       } catch(e) { lines.push('Erro ao ler estado: ' + e.message); }
     }
     lines.push('adm_notif localStorage: ' + localStorage.getItem('adm_notif'));
@@ -3977,48 +3978,64 @@ function updateNotifBtn() {
 
 /* ── Toggle (botão 🔔 no topbar) ── */
 async function toggleNotifications() {
-  const btn = $('notifBtn');
   const ico = $('notifIcon');
   if (ico) ico.className = 'fa-solid fa-spinner fa-spin';
   try {
     await window._osReady;
     const os = window._OS;
     if (!os) {
-      toast('SDK nao carregado — aguarda e tenta novamente', 'error');
-      if (ico) ico.className = 'fa-solid fa-bell-slash';
-      return;
+      toast('SDK nao carregado — recarrega a pagina', 'error');
+      if (ico) updateNotifBtn(); return;
     }
-    const subscrito = await os.User.PushSubscription.optedIn;
+
+    // optedIn é boolean — SEM await
+    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+
     if (subscrito) {
-      try { await os.User.PushSubscription.optOut(); } catch(e) {}
+      // Desativar
+      try { await os.User.PushSubscription.optOut(); } catch(e) { console.warn('[OS] optOut:', e); }
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
       localStorage.setItem('adm_notif', '0');
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
     } else {
-      // Verificar permissão nativa do browser ANTES de pedir
-      const permBrowser = ('Notification' in window) ? Notification.permission : 'unsupported';
-      console.log('[OS] Permissao browser:', permBrowser);
+      // Verificar permissao nativa
+      const permNativa = ('Notification' in window) ? Notification.permission : 'denied';
+      console.log('[OS] Permissao nativa:', permNativa);
 
-      if (permBrowser === 'denied') {
-        // Instruções claras para desbloquear
-        toast('Notificacoes bloqueadas! No Chrome: clica no cadeado na barra de endereco > Notificacoes > Permitir > recarrega', 'error');
-        if (ico) updateNotifBtn();
-        return;
+      if (permNativa === 'denied') {
+        toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
+        if (ico) updateNotifBtn(); return;
       }
 
-      try {
-        // Pedir permissão nativa primeiro se ainda não foi concedida
-        if (permBrowser === 'default') {
-          await Notification.requestPermission();
+      // Pedir permissao nativa se ainda for default
+      if (permNativa === 'default') {
+        const result = await Notification.requestPermission();
+        if (result !== 'granted') {
+          toast('Permissao negada pelo browser', 'error');
+          if (ico) updateNotifBtn(); return;
         }
-        // Depois pedir ao OneSignal
-        await os.Notifications.requestPermission();
-        await new Promise(r => setTimeout(r, 2000));
-      } catch(e) { console.warn('[OS]', e); }
+      }
 
-      const agora = await os.User.PushSubscription.optedIn;
+      // Subscrever via OneSignal optIn()
+      try {
+        await os.User.PushSubscription.optIn();
+      } catch(e) {
+        console.warn('[OS] optIn erro:', e);
+        toast('Erro ao subscrever: ' + (e.message || e), 'error');
+        if (ico) updateNotifBtn(); return;
+      }
+
+      // Aguardar confirmacao (max 5s)
+      let tentativas = 0;
+      while (tentativas < 10) {
+        await new Promise(r => setTimeout(r, 500));
+        if (os.User.PushSubscription.optedIn) break;
+        tentativas++;
+      }
+
+      const agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
       if (agora) {
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
@@ -4029,18 +4046,13 @@ async function toggleNotifications() {
         updateNotifBtn();
         toast('Notificacoes push ativadas!', 'success');
       } else {
-        const permDepois = ('Notification' in window) ? Notification.permission : '?';
-        if (permDepois === 'denied') {
-          toast('Bloqueado! Chrome > cadeado > Notificacoes > Permitir > recarrega', 'error');
-        } else {
-          toast('Nao foi possivel subscrever. Tenta novamente.', 'error');
-        }
+        toast('Nao foi possivel subscrever. Verifica o OneSignalSDKWorker.js', 'error');
+        if (ico) updateNotifBtn();
       }
     }
   } catch(err) {
-    console.error('[OneSignal] toggle:', err);
+    console.error('[OS] toggle:', err);
     toast('Erro: ' + (err.message || String(err)), 'error');
-  } finally {
     if (ico) updateNotifBtn();
   }
 }
@@ -4074,7 +4086,7 @@ async function initNotificacoes() {
     await Promise.race([window._osReady, new Promise(r => setTimeout(r, 10000))]);
     const os = window._OS;
     if (!os) { updateNotifBtn(); return; }
-    const subscrito = await os.User.PushSubscription.optedIn;
+    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
     const guardado = localStorage.getItem('adm_notif') === '1';
     console.log('[OneSignal] init — subscrito:', subscrito, '| guardado:', guardado);
     if (subscrito || guardado) {
