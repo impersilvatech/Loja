@@ -3983,57 +3983,36 @@ async function toggleNotifications() {
     const os = window._OS;
     if (!os) {
       toast('SDK nao carregado — recarrega a pagina', 'error');
-      if (ico) updateNotifBtn(); return;
+      updateNotifBtn(); return;
     }
 
-    // optedIn é boolean — SEM await
     const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
 
     if (subscrito) {
-      // Desativar
-      try { await os.User.PushSubscription.optOut(); } catch(e) { console.warn('[OS] optOut:', e); }
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
       localStorage.setItem('adm_notif', '0');
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
-    } else {
-      // Verificar permissao nativa
-      const permNativa = ('Notification' in window) ? Notification.permission : 'denied';
-      console.log('[OS] Permissao nativa:', permNativa);
+      return;
+    }
 
-      if (permNativa === 'denied') {
-        toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
-        if (ico) updateNotifBtn(); return;
-      }
+    // Verificar permissao nativa
+    const permNativa = ('Notification' in window) ? Notification.permission : 'denied';
+    if (permNativa === 'denied') {
+      toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
+      updateNotifBtn(); return;
+    }
 
-      // Pedir permissao nativa se ainda for default
-      if (permNativa === 'default') {
-        const result = await Notification.requestPermission();
-        if (result !== 'granted') {
-          toast('Permissao negada pelo browser', 'error');
-          if (ico) updateNotifBtn(); return;
-        }
-      }
+    // Usar Slidedown do OneSignal — gere todo o fluxo internamente
+    updateNotifBtn(); // resetar spinner enquanto aguarda
+    toast('A abrir dialogo de subscricao...', 'info');
 
-      // Subscrever via OneSignal optIn() com timeout de 10s
-      try {
-        await Promise.race([
-          os.User.PushSubscription.optIn(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
-        ]);
-      } catch(e) {
-        if (e.message === 'timeout') {
-          toast('Timeout — o Service Worker nao respondeu. Verifica se OneSignalSDKWorker.js esta na raiz do site.', 'error');
-        } else {
-          toast('Erro ao subscrever: ' + (e.message || e), 'error');
-        }
-        console.error('[OS] optIn:', e);
-        if (ico) updateNotifBtn(); return;
-      }
-
-      const agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-      if (agora) {
+    // Registar listener ANTES de abrir o slidedown
+    os.User.PushSubscription.addEventListener('change', async function handler(event) {
+      os.User.PushSubscription.removeEventListener('change', handler);
+      if (event.current && event.current.optedIn) {
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
         _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
@@ -4043,14 +4022,38 @@ async function toggleNotifications() {
         updateNotifBtn();
         toast('Notificacoes push ativadas!', 'success');
       } else {
-        toast('Nao foi possivel subscrever. Verifica o OneSignalSDKWorker.js', 'error');
-        if (ico) updateNotifBtn();
+        toast('Subscricao nao concluida', 'error');
+        updateNotifBtn();
+      }
+    });
+
+    // Abrir slidedown nativo do OneSignal
+    try {
+      await os.Slidedown.promptPush({ force: true });
+    } catch(e) {
+      // Slidedown pode nao existir em todas as versoes — fallback para requestPermission
+      console.warn('[OS] Slidedown nao disponivel, a usar requestPermission:', e);
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        try {
+          await Promise.race([
+            os.User.PushSubscription.optIn(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))
+          ]);
+        } catch(e2) {
+          toast('Erro ao subscrever: ' + (e2.message || e2), 'error');
+          updateNotifBtn();
+        }
+      } else {
+        toast('Permissao negada', 'error');
+        updateNotifBtn();
       }
     }
+
   } catch(err) {
     console.error('[OS] toggle:', err);
     toast('Erro: ' + (err.message || String(err)), 'error');
-    if (ico) updateNotifBtn();
+    updateNotifBtn();
   }
 }
 
