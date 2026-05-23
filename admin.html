@@ -945,10 +945,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     try {
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
-        allowLocalhostAsSecureOrigin: true,
-        serviceWorkerPath: "OneSignalSDKWorker.js",
-        serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js",
-        serviceWorkerParam: { scope: "/" },
         notifyButton: { enable: false }
       });
       console.log('[OneSignal] Init OK');
@@ -4018,21 +4014,20 @@ async function toggleNotifications() {
         }
       }
 
-      // Subscrever via OneSignal optIn()
+      // Subscrever via OneSignal optIn() com timeout de 10s
       try {
-        await os.User.PushSubscription.optIn();
+        await Promise.race([
+          os.User.PushSubscription.optIn(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
+        ]);
       } catch(e) {
-        console.warn('[OS] optIn erro:', e);
-        toast('Erro ao subscrever: ' + (e.message || e), 'error');
+        if (e.message === 'timeout') {
+          toast('Timeout — o Service Worker nao respondeu. Verifica se OneSignalSDKWorker.js esta na raiz do site.', 'error');
+        } else {
+          toast('Erro ao subscrever: ' + (e.message || e), 'error');
+        }
+        console.error('[OS] optIn:', e);
         if (ico) updateNotifBtn(); return;
-      }
-
-      // Aguardar confirmacao (max 5s)
-      let tentativas = 0;
-      while (tentativas < 10) {
-        await new Promise(r => setTimeout(r, 500));
-        if (os.User.PushSubscription.optedIn) break;
-        tentativas++;
       }
 
       const agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
