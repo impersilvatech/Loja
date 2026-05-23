@@ -4036,24 +4036,33 @@ async function toggleNotifications() {
 
 /* ── Botão TEST no topbar ── */
 async function testarNotificacao() {
-  if (!_osRestKey()) {
-    toast('Configura a REST API Key em Configuracoes > Notificacoes', 'error');
-    return;
-  }
-  if (!_notifEnabled) {
-    toast('Ativa as notificacoes primeiro (clica no sino)', 'error');
-    return;
-  }
-  const res = await enviarNotificacaoAdmin({
-    titulo: 'Teste Admin',
-    mensagem: 'Sistema de notificacoes push a funcionar!',
-    url: location.href,
-    dados: { tipo: 'teste', ts: Date.now() }
-  });
-  if (res && !res.errors) {
-    toast('Notificação de teste enviada! Verifica o teu dispositivo.', 'success');
-  } else {
-    toast('Erro ao enviar — verifica a REST API Key', 'error');
+  if (!_osRestKey()) { toast('Configura a REST API Key nas Configuracoes > Notificacoes','error'); return; }
+  try {
+    var key = _osRestKey();
+    var appId = _osAppId();
+    var res = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + key },
+      body: JSON.stringify({
+        app_id: appId,
+        included_segments: ['Total Subscriptions'],
+        headings: { pt: 'Teste Admin', en: 'Teste Admin' },
+        contents: { pt: 'Push a funcionar!', en: 'Push a funcionar!' },
+        url: location.href
+      })
+    });
+    var r = await res.json();
+    console.log('[OS] TEST resultado:', JSON.stringify(r));
+    if (r.id) {
+      toast('Enviado! ID: ' + r.id.substring(0,8) + '... Verifica o dispositivo.', 'success');
+    } else if (r.errors) {
+      var erroTexto = Array.isArray(r.errors) ? r.errors.join(', ') : JSON.stringify(r.errors);
+      toast('OneSignal erro: ' + erroTexto, 'error');
+    } else {
+      toast('Resposta: ' + JSON.stringify(r).substring(0,80), 'error');
+    }
+  } catch(e) {
+    toast('Erro de rede: ' + (e.message || e), 'error');
   }
 }
 
