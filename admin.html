@@ -3980,10 +3980,21 @@ async function toggleNotifications() {
   try {
     await window._osReady;
     const os = window._OS;
-    if (!os) { toast('SDK nao carregado — recarrega a pagina', 'error'); updateNotifBtn(); return; }
+    if (!os) { toast('SDK nao carregado — recarrega', 'error'); updateNotifBtn(); return; }
 
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+    // Verificar subscricao via pushManager nativo (mais fiavel que optedIn)
+    var pushSub = null;
+    try {
+      var swReg = await navigator.serviceWorker.getRegistration();
+      if (swReg) pushSub = await swReg.pushManager.getSubscription();
+    } catch(e) { console.warn('[OS] pushManager:', e); }
+
+    var osSubscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+    var subscrito = osSubscrito || !!pushSub;
+
     if (subscrito) {
+      // Desativar
+      if (pushSub) { try { await pushSub.unsubscribe(); } catch(e) {} }
       try { await os.User.PushSubscription.optOut(); } catch(e) {}
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
@@ -3993,30 +4004,36 @@ async function toggleNotifications() {
       return;
     }
 
-    // Verificar permissao nativa
-    const permNativa = ('Notification' in window) ? Notification.permission : 'denied';
+    // Verificar permissao
+    var permNativa = ('Notification' in window) ? Notification.permission : 'denied';
     if (permNativa === 'denied') {
       toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
       updateNotifBtn(); return;
     }
     if (permNativa === 'default') {
-      const r = await Notification.requestPermission();
+      var r = await Notification.requestPermission();
       if (r !== 'granted') { toast('Permissao negada', 'error'); updateNotifBtn(); return; }
     }
 
-    // Disparar optIn sem await — pode não resolver nunca
+    // Disparar optIn (nao aguardar promise — pode nao resolver)
     os.User.PushSubscription.optIn().catch(function(e) {
-      console.warn('[OS] optIn erro interno:', e);
+      console.warn('[OS] optIn interno:', e);
     });
 
-    // Fazer polling do estado a cada 500ms durante 30s
-    toast('A subscrever... aguarda', 'info');
-    var maxTentativas = 60; // 30 segundos
-    for (var i = 0; i < maxTentativas; i++) {
+    // Polling: verificar tanto optedIn como pushManager nativo
+    toast('A subscrever...', 'info');
+    for (var i = 0; i < 60; i++) {
       await new Promise(function(r) { setTimeout(r, 500); });
-      var agora = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-      if (agora) {
-        // Subscrito com sucesso!
+
+      var opted = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+      var nativeSub = null;
+      try {
+        var reg = await navigator.serviceWorker.getRegistration();
+        if (reg) nativeSub = await reg.pushManager.getSubscription();
+      } catch(e) {}
+
+      if (opted || nativeSub) {
+        // Sucesso — marcar como admin
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
         _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
@@ -4029,8 +4046,7 @@ async function toggleNotifications() {
       }
     }
 
-    // Timeout após 30s
-    toast('Nao foi possivel subscrever. Verifica o OneSignalSDKWorker.js em /Loja/', 'error');
+    toast('Timeout — tenta recarregar a pagina e clicar no sino novamente', 'error');
     updateNotifBtn();
 
   } catch(err) {
@@ -4069,8 +4085,14 @@ async function initNotificacoes() {
     await Promise.race([window._osReady, new Promise(r => setTimeout(r, 10000))]);
     const os = window._OS;
     if (!os) { updateNotifBtn(); return; }
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    const guardado = localStorage.getItem('adm_notif') === '1';
+    var osSubscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+    var nativePushSub = null;
+    try {
+      var swR = await navigator.serviceWorker.getRegistration();
+      if (swR) nativePushSub = await swR.pushManager.getSubscription();
+    } catch(e) {}
+    var subscrito = osSubscrito || !!nativePushSub;
+    var guardado = localStorage.getItem('adm_notif') === '1';
     console.log('[OneSignal] init — subscrito:', subscrito, '| guardado:', guardado);
     if (subscrito || guardado) {
       _notifEnabled = true;
