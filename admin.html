@@ -3981,13 +3981,9 @@ async function toggleNotifications() {
   try {
     await window._osReady;
     const os = window._OS;
-    if (!os) {
-      toast('SDK nao carregado — recarrega a pagina', 'error');
-      updateNotifBtn(); return;
-    }
+    if (!os) { toast('SDK nao carregado — recarrega a pagina', 'error'); updateNotifBtn(); return; }
 
     const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-
     if (subscrito) {
       try { await os.User.PushSubscription.optOut(); } catch(e) {}
       _notifEnabled = false;
@@ -4005,13 +4001,18 @@ async function toggleNotifications() {
       updateNotifBtn(); return;
     }
 
-    // Usar Slidedown do OneSignal — gere todo o fluxo internamente
-    updateNotifBtn(); // resetar spinner enquanto aguarda
-    toast('A abrir dialogo de subscricao...', 'info');
+    // Pedir permissao nativa primeiro
+    if (permNativa === 'default') {
+      const result = await Notification.requestPermission();
+      if (result !== 'granted') {
+        toast('Permissao negada', 'error');
+        updateNotifBtn(); return;
+      }
+    }
 
-    // Registar listener ANTES de abrir o slidedown
-    os.User.PushSubscription.addEventListener('change', async function handler(event) {
-      os.User.PushSubscription.removeEventListener('change', handler);
+    // Registar listener para quando subscricao mudar
+    const subHandler = async function(event) {
+      os.User.PushSubscription.removeEventListener('change', subHandler);
       if (event.current && event.current.optedIn) {
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
         _notifEnabled = true;
@@ -4022,32 +4023,26 @@ async function toggleNotifications() {
         updateNotifBtn();
         toast('Notificacoes push ativadas!', 'success');
       } else {
+        updateNotifBtn();
         toast('Subscricao nao concluida', 'error');
-        updateNotifBtn();
       }
-    });
+    };
+    os.User.PushSubscription.addEventListener('change', subHandler);
 
-    // Abrir slidedown nativo do OneSignal
+    // Tentar optIn com timeout de 20s
     try {
-      await os.Slidedown.promptPush({ force: true });
+      await Promise.race([
+        os.User.PushSubscription.optIn(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000))
+      ]);
     } catch(e) {
-      // Slidedown pode nao existir em todas as versoes — fallback para requestPermission
-      console.warn('[OS] Slidedown nao disponivel, a usar requestPermission:', e);
-      const perm = await Notification.requestPermission();
-      if (perm === 'granted') {
-        try {
-          await Promise.race([
-            os.User.PushSubscription.optIn(),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))
-          ]);
-        } catch(e2) {
-          toast('Erro ao subscrever: ' + (e2.message || e2), 'error');
-          updateNotifBtn();
-        }
+      os.User.PushSubscription.removeEventListener('change', subHandler);
+      if (e.message === 'timeout') {
+        toast('Timeout — verifica se o sw.js foi actualizado no GitHub', 'error');
       } else {
-        toast('Permissao negada', 'error');
-        updateNotifBtn();
+        toast('Erro: ' + (e.message || e), 'error');
       }
+      updateNotifBtn();
     }
 
   } catch(err) {
