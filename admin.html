@@ -3997,10 +3997,27 @@ async function toggleNotifications() {
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
     } else {
+      // Verificar permissão nativa do browser ANTES de pedir
+      const permBrowser = ('Notification' in window) ? Notification.permission : 'unsupported';
+      console.log('[OS] Permissao browser:', permBrowser);
+
+      if (permBrowser === 'denied') {
+        // Instruções claras para desbloquear
+        toast('Notificacoes bloqueadas! No Chrome: clica no cadeado na barra de endereco > Notificacoes > Permitir > recarrega', 'error');
+        if (ico) updateNotifBtn();
+        return;
+      }
+
       try {
+        // Pedir permissão nativa primeiro se ainda não foi concedida
+        if (permBrowser === 'default') {
+          await Notification.requestPermission();
+        }
+        // Depois pedir ao OneSignal
         await os.Notifications.requestPermission();
         await new Promise(r => setTimeout(r, 2000));
       } catch(e) { console.warn('[OS]', e); }
+
       const agora = await os.User.PushSubscription.optedIn;
       if (agora) {
         try { await os.User.addTag('role', 'admin'); } catch(e) {}
@@ -4012,7 +4029,12 @@ async function toggleNotifications() {
         updateNotifBtn();
         toast('Notificacoes push ativadas!', 'success');
       } else {
-        toast('Permissao negada — permite notificacoes nas definicoes do Chrome para este site', 'error');
+        const permDepois = ('Notification' in window) ? Notification.permission : '?';
+        if (permDepois === 'denied') {
+          toast('Bloqueado! Chrome > cadeado > Notificacoes > Permitir > recarrega', 'error');
+        } else {
+          toast('Nao foi possivel subscrever. Tenta novamente.', 'error');
+        }
       }
     }
   } catch(err) {
