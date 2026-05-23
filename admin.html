@@ -3809,7 +3809,7 @@ async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
 
   const corpo = {
     app_id: _osAppId(),
-    filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }],
+    included_segments: ['Total Subscriptions'],
     headings: { pt: titulo, en: titulo },
     contents: { pt: mensagem, en: mensagem },
     url: url || location.href,
@@ -3982,29 +3982,18 @@ async function toggleNotifications() {
     const os = window._OS;
     if (!os) { toast('SDK nao carregado — recarrega', 'error'); updateNotifBtn(); return; }
 
-    // Verificar subscricao via pushManager nativo (mais fiavel que optedIn)
-    var pushSub = null;
-    try {
-      var swReg = await navigator.serviceWorker.getRegistration();
-      if (swReg) pushSub = await swReg.pushManager.getSubscription();
-    } catch(e) { console.warn('[OS] pushManager:', e); }
-
-    var osSubscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    var subscrito = osSubscrito || !!pushSub;
-
-    if (subscrito) {
-      // Desativar
-      if (pushSub) { try { await pushSub.unsubscribe(); } catch(e) {} }
-      try { await os.User.PushSubscription.optOut(); } catch(e) {}
+    // Verificar se ja esta ativo (via localStorage)
+    if (_notifEnabled || localStorage.getItem('adm_notif') === '1') {
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
       localStorage.setItem('adm_notif', '0');
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
       return;
     }
 
-    // Verificar permissao
+    // Verificar permissao nativa
     var permNativa = ('Notification' in window) ? Notification.permission : 'denied';
     if (permNativa === 'denied') {
       toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
@@ -4015,39 +4004,28 @@ async function toggleNotifications() {
       if (r !== 'granted') { toast('Permissao negada', 'error'); updateNotifBtn(); return; }
     }
 
-    // Disparar optIn (nao aguardar promise — pode nao resolver)
+    // Disparar optIn — nao aguardar resolucao
+    toast('A ativar...', 'info');
     os.User.PushSubscription.optIn().catch(function(e) {
-      console.warn('[OS] optIn interno:', e);
+      console.warn('[OS] optIn:', e);
     });
 
-    // Polling: verificar tanto optedIn como pushManager nativo
-    toast('A subscrever...', 'info');
-    for (var i = 0; i < 60; i++) {
-      await new Promise(function(r) { setTimeout(r, 500); });
+    // Aguardar 5s para a subscricao ser processada
+    await new Promise(function(r) { setTimeout(r, 5000); });
 
-      var opted = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-      var nativeSub = null;
-      try {
-        var reg = await navigator.serviceWorker.getRegistration();
-        if (reg) nativeSub = await reg.pushManager.getSubscription();
-      } catch(e) {}
-
-      if (opted || nativeSub) {
-        // Sucesso — marcar como admin
-        try { await os.User.addTag('role', 'admin'); } catch(e) {}
-        _notifEnabled = true;
-        _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
-        localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
-        iniciarPollingNotif();
-        localStorage.setItem('adm_notif', '1');
-        updateNotifBtn();
-        toast('Notificacoes push ativadas!', 'success');
-        return;
-      }
+    // Adicionar tag role=admin independentemente do optedIn
+    try { await os.User.addTag('role', 'admin'); } catch(e) {
+      console.warn('[OS] addTag:', e);
     }
 
-    toast('Timeout — tenta recarregar a pagina e clicar no sino novamente', 'error');
+    // Ativar notificacoes localmente
+    _notifEnabled = true;
+    _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
+    localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
+    iniciarPollingNotif();
+    localStorage.setItem('adm_notif', '1');
     updateNotifBtn();
+    toast('Notificacoes ativadas! Clica TEST para confirmar.', 'success');
 
   } catch(err) {
     console.error('[OS] toggle:', err);
