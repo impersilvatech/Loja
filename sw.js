@@ -5,7 +5,7 @@
 // OneSignal DEVE ser o primeiro import
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-const CACHE_NAME = 'wandy-cache-v2';
+const CACHE_NAME = 'wandy-cache-v3';
 const urlsToCache = [
   '/Loja/',
   '/Loja/index.html',
@@ -58,7 +58,17 @@ self.addEventListener('activate', function(event) {
 // INTERCETAR PEDIDOS (CACHE FIRST)
 // ============================================================
 self.addEventListener('fetch', function(event) {
-  if (event.request.url.includes('/api/')) {
+  const url = event.request.url;
+
+  // Deixar passar: API, OneSignal, e pedidos externos
+  if (
+    url.includes('/api/') ||
+    url.includes('onesignal.com') ||
+    url.includes('OneSignalSDK') ||
+    url.includes('fcm.googleapis.com') ||
+    url.includes('push.services.mozilla.com') ||
+    !url.startsWith(self.location.origin)
+  ) {
     return;
   }
 
@@ -86,4 +96,4 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
-// Nota: push e notificationclick são geridos pelo OneSignal (importado no topo)
+// Push e notificationclick geridos pelo OneSignal (importado no topo)
