@@ -945,6 +945,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     try {
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
+        serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "/Loja/OneSignalSDKUpdaterWorker.js",
+        serviceWorkerParam: { scope: "/Loja/" },
         notifyButton: { enable: false }
       });
       console.log('[OneSignal] Init OK');
