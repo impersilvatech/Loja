@@ -3804,20 +3804,31 @@ function _osAppId() {
 }
 
 /* ── Motor de envio — via Cloudflare Worker (proxy) ── */
+/* Timestamp do último envio — protecção contra rate limit */
+var _ultimoEnvioNotif = 0;
+
 async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
   if (!state.token) { console.warn('[OS] Sem token'); return null; }
+  /* Rate limit local: mínimo 3s entre envios */
+  var agora = Date.now();
+  var espera = 3000 - (agora - _ultimoEnvioNotif);
+  if (espera > 0 && _ultimoEnvioNotif > 0) {
+    console.log('[OS] A aguardar rate limit local:', espera + 'ms');
+    await new Promise(function(r) { setTimeout(r, espera); });
+  }
+  _ultimoEnvioNotif = Date.now();
   try {
-    const res = await fetch(API + '/api/admin/notificar', {
+    var res = await fetch(API + '/api/admin/notificar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
-      body: JSON.stringify({ titulo, mensagem, url: url || location.href, dados: dados || {} })
+      body: JSON.stringify({ titulo: titulo, mensagem: mensagem, url: url || location.href, dados: dados || {} })
     });
-    const r = await res.json();
+    var r = await res.json();
     console.log('[OS] Enviado via Worker:', titulo, r);
     return r;
   } catch (err) {
     console.error('[OS] Erro envio:', err);
-    return null;
+    return { erro: err.message || 'Erro de rede' };
   }
 }
 
@@ -4046,23 +4057,27 @@ async function toggleNotifications() {
 /* ── Botão TEST no topbar ── */
 async function testarNotificacao() {
   if (!_notifEnabled) { toast('Ativa as notificacoes primeiro (clica no sino)', 'error'); return; }
+  toast('A enviar teste...', 'info');
   try {
-    const r = await enviarNotificacaoAdmin({
+    var r = await enviarNotificacaoAdmin({
       titulo: 'Teste Admin',
       mensagem: 'Push a funcionar!',
       url: location.href
     });
-    if (r && r.id) {
-      toast('Enviado! Verifica o dispositivo.', 'success');
-    } else if (r && r.erro) {
-      toast('Erro: ' + r.erro, 'error');
-    } else if (r && r.errors) {
-      toast('OneSignal: ' + (Array.isArray(r.errors) ? r.errors.join(', ') : JSON.stringify(r.errors)), 'error');
+    if (!r) {
+      toast('Sem resposta do Worker — verifica a ligacao', 'error');
+    } else if (r.id) {
+      toast('Enviado! ID: ' + r.id.substring(0,8) + '...', 'success');
+    } else if (r.erro) {
+      toast('Erro Worker: ' + r.erro, 'error');
+    } else if (r.errors) {
+      var erroTexto = Array.isArray(r.errors) ? r.errors.join(' | ') : JSON.stringify(r.errors);
+      toast('OneSignal: ' + erroTexto.substring(0, 80), 'error');
     } else {
-      toast('Resposta: ' + JSON.stringify(r || {}).substring(0, 60), 'error');
+      toast('Resposta: ' + JSON.stringify(r).substring(0, 80), 'error');
     }
   } catch(e) {
-    toast('Erro: ' + (e.message || e), 'error');
+    toast('Erro: ' + (e.message || String(e)), 'error');
   }
 }
 
