@@ -932,7 +932,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </style>
 </head>
 <body>
-<!-- OneSignal: inline script PRIMEIRO, SDK a seguir -->
+<!-- OneSignal SDK -->
 <script>
   window._OS = null;
   window._osReadyResolve = null;
@@ -946,7 +946,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       await OneSignal.init({
         appId: "d3394241-a8cb-4c7e-9d1d-ac0fb9704591",
         serviceWorkerPath: "/Loja/OneSignalSDKWorker.js",
-        serviceWorkerParam: { scope: "/Loja/" },
         notifyButton: { enable: false }
       });
       console.log('[OneSignal] Init OK');
@@ -955,9 +954,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
     }
     window._OS = OneSignal;
     window._osReadyResolve();
+    console.log('[OneSignal] Pronto. _OS definido.');
   });
 </script>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
@@ -1785,6 +1785,21 @@ select.form-input option{background:var(--bg2);color:var(--white)}
      ============================================================ -->
 <div class="toast" id="toast"></div>
 
+<!-- DIAGNÓSTICO ONESIGNAL — remover depois de funcionar -->
+<div id="osDiag" style="
+  position:fixed;bottom:70px;left:8px;right:8px;z-index:9998;
+  background:#1c1c32;border:2px solid #ff6b9d;border-radius:12px;
+  padding:12px 14px;font-size:11px;font-family:monospace;
+  color:#f0f0ff;display:none;max-height:200px;overflow-y:auto;
+">
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+    <b style="color:#ff6b9d">OneSignal Diagnóstico</b>
+    <button onclick="this.parentElement.parentElement.style.display='none'"
+      style="background:none;border:none;color:#ff4757;cursor:pointer;font-size:14px">✕</button>
+  </div>
+  <div id="osDiagContent">A verificar...</div>
+</div>
+
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
@@ -2097,6 +2112,33 @@ async function initApp(){
   renderSettingsForm();
   navigate('dashboard');
   initNotificacoes();
+  // Diagnóstico OneSignal (remover depois)
+  setTimeout(async function() {
+    var diag = document.getElementById('osDiag');
+    var content = document.getElementById('osDiagContent');
+    if (!diag || !content) return;
+    var lines = [];
+    lines.push('SDK carregado: ' + (window._OS ? 'SIM' : 'NAO'));
+    lines.push('_osReady resolvida: ' + (window._osReadyResolve ? 'SIM' : 'NAO'));
+    if (window._OS) {
+      try {
+        var sub = window._OS.User && window._OS.User.PushSubscription;
+        lines.push('PushSubscription existe: ' + (sub ? 'SIM' : 'NAO'));
+        if (sub) {
+          var opted = sub.optedIn;
+          lines.push('optedIn: ' + opted);
+          lines.push('id: ' + (sub.id || 'null'));
+        }
+        var perm = window._OS.Notifications && window._OS.Notifications.permission;
+        lines.push('Perm OneSignal: ' + (perm || 'n/a'));
+        lines.push('Perm Browser Nativa: ' + (('Notification' in window) ? Notification.permission : 'sem suporte'));
+      } catch(e) { lines.push('Erro ao ler estado: ' + e.message); }
+    }
+    lines.push('adm_notif localStorage: ' + localStorage.getItem('adm_notif'));
+    lines.push('REST Key configurada: ' + (localStorage.getItem('adm_onesignal_rest') ? 'SIM' : 'NAO'));
+    content.innerHTML = lines.join('<br>');
+    diag.style.display = 'block';
+  }, 4000);
   
   if(state.refreshInterval)clearInterval(state.refreshInterval);
   state.refreshInterval=setInterval(refreshData,60000);
@@ -3128,7 +3170,8 @@ const settingsSections={
     icon:'fa-solid fa-bell',name:'Notificações',
     render:()=>{
       const l=state.loja;
-      const osSubscrito=window._OS?.User?.PushSubscription?.optedIn||false;
+      const subState = window._OS?.User?.PushSubscription?.optedIn;
+      const osSubscrito = (subState && typeof subState.then === 'function') ? false : !!subState;
       const temRestKey=!!(l.onesignal_api_key||localStorage.getItem('adm_onesignal_rest')||'');
       const statusOk=osSubscrito&&temRestKey;
       return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i> Notificações</div></div>'+
@@ -3759,14 +3802,14 @@ function _osAppId() {
     || 'd3394241-a8cb-4c7e-9d1d-ac0fb9704591';
 }
 
-/* ── Motor de envio OneSignal REST API ── */
+/* ── Motor de envio — via Cloudflare Worker (proxy) ── */
 async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
   if (!state.token) { console.warn('[OS] Sem token'); return null; }
   try {
     const res = await fetch(API + '/api/admin/notificar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
-      body: JSON.stringify({ titulo, mensagem, url: url || location.href })
+      body: JSON.stringify({ titulo, mensagem, url: url || location.href, dados: dados || {} })
     });
     const r = await res.json();
     console.log('[OS] Enviado via Worker:', titulo, r);
@@ -3775,7 +3818,7 @@ async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
     console.error('[OS] Erro envio:', err);
     return null;
   }
-
+}
 
 /* ── Gatilhos específicos ── */
 function notificarNovaEncomenda(enc) {
@@ -3909,12 +3952,12 @@ function updateNotifBtn() {
     ico.className = 'fa-solid fa-bell';
     btn.style.borderColor = 'var(--teal)';
     btn.style.color = 'var(--teal)';
-    btn.title = 'Notificações push ativas — clica para desativar';
+    btn.title = 'Notificacoes push ativas — clica para desativar';
   } else {
     ico.className = 'fa-solid fa-bell-slash';
     btn.style.borderColor = '';
     btn.style.color = '';
-    btn.title = 'Ativar notificações push';
+    btn.title = 'Ativar notificacoes push';
   }
 }
 
@@ -3925,14 +3968,14 @@ async function toggleNotifications() {
   try {
     await window._osReady;
     const os = window._OS;
-    if (!os) { toast('SDK nao carregado — recarrega a pagina', 'error'); updateNotifBtn(); return; }
+    if (!os) { toast('SDK nao carregado — recarrega', 'error'); updateNotifBtn(); return; }
 
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    if (subscrito || (_notifEnabled && localStorage.getItem('adm_notif') === '1')) {
-      try { await os.User.PushSubscription.optOut(); } catch(e) {}
+    // Verificar se ja esta ativo (via localStorage)
+    if (_notifEnabled || localStorage.getItem('adm_notif') === '1') {
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
       localStorage.setItem('adm_notif', '0');
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
       return;
@@ -3949,49 +3992,28 @@ async function toggleNotifications() {
       if (r !== 'granted') { toast('Permissao negada', 'error'); updateNotifBtn(); return; }
     }
 
-    // Registar Service Worker dedicado ao OneSignal manualmente
-    var swReg = null;
-    try {
-      swReg = await navigator.serviceWorker.register('/Loja/OneSignalSDKWorker.js', { scope: '/Loja/' });
-      await navigator.serviceWorker.ready;
-      console.log('[OS] SW registado:', swReg.scope);
-    } catch(e) {
-      console.warn('[OS] SW register erro:', e);
-    }
-
-    // Disparar optIn
-    toast('A subscrever...', 'info');
+    // Disparar optIn — nao aguardar resolucao
+    toast('A ativar...', 'info');
     os.User.PushSubscription.optIn().catch(function(e) {
-      console.warn('[OS] optIn interno:', e);
+      console.warn('[OS] optIn:', e);
     });
 
-    // Polling: verificar optedIn E pushManager nativo
-    for (var i = 0; i < 40; i++) {
-      await new Promise(function(r) { setTimeout(r, 500); });
-      var opted = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-      var nativeSub = null;
-      try {
-        if (swReg) nativeSub = await swReg.pushManager.getSubscription();
-      } catch(e) {}
+    // Aguardar 5s para a subscricao ser processada
+    await new Promise(function(r) { setTimeout(r, 5000); });
 
-      if (opted || nativeSub) {
-        try { await os.User.addTag('role', 'admin'); } catch(e) {}
-        _notifEnabled = true;
-        _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
-        localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
-        iniciarPollingNotif();
-        localStorage.setItem('adm_notif', '1');
-        updateNotifBtn();
-        toast('Notificacoes push ativadas!', 'success');
-        return;
-      }
+    // Adicionar tag role=admin independentemente do optedIn
+    try { await os.User.addTag('role', 'admin'); } catch(e) {
+      console.warn('[OS] addTag:', e);
     }
 
-    // Mesmo sem confirmacao, marcar como ativo (subscritor ja aparece no OneSignal)
+    // Ativar notificacoes localmente
     _notifEnabled = true;
+    _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
+    localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
+    iniciarPollingNotif();
     localStorage.setItem('adm_notif', '1');
     updateNotifBtn();
-    toast('Subscricao enviada! Clica TEST para confirmar.', 'success');
+    toast('Notificacoes ativadas! Clica TEST para confirmar.', 'success');
 
   } catch(err) {
     console.error('[OS] toggle:', err);
@@ -4016,7 +4038,7 @@ async function testarNotificacao() {
     } else if (r && r.errors) {
       toast('OneSignal: ' + (Array.isArray(r.errors) ? r.errors.join(', ') : JSON.stringify(r.errors)), 'error');
     } else {
-      toast('Resposta: ' + JSON.stringify(r || {}).substring(0, 80), 'error');
+      toast('Resposta: ' + JSON.stringify(r || {}).substring(0, 60), 'error');
     }
   } catch(e) {
     toast('Erro: ' + (e.message || e), 'error');
@@ -4026,17 +4048,23 @@ async function testarNotificacao() {
 /* ── Init (chamado em initApp) ── */
 async function initNotificacoes() {
   try {
-    await Promise.race([_osReady, new Promise(r => setTimeout(r, 10000))]);
+    await Promise.race([window._osReady, new Promise(r => setTimeout(r, 10000))]);
     const os = window._OS;
     if (!os) { updateNotifBtn(); return; }
-    const subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    const guardado  = localStorage.getItem('adm_notif') === '1';
+    var osSubscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+    var nativePushSub = null;
+    try {
+      var swR = await navigator.serviceWorker.getRegistration();
+      if (swR) nativePushSub = await swR.pushManager.getSubscription();
+    } catch(e) {}
+    var subscrito = osSubscrito || !!nativePushSub;
+    var guardado = localStorage.getItem('adm_notif') === '1';
     console.log('[OneSignal] init — subscrito:', subscrito, '| guardado:', guardado);
     if (subscrito || guardado) {
       _notifEnabled = true;
       try { await os.User.addTag('role', 'admin'); } catch(e) {}
       _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
-      localStorage.setItem('adm_clients_seen', (state.clientes || []).length);
+      localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
       iniciarPollingNotif();
     }
     updateNotifBtn();
@@ -4080,8 +4108,6 @@ applyTheme();
   sessionStorage.removeItem('gh_repo');
   sessionStorage.removeItem('gh_branch');
 })();
-
-}
 
 autoLogin();
 </script>
