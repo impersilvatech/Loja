@@ -3761,33 +3761,21 @@ function _osAppId() {
 
 /* ── Motor de envio OneSignal REST API ── */
 async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
-  const restKey = _osRestKey();
-  if (!restKey) { console.warn('[OneSignal] REST API Key não configurada.'); return null; }
-
-  const corpo = {
-    app_id: _osAppId(),
-    filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }],
-    headings: { pt: titulo, en: titulo },
-    contents: { pt: mensagem, en: mensagem },
-    url: url || location.href,
-    data: dados || {}
-  };
-  if (icone) { corpo.chrome_web_icon = icone; corpo.firefox_icon = icone; }
-
+  if (!state.token) { console.warn('[OS] Sem token'); return null; }
   try {
-    const res = await fetch('https://onesignal.com/api/v1/notifications', {
+    const res = await fetch(API + '/api/admin/notificar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + restKey },
-      body: JSON.stringify(corpo)
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
+      body: JSON.stringify({ titulo, mensagem, url: url || location.href })
     });
     const r = await res.json();
-    console.log('[OneSignal] ✅', titulo, r);
+    console.log('[OS] Enviado via Worker:', titulo, r);
     return r;
   } catch (err) {
-    console.error('[OneSignal] ❌', err);
+    console.error('[OS] Erro envio:', err);
     return null;
   }
-}
+
 
 /* ── Gatilhos específicos ── */
 function notificarNovaEncomenda(enc) {
@@ -4014,24 +4002,24 @@ async function toggleNotifications() {
 
 /* ── Botão TEST no topbar ── */
 async function testarNotificacao() {
-  if (!_osRestKey()) {
-    toast('Configura a REST API Key em Configuracoes > Notificacoes', 'error');
-    return;
-  }
-  if (!_notifEnabled) {
-    toast('Ativa as notificacoes primeiro (clica no sino)', 'error');
-    return;
-  }
-  const res = await enviarNotificacaoAdmin({
-    titulo: 'Teste Admin',
-    mensagem: 'Sistema de notificacoes push a funcionar!',
-    url: location.href,
-    dados: { tipo: 'teste', ts: Date.now() }
-  });
-  if (res && !res.errors) {
-    toast('Notificação de teste enviada! Verifica o teu dispositivo.', 'success');
-  } else {
-    toast('Erro ao enviar — verifica a REST API Key', 'error');
+  if (!_notifEnabled) { toast('Ativa as notificacoes primeiro (clica no sino)', 'error'); return; }
+  try {
+    const r = await enviarNotificacaoAdmin({
+      titulo: 'Teste Admin',
+      mensagem: 'Push a funcionar!',
+      url: location.href
+    });
+    if (r && r.id) {
+      toast('Enviado! Verifica o dispositivo.', 'success');
+    } else if (r && r.erro) {
+      toast('Erro: ' + r.erro, 'error');
+    } else if (r && r.errors) {
+      toast('OneSignal: ' + (Array.isArray(r.errors) ? r.errors.join(', ') : JSON.stringify(r.errors)), 'error');
+    } else {
+      toast('Resposta: ' + JSON.stringify(r || {}).substring(0, 80), 'error');
+    }
+  } catch(e) {
+    toast('Erro: ' + (e.message || e), 'error');
   }
 }
 
@@ -4092,6 +4080,8 @@ applyTheme();
   sessionStorage.removeItem('gh_repo');
   sessionStorage.removeItem('gh_branch');
 })();
+
+}
 
 autoLogin();
 </script>
