@@ -2136,7 +2136,7 @@ async function initApp(){
       } catch(e) { lines.push('Erro ao ler estado: ' + e.message); }
     }
     lines.push('adm_notif localStorage: ' + localStorage.getItem('adm_notif'));
-    lines.push('REST Key configurada: ' + (localStorage.getItem('adm_onesignal_rest') ? 'SIM' : 'NAO'));
+    lines.push('REST Key configurada: ' + (state.loja && state.loja.onesignal_api_key ? 'SIM' : 'NAO'));
     content.innerHTML = lines.join('<br>');
     diag.style.display = 'block';
   }, 4000);
@@ -3173,7 +3173,7 @@ const settingsSections={
       const l=state.loja;
       const subState = window._OS?.User?.PushSubscription?.optedIn;
       const osSubscrito = (subState && typeof subState.then === 'function') ? false : !!subState;
-      const temRestKey=!!(l.onesignal_api_key||localStorage.getItem('adm_onesignal_rest')||'');
+      const temRestKey=!!(l.onesignal_api_key||'');
       const statusOk=osSubscrito&&temRestKey;
       return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i> Notificações</div></div>'+
         '<div class="switch-row"><div><div class="switch-label">Email (EmailJS)</div></div><label class="switch"><input type="checkbox" id="cfgNotEmail" '+(l.notif_email?'checked':'')+'/><span class="switch-slider"></span></label></div>'+
@@ -3301,7 +3301,7 @@ async function saveSettings(){
   }else if(section==='notifications'){
     campos={notif_email:getChk('cfgNotEmail')?1:0,notif_whatsapp:getChk('cfgNotWa')?1:0,callmebot_apikey:getVal('cfgCmb')||null,emailjs_service:getVal('cfgEjsS')||null,emailjs_template:getVal('cfgEjsT')||null,emailjs_pubkey:getVal('cfgEjsK')||null,onesignal_app_id:getVal('cfgOsAppId')||null,onesignal_api_key:getVal('cfgOsApiKey')||null,onesignal_admin_tag:getVal('cfgOsTag')||'admin'};
     /* Guardar REST Key também no localStorage para uso imediato */
-    if(campos.onesignal_api_key) localStorage.setItem('adm_onesignal_rest', campos.onesignal_api_key);
+    /* REST Key guardada apenas na BD via Worker */
     if(campos.onesignal_app_id) localStorage.setItem('adm_onesignal_appid', campos.onesignal_app_id);
   }else if(section==='seo'){
     campos={meta_descricao:getVal('cfgMetaDesc')||null,palavras_chave:getVal('cfgKw')||null,politica:getVal('cfgPolitica')||null,termos:getVal('cfgTermos')||null};
@@ -3759,201 +3759,199 @@ function _getNotifPref(tipo){ const p=JSON.parse(localStorage.getItem('adm_notif
 function _setNotifPref(tipo,val){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); p[tipo]=val; localStorage.setItem('adm_notif_prefs',JSON.stringify(p)); }
 
 /* ── Promise que resolve quando o SDK OneSignal está pronto ── */
-/* _osReady e _osReadyResolve definidos no inline script no <head> */
+/* ============================================================
+   SISTEMA DE NOTIFICAÇÕES — Versão 2.0
+   Fixes: permissão browser, REST Key só na BD, polling
+   inteligente, BroadcastChannel anti-duplicados, UX melhorada
+   ============================================================ */
 
-function _renderNotifPrefs(){
-  const prefs=[
-    ['enc','<i class="fa-solid fa-cart-shopping" style="color:var(--pink)"></i> Novas Encomendas','Quando um cliente faz uma nova encomenda'],
-    ['rev','<i class="fa-solid fa-comment-dots" style="color:var(--yellow)"></i> Novas Avaliacoes','Avaliacoes pendentes de aprovacao'],
-    ['cpn','<i class="fa-solid fa-ticket" style="color:var(--teal)"></i> Uso de Cupoes','Quando um cupao e aplicado a uma encomenda'],
-    ['cli','<i class="fa-solid fa-user-plus" style="color:var(--blue)"></i> Novos Clientes','Quando um novo cliente se regista']
-  ];
-  return prefs.map(([k,lbl,sub])=>
-    '<div class="switch-row">'+
-      '<div><div class="switch-label">'+lbl+'</div><div class="switch-sub">'+sub+'</div></div>'+
-      '<label class="switch"><input type="checkbox" '+(
-        _getNotifPref(k)?'checked':''
-      )+' onchange="_setNotifPref(\''+k+'\',this.checked)"/><span class="switch-slider"></span></label>'+
-    '</div>'
-  ).join('');
+/* ── Preferências por tipo ── */
+function _getNotifPref(tipo) {
+  return JSON.parse(localStorage.getItem('adm_notif_prefs') || '{}')[tipo] !== false;
+}
+function _setNotifPref(tipo, val) {
+  var p = JSON.parse(localStorage.getItem('adm_notif_prefs') || '{}');
+  p[tipo] = val;
+  localStorage.setItem('adm_notif_prefs', JSON.stringify(p));
 }
 
-/* ============================================================
-   NOTIFICAÇÕES PUSH — OneSignal v16
-   ============================================================ */
-var _notifInterval = null;
-var _notifEnabled  = false;
-var _notifiedRefs  = new Set(JSON.parse(localStorage.getItem('adm_notified_refs') || '[]'));
-var _lastRevCount  = 0;
+function _renderNotifPrefs() {
+  var prefs = [
+    ['enc', '<i class="fa-solid fa-cart-shopping" style="color:var(--pink)"></i> Novas Encomendas', 'Quando um cliente faz uma nova encomenda'],
+    ['rev', '<i class="fa-solid fa-comment-dots" style="color:var(--yellow)"></i> Novas Avaliacoes', 'Avaliacoes pendentes de aprovacao'],
+    ['cpn', '<i class="fa-solid fa-ticket" style="color:var(--teal)"></i> Uso de Cupoes', 'Quando um cupao e aplicado a uma encomenda'],
+    ['cli', '<i class="fa-solid fa-user-plus" style="color:var(--blue)"></i> Novos Clientes', 'Quando um novo cliente se regista']
+  ];
+  return prefs.map(function(p) {
+    return '<div class="switch-row">' +
+      '<div><div class="switch-label">' + p[1] + '</div><div class="switch-sub">' + p[2] + '</div></div>' +
+      '<label class="switch"><input type="checkbox" ' + (_getNotifPref(p[0]) ? 'checked' : '') +
+      ' onchange="_setNotifPref(\'' + p[0] + '\',this.checked)"/><span class="switch-slider"></span></label>' +
+      '</div>';
+  }).join('');
+}
 
-/* Persistência anti-duplicados */
+/* ── Estado ── */
+var _notifEnabled  = false;
+var _notifInterval = null;
+var _lastRevCount  = 0;
+var _notifiedRefs  = new Set(JSON.parse(localStorage.getItem('adm_notified_refs') || '[]'));
+var _notifChannel  = null; /* BroadcastChannel — só um tab faz polling */
+var _isLeaderTab   = false;
+
 function salvarNotifiedRefs() {
   localStorage.setItem('adm_notified_refs', JSON.stringify([..._notifiedRefs].slice(-300)));
 }
 
-/* Lê chave de prioridade: state.loja (BD) > localStorage */
+/* ── REST Key — apenas da BD, nunca do localStorage ── */
 function _osRestKey() {
-  return state.loja.onesignal_api_key
-    || localStorage.getItem('adm_onesignal_rest')
-    || '';
+  return (state.loja && state.loja.onesignal_api_key) || '';
 }
 function _osAppId() {
-  return state.loja.onesignal_app_id
-    || localStorage.getItem('adm_onesignal_appid')
-    || '28d74020-c173-4107-915f-ae48ef166118';
+  return (state.loja && state.loja.onesignal_app_id) || '28d74020-c173-4107-915f-ae48ef166118';
 }
 
 /* ── Motor de envio — via Cloudflare Worker (proxy) ── */
-async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados, icone }) {
-  if (!state.token) { console.warn('[OS] Sem token'); return null; }
+async function enviarNotificacaoAdmin({ titulo, mensagem, url, dados }) {
+  if (!state.token) return null;
   try {
-    const res = await fetch(API + '/api/admin/notificar', {
+    var res = await fetch(API + '/api/admin/notificar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
-      body: JSON.stringify({ titulo, mensagem, url: url || location.href, dados: dados || {} })
+      body: JSON.stringify({ titulo: titulo, mensagem: mensagem, url: url || location.href })
     });
-    const r = await res.json();
-    console.log('[OS] Enviado via Worker:', titulo, r);
+    var r = await res.json();
+    console.log('[OS] Enviado:', titulo, r);
     return r;
-  } catch (err) {
-    console.error('[OS] Erro envio:', err);
+  } catch(e) {
+    console.error('[OS] Erro envio:', e);
     return null;
   }
 }
 
-/* ── Gatilhos específicos ── */
+/* ── Gatilhos ── */
 function notificarNovaEncomenda(enc) {
-  const ref = enc.ref || enc.id || '';
-  if (!ref || _notifiedRefs.has('ord_' + ref)) return;
+  var ref = enc.ref || enc.id || '';
+  if (!ref || _notifiedRefs.has('ord_' + ref) || !_getNotifPref('enc')) return;
   _notifiedRefs.add('ord_' + ref); salvarNotifiedRefs();
-  const nome  = enc.nome_cliente || 'Cliente';
-  const total = enc.total != null ? kz(enc.total, state.loja.simbolo_moeda) : '—';
-  const nitens = Array.isArray(enc.itens) ? enc.itens.length : '?';
-  return enviarNotificacaoAdmin({
-    titulo: 'Nova Encomenda',
-    mensagem: nome + ' · ' + nitens + ' item(ns) · ' + total,
-    url: location.href.split('?')[0] + '#orders',
-    dados: { tipo: 'encomenda', ref, cliente: nome }
-  });
+  var nome = enc.nome_cliente || 'Cliente';
+  var total = enc.total != null ? kz(enc.total, state.loja && state.loja.simbolo_moeda) : '?';
+  return enviarNotificacaoAdmin({ titulo: 'Nova Encomenda', mensagem: nome + ' | Total: ' + total, url: location.href.split('?')[0] + '#orders' });
 }
-
 function notificarNovaAvaliacao(av) {
-  const id = String(av.id || (av.produto_id + '_' + av.criado_em));
-  if (_notifiedRefs.has('rev_' + id)) return;
+  var id = String(av.id || av.produto_id);
+  if (_notifiedRefs.has('rev_' + id) || !_getNotifPref('rev')) return;
   _notifiedRefs.add('rev_' + id); salvarNotifiedRefs();
-  const estrelas = av.estrelas ? av.estrelas + '/5 estrelas' : '';
-  const prodMap = {}; state.produtos.forEach(p => { prodMap[p.id] = p.nome; });
-  const produto = prodMap[av.produto_id] || 'produto';
-  const nome    = av.cliente_nome || 'Anonimo';
-  return enviarNotificacaoAdmin({
-    titulo: 'Nova Avaliacao',
-    mensagem: nome + ' avaliou "' + produto + '" — ' + estrelas,
-    url: location.href.split('?')[0] + '#reviews',
-    dados: { tipo: 'avaliacao', produto, estrelas: av.estrelas }
-  });
+  return enviarNotificacaoAdmin({ titulo: 'Nova Avaliacao', mensagem: (av.cliente_nome || 'Anonimo') + ' avaliou com ' + (av.estrelas || '?') + '/5', url: location.href.split('?')[0] + '#reviews' });
 }
-
 function notificarUsoCupom(enc) {
-  if (!enc.cupao_codigo) return;
-  const chave = 'cpn_' + enc.cupao_codigo + '_' + (enc.ref || enc.id);
+  if (!enc.cupao_codigo || !_getNotifPref('cpn')) return;
+  var chave = 'cpn_' + enc.cupao_codigo + '_' + (enc.ref || enc.id);
   if (_notifiedRefs.has(chave)) return;
   _notifiedRefs.add(chave); salvarNotifiedRefs();
-  const nome = enc.nome_cliente || 'Cliente';
-  const desc = enc.cupao_desconto != null
-    ? (enc.cupao_tipo === 'percentagem' ? enc.cupao_desconto + '%' : kz(enc.cupao_desconto, state.loja.simbolo_moeda))
-    : '?';
-  return enviarNotificacaoAdmin({
-    titulo: 'Cupao Utilizado',
-    mensagem: nome + ' usou "' + enc.cupao_codigo + '" — Desconto: ' + desc,
-    url: location.href.split('?')[0] + '#coupons',
-    dados: { tipo: 'cupom', codigo: enc.cupao_codigo }
-  });
+  return enviarNotificacaoAdmin({ titulo: 'Cupao Utilizado', mensagem: (enc.nome_cliente || 'Cliente') + ' usou "' + enc.cupao_codigo + '"', url: location.href.split('?')[0] + '#coupons' });
 }
-
-function notificarNovoCliente(cliente) {
-  const id = cliente.email || cliente.tel || '';
-  if (!id || _notifiedRefs.has('cli_' + id)) return;
+function notificarNovoCliente(cli) {
+  var id = cli.email || cli.telefone || '';
+  if (!id || _notifiedRefs.has('cli_' + id) || !_getNotifPref('cli')) return;
   _notifiedRefs.add('cli_' + id); salvarNotifiedRefs();
-  const nome = cliente.nome || 'Novo cliente';
-  return enviarNotificacaoAdmin({
-    titulo: 'Novo Cliente',
-    mensagem: nome + (cliente.tel ? ' · ' + cliente.tel : '') + ' registou-se',
-    url: location.href.split('?')[0] + '#clients',
-    dados: { tipo: 'cliente', nome }
-  });
+  return enviarNotificacaoAdmin({ titulo: 'Novo Cliente', mensagem: (cli.nome || 'Cliente') + (cli.telefone ? ' | ' + cli.telefone : '') + ' registou-se', url: location.href.split('?')[0] + '#clients' });
 }
 
-/* ── Polling — detecta novidades a cada 25s ── */
-async function _pollNotificacoes() {
-  if (!_notifEnabled || !state.token) return;
+/* ── BroadcastChannel — apenas o tab activo faz polling ── */
+function _iniciarBroadcastChannel() {
   try {
-    /* Novas encomendas */
-    const encs = await fetch(API + '/api/admin/encomendas', {
-      headers: { 'Authorization': 'Bearer ' + state.token }
-    }).then(r => r.json());
-
-    if (Array.isArray(encs)) {
-      const novas = encs.filter(e => !_notifiedRefs.has('ord_' + e.ref));
-      if (novas.length > 0) {
-        state.encomendas = encs;
-        state.filteredOrders = [...encs];
-        updateDashboardStats();
-        if (state.currentPanel === 'dashboard') renderDashboard();
-        if (state.currentPanel === 'orders') renderOrders();
-        novas.forEach(enc => {
-          notificarNovaEncomenda(enc);
-          /* Cupões usados */
-          if (enc.cupao_codigo) notificarUsoCupom(enc);
-        });
+    _notifChannel = new BroadcastChannel('adm_notif_leader');
+    /* Anunciar que este tab quer ser líder */
+    _notifChannel.postMessage({ tipo: 'candidato', ts: Date.now() });
+    _notifChannel.onmessage = function(e) {
+      if (e.data.tipo === 'candidato') {
+        /* Já somos líder — responder */
+        if (_isLeaderTab) _notifChannel.postMessage({ tipo: 'lider_existe' });
+      } else if (e.data.tipo === 'lider_existe') {
+        /* Outro tab já é líder — este não faz polling */
+        _isLeaderTab = false;
+        if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
+        console.log('[OS] Este tab nao e lider — polling pausado');
       }
-      encs.forEach(e => _notifiedRefs.add('ord_' + e.ref));
-      salvarNotifiedRefs();
-    }
-
-    /* Novas avaliações pendentes */
-    try {
-      const revs = await api('/api/admin/avaliacoes');
-      const pendentes = revs.filter(r => !r.aprovada);
-      if (pendentes.length > _lastRevCount && _lastRevCount > 0) {
-        pendentes.slice(_lastRevCount).forEach(av => notificarNovaAvaliacao(av));
+    };
+    /* Assumir liderança após 500ms sem resposta */
+    setTimeout(function() {
+      if (!_isLeaderTab) {
+        _isLeaderTab = true;
+        console.log('[OS] Este tab e lider — polling activo');
+        _iniciarPollingComVisibility();
       }
-      _lastRevCount = pendentes.length;
-    } catch(e) {}
-
-    /* Novos clientes */
-    try {
-      const clis = await api('/api/admin/clientes');
-      const visto = parseInt(localStorage.getItem('adm_clients_seen') || '0');
-      if (Array.isArray(clis) && clis.length > visto && visto > 0) {
-        clis.slice(visto).forEach(c => notificarNovoCliente(c));
-      }
-      if (Array.isArray(clis)) localStorage.setItem('adm_clients_seen', clis.length);
-    } catch(e) {}
-
-  } catch(e) { console.warn('[OneSignal] Erro polling:', e); }
+    }, 500);
+  } catch(e) {
+    /* BroadcastChannel não suportado — polling normal */
+    _isLeaderTab = true;
+    _iniciarPollingComVisibility();
+  }
 }
 
-function iniciarPollingNotif() {
+/* ── Polling inteligente — pausa quando tab está inactivo ── */
+function _iniciarPollingComVisibility() {
   if (_notifInterval) clearInterval(_notifInterval);
-  /* Snapshot inicial: marca tudo existente como já notificado */
+  /* Snapshot inicial: marcar tudo existente */
   fetch(API + '/api/admin/encomendas', { headers: { 'Authorization': 'Bearer ' + state.token } })
-    .then(r => r.json()).then(encs => {
-      if (Array.isArray(encs)) { encs.forEach(e => _notifiedRefs.add('ord_' + e.ref)); salvarNotifiedRefs(); }
-    }).catch(() => {})
-    .finally(() => {
-      _notifInterval = setInterval(_pollNotificacoes, 25000);
+    .then(function(r) { return r.json(); })
+    .then(function(encs) {
+      if (Array.isArray(encs)) { encs.forEach(function(e) { _notifiedRefs.add('ord_' + e.ref); }); salvarNotifiedRefs(); }
+    }).catch(function() {})
+    .finally(function() {
+      _notifInterval = setInterval(function() {
+        /* Pausar se tab inactivo */
+        if (document.visibilityState === 'hidden') return;
+        if (!_notifEnabled || !state.token || !_isLeaderTab) return;
+        _pollNotificacoes();
+      }, 25000);
     });
 }
 
-/* ── Botão no topbar ── */
+async function _pollNotificacoes() {
+  try {
+    var encs = await fetch(API + '/api/admin/encomendas', { headers: { 'Authorization': 'Bearer ' + state.token } }).then(function(r) { return r.json(); });
+    if (Array.isArray(encs)) {
+      var novas = encs.filter(function(e) { return !_notifiedRefs.has('ord_' + e.ref); });
+      if (novas.length > 0) {
+        state.encomendas = encs; state.filteredOrders = [...encs];
+        updateDashboardStats();
+        if (state.currentPanel === 'dashboard') renderDashboard();
+        if (state.currentPanel === 'orders') renderOrders();
+        novas.forEach(function(enc) {
+          notificarNovaEncomenda(enc);
+          if (enc.cupao_codigo) notificarUsoCupom(enc);
+        });
+        encs.forEach(function(e) { _notifiedRefs.add('ord_' + e.ref); });
+        salvarNotifiedRefs();
+      }
+    }
+    /* Avaliações */
+    try {
+      var revs = await api('/api/admin/avaliacoes');
+      var pend = (revs || []).filter(function(r) { return !r.aprovada; });
+      if (pend.length > _lastRevCount && _lastRevCount > 0) {
+        pend.slice(_lastRevCount).forEach(function(av) { notificarNovaAvaliacao(av); });
+      }
+      _lastRevCount = pend.length;
+    } catch(e) {}
+  } catch(e) { console.warn('[OS] poll erro:', e); }
+}
+
+function iniciarPollingNotif() {
+  _iniciarBroadcastChannel();
+}
+
+/* ── Actualizar botão no topbar ── */
 function updateNotifBtn() {
-  const btn = $('notifBtn'), ico = $('notifIcon');
+  var btn = $('notifBtn'), ico = $('notifIcon');
   if (!btn || !ico) return;
   if (_notifEnabled) {
     ico.className = 'fa-solid fa-bell';
     btn.style.borderColor = 'var(--teal)';
     btn.style.color = 'var(--teal)';
-    btn.title = 'Notificacoes push ativas — clica para desativar';
+    btn.title = 'Notificacoes ativas — clica para desativar';
   } else {
     ico.className = 'fa-solid fa-bell-slash';
     btn.style.borderColor = '';
@@ -3962,59 +3960,86 @@ function updateNotifBtn() {
   }
 }
 
-/* ── Toggle (botão 🔔 no topbar) ── */
+/* ── Toggle — ativar/desativar notificações ── */
 async function toggleNotifications() {
-  const ico = $('notifIcon');
+  var ico = $('notifIcon');
   if (ico) ico.className = 'fa-solid fa-spinner fa-spin';
   try {
     await window._osReady;
-    const os = window._OS;
-    if (!os) { toast('SDK nao carregado — recarrega', 'error'); updateNotifBtn(); return; }
+    var os = window._OS;
+    if (!os) { toast('SDK nao carregado — recarrega a pagina', 'error'); updateNotifBtn(); return; }
 
-    // Verificar se ja esta ativo (via localStorage)
-    if (_notifEnabled || localStorage.getItem('adm_notif') === '1') {
+    var subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+
+    if (_notifEnabled || subscrito) {
+      /* Desativar */
+      try { await os.User.PushSubscription.optOut(); } catch(e) {}
       _notifEnabled = false;
       if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
       localStorage.setItem('adm_notif', '0');
-      try { await os.User.PushSubscription.optOut(); } catch(e) {}
       updateNotifBtn();
       toast('Notificacoes desativadas', 'info');
       return;
     }
 
-    // Verificar permissao nativa
-    var permNativa = ('Notification' in window) ? Notification.permission : 'denied';
-    if (permNativa === 'denied') {
-      toast('Bloqueado! Chrome: cadeado > Notificacoes > Permitir > recarrega', 'error');
-      updateNotifBtn(); return;
-    }
-    if (permNativa === 'default') {
-      var r = await Notification.requestPermission();
-      if (r !== 'granted') { toast('Permissao negada', 'error'); updateNotifBtn(); return; }
+    /* ── Verificar e pedir permissão do browser ── */
+    var perm = ('Notification' in window) ? Notification.permission : 'denied';
+
+    if (perm === 'denied') {
+      /* Mostrar instruções claras */
+      toast('Bloqueado pelo browser — segue os passos abaixo', 'error');
+      /* Mostrar card de instrucoes */
+      _mostrarInstrucoesPermissao();
+      updateNotifBtn();
+      return;
     }
 
-    // Disparar optIn — nao aguardar resolucao
+    if (perm === 'default') {
+      /* Pedir permissão — abre o popup do browser */
+      var resultado = await Notification.requestPermission();
+      if (resultado !== 'granted') {
+        toast('Permissao negada — ativa nas definicoes do Chrome', 'error');
+        updateNotifBtn();
+        return;
+      }
+    }
+
+    /* ── Registar SW e subscrever ── */
     toast('A ativar...', 'info');
-    os.User.PushSubscription.optIn().catch(function(e) {
-      console.warn('[OS] optIn:', e);
-    });
+    var swReg = null;
+    try {
+      swReg = await navigator.serviceWorker.register('/Loja/sw.js', { scope: '/Loja/' });
+      await navigator.serviceWorker.ready;
+    } catch(e) { console.warn('[OS] SW:', e); }
 
-    // Aguardar 5s para a subscricao ser processada
-    await new Promise(function(r) { setTimeout(r, 5000); });
+    /* Disparar optIn */
+    os.User.PushSubscription.optIn().catch(function(e) { console.warn('[OS] optIn:', e); });
 
-    // Adicionar tag role=admin independentemente do optedIn
-    try { await os.User.addTag('role', 'admin'); } catch(e) {
-      console.warn('[OS] addTag:', e);
+    /* Aguardar confirmacao (máx 20s) */
+    for (var i = 0; i < 40; i++) {
+      await new Promise(function(r) { setTimeout(r, 500); });
+      var opted = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+      var nativeSub = null;
+      try { if (swReg) nativeSub = await swReg.pushManager.getSubscription(); } catch(e) {}
+      if (opted || nativeSub) {
+        try { await os.User.addTag('role', 'admin'); } catch(e) {}
+        _notifEnabled = true;
+        _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
+        localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
+        iniciarPollingNotif();
+        localStorage.setItem('adm_notif', '1');
+        updateNotifBtn();
+        toast('Notificacoes push ativas!', 'success');
+        return;
+      }
     }
 
-    // Ativar notificacoes localmente
+    /* Subscricao chegou ao OneSignal mesmo sem confirmacao local */
     _notifEnabled = true;
-    _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
-    localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
-    iniciarPollingNotif();
     localStorage.setItem('adm_notif', '1');
+    iniciarPollingNotif();
     updateNotifBtn();
-    toast('Notificacoes ativadas! Clica TEST para confirmar.', 'success');
+    toast('Ativado! Clica TEST para confirmar.', 'success');
 
   } catch(err) {
     console.error('[OS] toggle:', err);
@@ -4023,57 +4048,89 @@ async function toggleNotifications() {
   }
 }
 
-/* ── Botão TEST no topbar ── */
+/* ── Instruções quando permissão bloqueada ── */
+function _mostrarInstrucoesPermissao() {
+  var existente = document.getElementById('notifBlockedCard');
+  if (existente) { existente.remove(); return; }
+  var card = document.createElement('div');
+  card.id = 'notifBlockedCard';
+  card.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9997;background:var(--card);border:2px solid var(--red);border-radius:14px;padding:16px 20px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+  var fecharBtn = document.createElement('button');
+  fecharBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;float:right';
+  fecharBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+  fecharBtn.onclick = function() { card.remove(); };
+  var corpo = document.createElement('div');
+  corpo.innerHTML = '<b style="color:var(--red);font-family:var(--ft)"><i class="fa-solid fa-bell-slash"></i> Notificacoes Bloqueadas</b><br><br>' +
+    '<div style="font-size:.78rem;color:var(--white);line-height:1.8">' +
+    '<b style="color:var(--yellow)">Chrome Android:</b><br>' +
+    '1. Clica no <b>cadeado</b> na barra de endereco<br>' +
+    '2. Toca em <b>Permissoes do site</b><br>' +
+    '3. <b>Notificacoes &rarr; Permitir</b><br>' +
+    '4. Recarrega e tenta novamente</div>';
+  var recarregarBtn = document.createElement('button');
+  recarregarBtn.style.cssText = 'margin-top:12px;width:100%;padding:9px;background:var(--grad);border:none;border-radius:50px;color:#fff;font-family:var(--ft);font-size:.78rem;cursor:pointer';
+  recarregarBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Recarregar agora';
+  recarregarBtn.onclick = function() { location.reload(); };
+  card.appendChild(fecharBtn);
+  card.appendChild(corpo);
+  card.appendChild(recarregarBtn);
+  document.body.appendChild(card);
+  setTimeout(function() { if (card.parentNode) card.remove(); }, 15000);
+}
+
+/* ── Botão TEST ── */
 async function testarNotificacao() {
   if (!_notifEnabled) { toast('Ativa as notificacoes primeiro (clica no sino)', 'error'); return; }
   try {
-    const r = await enviarNotificacaoAdmin({
-      titulo: 'Teste Admin',
-      mensagem: 'Push a funcionar!',
-      url: location.href
-    });
+    var r = await enviarNotificacaoAdmin({ titulo: 'Teste Admin', mensagem: 'Push a funcionar!', url: location.href });
     if (r && r.id) {
       toast('Enviado! Verifica o dispositivo.', 'success');
     } else if (r && r.erro) {
-      toast('Erro: ' + r.erro, 'error');
+      toast('Erro do Worker: ' + r.erro, 'error');
     } else if (r && r.errors) {
       toast('OneSignal: ' + (Array.isArray(r.errors) ? r.errors.join(', ') : JSON.stringify(r.errors)), 'error');
     } else {
       toast('Resposta: ' + JSON.stringify(r || {}).substring(0, 60), 'error');
     }
-  } catch(e) {
-    toast('Erro: ' + (e.message || e), 'error');
-  }
+  } catch(e) { toast('Erro: ' + (e.message || e), 'error'); }
 }
 
-/* ── Init (chamado em initApp) ── */
+/* ── Init — chamado em initApp() ── */
 async function initNotificacoes() {
   try {
-    await Promise.race([window._osReady, new Promise(r => setTimeout(r, 10000))]);
-    const os = window._OS;
-    if (!os) { updateNotifBtn(); return; }
-    var osSubscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
-    var nativePushSub = null;
-    try {
-      var swR = await navigator.serviceWorker.getRegistration();
-      if (swR) nativePushSub = await swR.pushManager.getSubscription();
-    } catch(e) {}
-    var subscrito = osSubscrito || !!nativePushSub;
     var guardado = localStorage.getItem('adm_notif') === '1';
-    console.log('[OneSignal] init — subscrito:', subscrito, '| guardado:', guardado);
-    if (subscrito || guardado) {
+    /* Verificar permissao actual do browser */
+    var perm = ('Notification' in window) ? Notification.permission : 'denied';
+    /* Se permissao foi revogada, limpar estado */
+    if (perm !== 'granted' && guardado) {
+      localStorage.setItem('adm_notif', '0');
+      guardado = false;
+      console.log('[OS] Permissao revogada — estado limpo');
+    }
+    if (guardado) {
       _notifEnabled = true;
-      try { await os.User.addTag('role', 'admin'); } catch(e) {}
-      _lastRevCount = (state.avaliacoes || []).filter(a => !a.aprovada).length;
+      _lastRevCount = (state.avaliacoes || []).filter(function(a) { return !a.aprovada; }).length;
       localStorage.setItem('adm_clients_seen', String((state.clientes || []).length));
       iniciarPollingNotif();
     }
+    /* Verificar estado do SDK apos carregamento */
+    await window._osReady;
+    var os = window._OS;
+    if (os) {
+      var subscrito = !!(os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn);
+      if (subscrito && !_notifEnabled) {
+        _notifEnabled = true;
+        localStorage.setItem('adm_notif', '1');
+        iniciarPollingNotif();
+      }
+    }
     updateNotifBtn();
   } catch(e) {
-    console.warn('[OneSignal] initNotificacoes:', e);
+    console.warn('[OS] initNotificacoes:', e);
     updateNotifBtn();
   }
 }
+
 
 applyTheme();
 
