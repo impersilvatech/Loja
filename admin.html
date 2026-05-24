@@ -3754,15 +3754,11 @@ function getFaqs(){
   return faqs;
 }
 
-/* ── Preferências de tipos de notificação ── */
-function _getNotifPref(tipo){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); return p[tipo]!==false; }
-function _setNotifPref(tipo,val){ const p=JSON.parse(localStorage.getItem('adm_notif_prefs')||'{}'); p[tipo]=val; localStorage.setItem('adm_notif_prefs',JSON.stringify(p)); }
-
-/* ── Promise que resolve quando o SDK OneSignal está pronto ── */
 /* ============================================================
-   SISTEMA DE NOTIFICAÇÕES — Versão 2.0
-   Fixes: permissão browser, REST Key só na BD, polling
-   inteligente, BroadcastChannel anti-duplicados, UX melhorada
+   SISTEMA DE NOTIFICAÇÕES — Versão 2.1
+   Fixes: funções duplicadas removidas, bug _lastRevCount===0
+   corrigido, polling de clientes adicionado, liderança de tab
+   recuperada quando líder fecha.
    ============================================================ */
 
 /* ── Preferências por tipo ── */
@@ -3873,6 +3869,21 @@ function _iniciarBroadcastChannel() {
         _isLeaderTab = false;
         if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
         console.log('[OS] Este tab nao e lider — polling pausado');
+      } else if (e.data.tipo === 'lider_fechou') {
+        /* FIX BUG 4: líder anterior fechou — tentar assumir liderança */
+        if (!_isLeaderTab && _notifEnabled) {
+          setTimeout(function() {
+            /* Pequeno delay aleatório para evitar que múltiplos tabs assumam ao mesmo tempo */
+            _notifChannel.postMessage({ tipo: 'candidato', ts: Date.now() });
+            setTimeout(function() {
+              if (!_isLeaderTab) {
+                _isLeaderTab = true;
+                console.log('[OS] Lider anterior fechou — este tab assumiu lideranca');
+                _iniciarPollingComVisibility();
+              }
+            }, 300);
+          }, Math.random() * 200);
+        }
       }
     };
     /* Assumir liderança após 500ms sem resposta */
@@ -3883,6 +3894,12 @@ function _iniciarBroadcastChannel() {
         _iniciarPollingComVisibility();
       }
     }, 500);
+    /* FIX BUG 4: avisar outros tabs quando este fecha */
+    window.addEventListener('beforeunload', function() {
+      if (_isLeaderTab && _notifChannel) {
+        _notifChannel.postMessage({ tipo: 'lider_fechou' });
+      }
+    });
   } catch(e) {
     /* BroadcastChannel não suportado — polling normal */
     _isLeaderTab = true;
@@ -3893,13 +3910,32 @@ function _iniciarBroadcastChannel() {
 /* ── Polling inteligente — pausa quando tab está inactivo ── */
 function _iniciarPollingComVisibility() {
   if (_notifInterval) clearInterval(_notifInterval);
-  /* Snapshot inicial: marcar tudo existente */
+  /* FIX BUG 5: Snapshot inicial — só marca as que ainda NÃO estão no Set
+     (respeita refs já guardadas no localStorage de sessões anteriores) */
   fetch(API + '/api/admin/encomendas', { headers: { 'Authorization': 'Bearer ' + state.token } })
     .then(function(r) { return r.json(); })
     .then(function(encs) {
-      if (Array.isArray(encs)) { encs.forEach(function(e) { _notifiedRefs.add('ord_' + e.ref); }); salvarNotifiedRefs(); }
+      if (Array.isArray(encs)) {
+        encs.forEach(function(e) { _notifiedRefs.add('ord_' + e.ref); });
+        salvarNotifiedRefs();
+      }
     }).catch(function() {})
     .finally(function() {
+      /* FIX BUG 2: Inicializar _lastRevCount com valor real ANTES de começar polling */
+      api('/api/admin/avaliacoes').then(function(revs) {
+        _lastRevCount = (revs || []).filter(function(r) { return !r.aprovada; }).length;
+        console.log('[OS] Snapshot avaliacoes pendentes:', _lastRevCount);
+      }).catch(function() {});
+      /* FIX BUG 3: Snapshot de clientes para polling posterior */
+      api('/api/admin/clientes').then(function(clis) {
+        if (Array.isArray(clis)) {
+          clis.forEach(function(c) {
+            var id = c.email || c.telefone || '';
+            if (id) _notifiedRefs.add('cli_' + id);
+          });
+          salvarNotifiedRefs();
+        }
+      }).catch(function() {});
       _notifInterval = setInterval(function() {
         /* Pausar se tab inactivo */
         if (document.visibilityState === 'hidden') return;
@@ -3931,10 +3967,19 @@ async function _pollNotificacoes() {
     try {
       var revs = await api('/api/admin/avaliacoes');
       var pend = (revs || []).filter(function(r) { return !r.aprovada; });
-      if (pend.length > _lastRevCount && _lastRevCount > 0) {
+      /* FIX BUG 2: removida condição "&& _lastRevCount > 0" que bloqueava
+         a primeira notificação quando não havia avaliações pendentes inicialmente */
+      if (pend.length > _lastRevCount) {
         pend.slice(_lastRevCount).forEach(function(av) { notificarNovaAvaliacao(av); });
       }
       _lastRevCount = pend.length;
+    } catch(e) {}
+    /* FIX BUG 3: Clientes — nunca eram verificados no polling */
+    try {
+      var clis = await api('/api/admin/clientes');
+      if (Array.isArray(clis)) {
+        clis.forEach(function(cli) { notificarNovoCliente(cli); });
+      }
     } catch(e) {}
   } catch(e) { console.warn('[OS] poll erro:', e); }
 }
