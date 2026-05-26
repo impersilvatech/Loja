@@ -174,6 +174,7 @@ body{
 .panel{display:none;animation:fadeUp .25s ease both}
 .panel.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
 /* ============================================================
    10. PAGE HEADER
@@ -3942,7 +3943,19 @@ async function toggleNotifications() {
 
     /* ── Verificar suporte ── */
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-      toast('Browser nao suporta notificacoes push', 'error');
+      /* Verificar se é iPhone/iPad sem PWA instalada */
+      if (_isIOS() && !_isInstalledPWA()) {
+        _mostrarInstrucoesIOS();
+      } else {
+        toast('Browser nao suporta notificacoes push', 'error');
+      }
+      updateNotifBtn();
+      return;
+    }
+
+    /* ── iOS instalado como PWA mas sem suporte push (iOS < 16.4) ── */
+    if (_isIOS() && !('PushManager' in window)) {
+      toast('Actualiza o iOS para a versao 16.4 ou superior', 'error');
       updateNotifBtn();
       return;
     }
@@ -4028,8 +4041,64 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-/* ── Instruções quando permissão bloqueada ── */
-function _mostrarInstrucoesPermissao() {
+/* ── Detetar iOS (iPhone / iPad) ── */
+function _isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/* ── Detetar se está instalado como PWA ── */
+function _isInstalledPWA() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+}
+
+/* ── Modal de instruções para iPhone ── */
+function _mostrarInstrucoesIOS() {
+  var existente = document.getElementById('iosInstallCard');
+  if (existente) { existente.remove(); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'iosInstallCard';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;padding:0 0 0 0';
+
+  var card = document.createElement('div');
+  card.style.cssText = 'background:var(--card);border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,.5);animation:slideUp .3s ease';
+
+  /* Seta apontando para baixo (Safari share button fica em baixo) */
+  var seta = '<div style="text-align:center;margin-bottom:14px"><div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>' +
+    '<i class="fa-brands fa-apple" style="font-size:2rem;color:#fff;margin-bottom:6px;display:block"></i>' +
+    '<b style="font-size:1rem;color:var(--white)">Instala o Admin no iPhone</b>' +
+    '<p style="font-size:.72rem;color:var(--muted);margin-top:4px;line-height:1.5">No iPhone as notificações só funcionam com a app instalada no ecrã inicial</p></div>';
+
+  var passos = '<div style="display:flex;flex-direction:column;gap:10px;margin:14px 0">' +
+    _iosStep('1', 'fa-safari', '#007AFF', 'Abre o Admin no <b>Safari</b>', 'Não funciona no Chrome nem noutros browsers do iPhone') +
+    _iosStep('2', 'fa-arrow-up-from-bracket', '#30D158', 'Toca em <b>Partilhar</b>', 'O botão fica na barra de baixo do Safari — ícone de caixa com seta para cima') +
+    _iosStep('3', 'fa-plus-square', '#FF9F0A', 'Toca em <b>"Adicionar ao ecrã inicial"</b>', 'Faz scroll para baixo na lista de opções se não vires logo') +
+    _iosStep('4', 'fa-house', '#FF375F', 'Abre o Admin <b>pelo ícone</b> criado', 'Não pelo Safari directamente — pelo ícone no ecrã inicial') +
+    _iosStep('5', 'fa-bell', '#a78bfa', 'Clica no sino 🔔 e <b>permite</b> as notificações', 'O pedido de permissão aparece automaticamente') +
+    '</div>';
+
+  var fecharBtn = '<button onclick="document.getElementById(\'iosInstallCard\').remove()" style="width:100%;padding:13px;background:var(--grad);border:none;border-radius:50px;color:#fff;font-family:var(--ft);font-size:.85rem;font-weight:700;cursor:pointer;margin-top:4px"><i class="fa-solid fa-check"></i> Percebi, vou instalar</button>';
+
+  card.innerHTML = seta + passos + fecharBtn;
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  /* Fechar ao clicar no overlay */
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.remove();
+  });
+}
+
+function _iosStep(num, icon, cor, titulo, sub) {
+  return '<div style="display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:10px;padding:10px 12px">' +
+    '<div style="min-width:28px;height:28px;border-radius:50%;background:' + cor + '22;border:1.5px solid ' + cor + ';display:flex;align-items:center;justify-content:center">' +
+    '<i class="fa-solid ' + icon + '" style="color:' + cor + ';font-size:.75rem"></i></div>' +
+    '<div><div style="font-size:.78rem;color:var(--white);line-height:1.4">' + titulo + '</div>' +
+    '<div style="font-size:.65rem;color:var(--muted);margin-top:2px;line-height:1.4">' + sub + '</div></div></div>';
+}
+
   var existente = document.getElementById('notifBlockedCard');
   if (existente) { existente.remove(); return; }
   var card = document.createElement('div');
