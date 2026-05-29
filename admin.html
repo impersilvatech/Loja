@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+
 <style>
 /* ============================================================
    1. VARIÁVEIS E RESET
@@ -4190,33 +4191,58 @@ async function initNotificacoes() {
 
 applyTheme();
 
-/* Migração de token antigo do portal */
+// ⚠️ SOLUÇÃO DEFINITIVA: Token com expiração de 24h
+(function(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('tok');
+  
+  if (tokenFromUrl) {
+    // Guardar o token e o timestamp de expiração (24h)
+    const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // 24 horas em milissegundos
+    localStorage.setItem('adm_tk', tokenFromUrl);
+    localStorage.setItem('adm_tk_expiry', expiryTime);
+    
+    // Limpar a URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    console.log('🔑 Token guardado (expira em 24h)');
+  }
+
+  // Verificar se o token expirou
+  const storedToken = localStorage.getItem('adm_tk');
+  const expiry = localStorage.getItem('adm_tk_expiry');
+  
+  if (storedToken && expiry && Date.now() > parseInt(expiry)) {
+    // Token expirou - limpar
+    localStorage.removeItem('adm_tk');
+    localStorage.removeItem('adm_tk_expiry');
+    console.log('⏰ Token expirado - limpo');
+  }
+})();
+
+/* Migração de token antigo do portal (com expiração) */
 (function(){
   var portalToken=sessionStorage.getItem('admin_loja_token');
   var portalLojaId=sessionStorage.getItem('admin_loja_id');
   if(portalToken&&!localStorage.getItem('adm_tk')){
-    localStorage.setItem('adm_tk',portalToken);
-    localStorage.setItem('adm_loja_id',portalLojaId||'');
+    const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+    localStorage.setItem('adm_tk', portalToken);
+    localStorage.setItem('adm_tk_expiry', expiryTime);
+    localStorage.setItem('adm_loja_id', portalLojaId||'');
     sessionStorage.removeItem('admin_loja_token');
     sessionStorage.removeItem('admin_loja_id');
   }
 })();
 
-/* ============================================================
-   CAPTURAR DADOS GITHUB DA SESSÃO
-   ============================================================ */
+/* Capturar dados GitHub da sessão (estes podem ficar permanentes - não são sensíveis) */
 (function(){
   var ghToken = sessionStorage.getItem('gh_token');
   var ghUser = sessionStorage.getItem('gh_user');
   var ghRepo = sessionStorage.getItem('gh_repo');
   var ghBranch = sessionStorage.getItem('gh_branch');
-  
-  // Sempre guarda, mesmo que seja vazio (permite "limpar" campos)
   if (ghToken !== null) localStorage.setItem('adm_gh', ghToken);
   if (ghUser !== null) localStorage.setItem('adm_gh_user', ghUser);
   if (ghRepo !== null) localStorage.setItem('adm_gh_repo', ghRepo);
   if (ghBranch !== null) localStorage.setItem('adm_gh_branch', ghBranch);
-  
   sessionStorage.removeItem('gh_token');
   sessionStorage.removeItem('gh_user');
   sessionStorage.removeItem('gh_repo');
@@ -4224,6 +4250,42 @@ applyTheme();
 })();
 
 autoLogin();
+
+// ⚠️ DIAGNÓSTICO — REMOVER DEPOIS
+// Colocado APÓS autoLogin() para garantir que o token já foi migrado/definido
+(async function(){
+  await new Promise(r => setTimeout(r, 800)); // aguarda autoLogin processar
+  const token = localStorage.getItem('adm_tk');
+  const expiry = localStorage.getItem('adm_tk_expiry');
+  const expiryStr = expiry
+    ? new Date(parseInt(expiry)).toLocaleString('pt-PT')
+    : 'sem expiração definida';
+
+  try {
+    const res = await fetch('https://impersilva-d1work.3miliosilva.workers.dev/api/loja', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    alert(
+      '🔍 DIAGNÓSTICO API\n' +
+      '─────────────────────\n' +
+      '🔑 Token: ' + (token ? token.substring(0,20) + '...' : 'NÃO ENCONTRADO') + '\n' +
+      '⏰ Expira: ' + expiryStr + '\n' +
+      '📡 Status HTTP: ' + res.status + '\n' +
+      '─────────────────────\n' +
+      JSON.stringify(data, null, 2)
+    );
+  } catch(e) {
+    alert(
+      '❌ DIAGNÓSTICO — ERRO\n' +
+      '─────────────────────\n' +
+      '🔑 Token: ' + (token ? token.substring(0,20) + '...' : 'NÃO ENCONTRADO') + '\n' +
+      '⏰ Expira: ' + expiryStr + '\n' +
+      '─────────────────────\n' +
+      'Erro: ' + e.message
+    );
+  }
+})();
 </script>
 
 </body>
