@@ -16,6 +16,7 @@
   }
 })();
 </script>
+<script src="config.js"></script>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -194,7 +195,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 <div class="toast" id="toast"></div>
 
 <script>
-var API='https://impersilva-d1work.3miliosilva.workers.dev';
+var API = window.SITE_API || 'https://SLUG.workers.dev';
 var loja={},cats=[],prods=[],catAtiva='',wlModo=false,vista='grid',sortModo='padrao';
 var drProd=null,drQty=0;
 var idioma=localStorage.getItem('idioma')||'pt';

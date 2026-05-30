@@ -14,6 +14,7 @@
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 })();
 </script>
+<script src="config.js"></script>
 <link rel="manifest" href="/Loja/manifest.json"/>
 <link rel="icon" href="/Loja/favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -160,7 +161,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 <div class="toast" id="toast"></div>
 
 <script>
-var API='https://impersilva-d1work.3miliosilva.workers.dev';
+var API = window.SITE_API || 'https://SLUG.workers.dev';
 var produto,loja,qty=0,imagens=[],imgAtual=0;
 var estrelasSelecionadas=0;
 var todosProdutos=[];

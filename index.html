@@ -44,6 +44,7 @@
   }
 }
 </script>
+<script src="config.js"></script>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--white:#f0f0ff;--muted:#9898bb;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
 [data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65}
@@ -225,7 +226,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </div>
 
 <script>
-var API='https://impersilva-d1work.3miliosilva.workers.dev';
+var API = window.SITE_API || 'https://SLUG.workers.dev';
 var loja,cats,prods;
 var idioma=localStorage.getItem('idioma')||'pt';
 var pwaPrompt=null;

@@ -14,6 +14,7 @@
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 })();
 </script>
+<script src="config.js"></script>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -139,7 +140,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);padding-botto
 <div class="toast" id="toast"></div>
 
 <script>
-var API='https://impersilva-d1work.3miliosilva.workers.dev';
+var API = window.SITE_API || 'https://SLUG.workers.dev';
 var idioma=localStorage.getItem('idioma')||'pt';
 var todosProdutos=[],cats=[],loja={};
 var catAtiva='';
