@@ -5,11 +5,11 @@
 // ============================================================
 
 window.SITE_CONFIG = {
-  api_url:    "https://SLUG.workers.dev",   // URL do Worker Cloudflare
+  api_url:    "https://impersilvatech-d1work.workers.dev",   // URL do Worker Cloudflare
   slug:       "SLUG",                        // slug do repositório GitHub
   gh_user:    "impersilvatech",              // GitHub user/org
-  nome:       "Nome da Loja",                // Nome para manifest.json
-  short_name: "Loja",                        // Nome curto para manifest.json
+  nome:       "Pastelaria wandy",                // Nome para manifest.json
+  short_name: "wANDY",                        // Nome curto para manifest.json
   descricao:  "A melhor loja online",        // Descrição para manifest.json
   cor_fundo:  "#0d0d1a",                     // Cor de fundo (theme_color)
 };
