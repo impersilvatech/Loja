@@ -5,7 +5,7 @@
 // ============================================================
 
 window.SITE_CONFIG = {
-  api_url:    "https://impersilvatech-d1work.workers.dev",   // URL do Worker Cloudflare
+  api_url:    "https://impersilva-d1work.3miliosilva.workers.dev",   // URL do Worker Cloudflare
   slug:       "SLUG",                        // slug do repositório GitHub
   gh_user:    "impersilvatech",              // GitHub user/org
   nome:       "Pastelaria wandy",                // Nome para manifest.json
