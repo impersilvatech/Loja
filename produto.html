@@ -272,7 +272,7 @@ async function carregar(){
   try{
     var [rP,rL,rTodos]=await Promise.all([
       fetch(API+'/api/produtos/'+id),
-      fetch(API+'/api/loja'),
+      fetch(API+'/api/loja/publica'),
       fetch(API+'/api/produtos')
     ]);
     produto=await rP.json();
