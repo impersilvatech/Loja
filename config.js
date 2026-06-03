@@ -6,7 +6,7 @@
 
 window.SITE_CONFIG = {
   api_url:    "https:impersilva-d1work.3miliosilva.workers.dev",   // URL do Worker Cloudflare
-  slug:       "SLUG",                        // slug do repositório GitHub
+  slug:       "impersilva-d1work",                        // slug do repositório GitHub
   gh_user:    "impersilvatech",              // GitHub user/org
   nome:       "Nome da Loja",                // Nome para manifest.json
   short_name: "Loja",                        // Nome curto para manifest.json
