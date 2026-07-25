@@ -1053,6 +1053,77 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .stk-threshold-val{font-family:var(--ft);font-size:1.1rem;color:var(--orange);min-width:30px;text-align:center}
 .stk-bar-wrap{height:5px;background:var(--bg3);border-radius:3px;margin-top:14px;margin-bottom:6px}
 .stk-bar-fill{height:100%;border-radius:3px;background:var(--grad);transition:width .4s}
+
+/* ============================================================
+   CAIXA / PAGAMENTOS
+   ============================================================ */
+.caixa-period-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.caixa-period-btn{padding:5px 14px;border-radius:50px;border:1px solid var(--border);background:none;font-size:.68rem;font-family:var(--ft);color:var(--muted);cursor:pointer;transition:var(--tr)}
+.caixa-period-btn:hover,.caixa-period-btn.active{background:var(--grad);color:#fff;border-color:transparent}
+.caixa-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.caixa-kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.caixa-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.caixa-kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;margin-bottom:8px}
+.caixa-kpi-icon.teal{background:rgba(6,214,160,.1);color:var(--teal)}
+.caixa-kpi-icon.red{background:rgba(255,71,87,.1);color:var(--red)}
+.caixa-kpi-icon.orange{background:rgba(255,159,67,.1);color:var(--orange)}
+.caixa-kpi-icon.purple{background:rgba(177,74,232,.1);color:var(--purple)}
+.caixa-kpi-val{font-family:var(--ft);font-size:1.3rem;color:var(--white);line-height:1.1;margin-bottom:2px}
+.caixa-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.caixa-kpi-sub{font-size:.62rem;color:var(--muted);margin-top:4px}
+.pend-table{width:100%;border-collapse:collapse}
+.pend-table th{font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.pend-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:.78rem;vertical-align:middle}
+.pend-table tr:last-child td{border-bottom:none}
+.pend-table tr.pend-selected td{background:rgba(6,214,160,.04)}
+.pend-table tr:hover td{background:var(--bg3)}
+.pend-ref{font-family:var(--ft);font-size:.74rem;color:var(--pink)}
+.pend-date{font-size:.65rem;color:var(--muted)}
+.pend-total{font-family:var(--ft);color:var(--orange)}
+.pend-bulk-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--border);margin-top:6px}
+.pend-bulk-count{font-size:.72rem;color:var(--muted);flex:1}
+.tx-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tx-row:last-child{border-bottom:none}
+.tx-ref{font-family:var(--ft);font-size:.72rem;color:var(--pink);min-width:110px;flex-shrink:0}
+.tx-nome{flex:1;font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-data{font-size:.65rem;color:var(--muted);flex-shrink:0}
+.tx-total{font-family:var(--ft);font-size:.82rem;color:var(--teal);flex-shrink:0;min-width:80px;text-align:right}
+
+/* ============================================================
+   FIDELIZAÇÃO POR PONTOS
+   ============================================================ */
+.fidel-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.fidel-kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.fidel-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.fidel-kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;margin-bottom:8px}
+.fidel-kpi-icon.gold{background:rgba(255,209,102,.12);color:var(--yellow)}
+.fidel-kpi-icon.teal{background:rgba(6,214,160,.1);color:var(--teal)}
+.fidel-kpi-icon.purple{background:rgba(177,74,232,.1);color:var(--purple)}
+.fidel-kpi-icon.pink{background:rgba(255,107,157,.1);color:var(--pink)}
+.fidel-kpi-val{font-family:var(--ft);font-size:1.3rem;color:var(--white);line-height:1.1;margin-bottom:2px}
+.fidel-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.fidel-kpi-sub{font-size:.62rem;color:var(--muted);margin-top:3px}
+.fidel-preview-box{background:rgba(255,209,102,.04);border:1px solid rgba(255,209,102,.18);border-radius:var(--r2);padding:14px}
+.fidel-preview-title{font-family:var(--ft);font-size:.78rem;color:var(--yellow);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.fidel-preview-rule{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:.76rem;color:var(--muted)}
+.fidel-preview-rule i{color:var(--yellow);margin-top:2px;flex-shrink:0}
+.fidel-preview-rule strong{color:var(--white)}
+.fidel-pts-table{width:100%;border-collapse:collapse}
+.fidel-pts-table th{font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.fidel-pts-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:.78rem;vertical-align:middle}
+.fidel-pts-table tr:last-child td{border-bottom:none}
+.fidel-pts-table tr:hover td{background:var(--bg3)}
+.fidel-pts-bar-wrap{height:5px;background:var(--bg3);border-radius:3px;margin-top:4px;min-width:60px}
+.fidel-pts-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.fidel-badge-gold{background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);color:var(--yellow);border-radius:50px;padding:2px 8px;font-size:.62rem;font-weight:700}
+.fidel-badge-silver{background:rgba(136,136,170,.1);border:1px solid var(--border);color:var(--muted);border-radius:50px;padding:2px 8px;font-size:.62rem}
+.fidel-tier-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.fidel-tier{flex:1;min-width:80px;background:var(--bg3);border-radius:var(--r);padding:10px;text-align:center}
+.fidel-tier-icon{font-size:1.2rem;margin-bottom:4px}
+.fidel-tier-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.fidel-tier-val{font-family:var(--ft);font-size:.85rem;color:var(--white)}
+.fidel-active-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);color:var(--yellow);border-radius:50px;padding:3px 10px;font-size:.68rem;font-weight:700}
+.fidel-inactive-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(136,136,170,.08);border:1px solid var(--border);color:var(--muted);border-radius:50px;padding:3px 10px;font-size:.68rem}
 </style>
 </head>
 <body>
@@ -1168,6 +1239,15 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="sidebar-item" data-panel="marketing" onclick="navigate('marketing')">
         <i class="fa-solid fa-bullhorn"></i>
         <span class="sidebar-item-label">Marketing</span>
+      </button>
+      <button class="sidebar-item" data-panel="caixa" onclick="navigate('caixa')">
+        <i class="fa-solid fa-cash-register"></i>
+        <span class="sidebar-item-label">Caixa</span>
+        <span class="sidebar-badge" id="sidebarCaixaBadge" style="display:none;background:var(--red)">0</span>
+      </button>
+      <button class="sidebar-item" data-panel="fidelizacao" onclick="navigate('fidelizacao')">
+        <i class="fa-solid fa-crown"></i>
+        <span class="sidebar-item-label">Fidelização</span>
       </button>
       <button class="sidebar-item" data-panel="reports" onclick="navigate('reports')">
         <i class="fa-solid fa-chart-pie"></i>
@@ -1562,6 +1642,180 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             FIDELIZAÇÃO POR PONTOS
+             ============================================ -->
+        <div class="panel" id="panel-fidelizacao">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-crown" style="color:var(--yellow)"></i> Fidelização por Pontos</div>
+            <div class="page-actions">
+              <span id="fidelStatusPill"></span>
+              <button class="btn btn-outline btn-sm" onclick="renderFidelizacao()"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="fidel-kpi-grid" id="fidelKpis"></div>
+
+          <!-- Config + Preview -->
+          <div class="mkt-section-2col" style="margin-bottom:10px">
+            <!-- Configuração -->
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-sliders" style="color:var(--muted)"></i> Configuração do Programa</div>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">Nome do programa</label>
+                <input type="text" class="form-input" id="fidelNome" placeholder="ex: ImperiPoints" maxlength="40" oninput="updateFidelPreview()"/>
+              </div>
+              <div class="form-row" style="margin-bottom:10px">
+                <div class="form-group" style="flex:1">
+                  <label class="form-label">Kz por 1 ponto</label>
+                  <input type="number" class="form-input" id="fidelKzPorPonto" min="1" placeholder="100" oninput="updateFidelPreview()"/>
+                  <div class="form-hint">Cada X Kz gastos = 1 ponto</div>
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label">Valor do ponto (Kz)</label>
+                  <input type="number" class="form-input" id="fidelValorPonto" min="1" placeholder="10" oninput="updateFidelPreview()"/>
+                  <div class="form-hint">1 ponto = X Kz de desconto</div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">Pontos mínimos para resgatar</label>
+                <input type="number" class="form-input" id="fidelMinResgate" min="1" placeholder="50" oninput="updateFidelPreview()"/>
+              </div>
+              <div class="switch-row" style="margin-bottom:12px">
+                <div><div class="switch-label">Programa activo</div><div class="switch-hint">Permite ganhar e resgatar pontos na loja</div></div>
+                <label class="switch"><input type="checkbox" id="fidelAtivo" onchange="updateFidelPreview()"/><span class="switch-slider"></span></label>
+              </div>
+              <button class="btn btn-primary btn-full" onclick="savePontosConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar Configuração</button>
+            </div>
+
+            <!-- Preview -->
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-eye" style="color:var(--muted)"></i> Pré-visualização</div>
+              </div>
+              <div class="fidel-preview-box" id="fidelPreviewBox">
+                <div class="fidel-preview-title"><i class="fa-solid fa-crown"></i> <span id="pvNome">O teu programa</span></div>
+                <div class="fidel-preview-rule"><i class="fa-solid fa-cart-shopping"></i><span>Por cada <strong id="pvKz">100 Kz</strong> gastos o cliente ganha <strong>1 ponto</strong></span></div>
+                <div class="fidel-preview-rule"><i class="fa-solid fa-tag"></i><span>Cada ponto vale <strong id="pvValor">10 Kz</strong> de desconto</span></div>
+                <div class="fidel-preview-rule"><i class="fa-solid fa-lock-open"></i><span>Resgate disponível a partir de <strong id="pvMin">50 pontos</strong> (<strong id="pvMinKz">500 Kz</strong> de desconto)</span></div>
+                <div class="fidel-tier-row">
+                  <div class="fidel-tier"><div class="fidel-tier-icon">🥉</div><div class="fidel-tier-lbl">Exemplo</div><div class="fidel-tier-val" id="pvEx1">—</div></div>
+                  <div class="fidel-tier"><div class="fidel-tier-icon">🥈</div><div class="fidel-tier-lbl">5 000 Kz</div><div class="fidel-tier-val" id="pvEx2">—</div></div>
+                  <div class="fidel-tier"><div class="fidel-tier-icon">🥇</div><div class="fidel-tier-lbl">20 000 Kz</div><div class="fidel-tier-val" id="pvEx3">—</div></div>
+                </div>
+              </div>
+              <div style="margin-top:12px;font-size:.72rem;color:var(--muted);line-height:1.5">
+                <i class="fa-solid fa-circle-info" style="color:var(--blue)"></i>
+                Os pontos são calculados automaticamente com base nas encomendas pagas de cada cliente.
+                Para resgates, o código de desconto é gerado na secção <strong style="color:var(--white)">Cupões</strong>.
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabela de clientes com pontos -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-users" style="color:var(--purple)"></i> Saldo de Pontos por Cliente</div>
+              <button class="btn btn-outline btn-sm" onclick="exportPontosCSV()"><i class="fa-solid fa-file-csv"></i> Exportar</button>
+            </div>
+            <div class="search-bar" style="margin-bottom:8px">
+              <input class="search-input" type="search" id="fidelSearch" placeholder="Filtrar por nome ou email..." oninput="filterFidelTable()"/>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="fidel-pts-table">
+                <thead><tr>
+                  <th>Cliente</th>
+                  <th style="text-align:right">Total gasto</th>
+                  <th style="text-align:center">Pontos</th>
+                  <th style="text-align:right">Equivale a</th>
+                  <th style="text-align:center">Encomendas</th>
+                  <th></th>
+                </tr></thead>
+                <tbody id="fidelTableBody"></tbody>
+              </table>
+            </div>
+            <p style="font-size:.66rem;color:var(--muted);text-align:center;margin-top:8px" id="fidelTableCount"></p>
+          </div>
+        </div>
+
+        <!-- ============================================
+             CAIXA / PAGAMENTOS
+             ============================================ -->
+        <div class="panel" id="panel-caixa">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-cash-register" style="color:var(--teal)"></i> Caixa & Pagamentos</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="exportCaixaCSV()"><i class="fa-solid fa-file-csv"></i> Exportar</button>
+              <button class="btn btn-outline btn-sm" onclick="renderCaixa()"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+
+          <!-- Period selector -->
+          <div class="caixa-period-bar">
+            <button class="caixa-period-btn active" onclick="setCaixaPeriod('hoje',this)">Hoje</button>
+            <button class="caixa-period-btn" onclick="setCaixaPeriod('semana',this)">Esta semana</button>
+            <button class="caixa-period-btn" onclick="setCaixaPeriod('mes',this)">Este mês</button>
+            <button class="caixa-period-btn" onclick="setCaixaPeriod('ano',this)">Este ano</button>
+          </div>
+
+          <!-- KPIs -->
+          <div class="caixa-kpi-grid" id="caixaKpis"></div>
+
+          <!-- Pending payments -->
+          <div class="section-card" style="margin-bottom:10px">
+            <div class="section-header">
+              <div class="section-title">
+                <i class="fa-solid fa-clock" style="color:var(--yellow)"></i> Pagamentos Pendentes
+                <span id="caixaPendCount" style="font-family:var(--ft);font-size:.75rem;color:var(--yellow);margin-left:4px"></span>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="markAllPendingAsPaid()">
+                <i class="fa-solid fa-check-double"></i> Marcar Todas
+              </button>
+            </div>
+            <div class="search-bar" style="margin-bottom:8px">
+              <input class="search-input" type="search" id="caixaPendSearch" placeholder="Filtrar por nome ou referência..." oninput="filterPendingPayments()"/>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="pend-table">
+                <thead><tr>
+                  <th><input type="checkbox" id="caixaSelectAll" onchange="toggleSelectAll(this)" style="accent-color:var(--teal)"/></th>
+                  <th>Referência</th><th>Cliente</th><th>Entrega</th>
+                  <th style="text-align:right">Total</th><th>Data</th><th></th>
+                </tr></thead>
+                <tbody id="caixaPendBody"></tbody>
+              </table>
+            </div>
+            <div class="pend-bulk-bar" id="caixaBulkBar" style="display:none">
+              <span class="pend-bulk-count" id="caixaBulkCount"></span>
+              <button class="btn btn-sm" style="background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.3)"
+                      onclick="markSelectedAsPaid()">
+                <i class="fa-solid fa-check"></i> Marcar seleccionadas como pagas
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom 2-col: em aberto + últimas transacções -->
+          <div class="mkt-section-2col">
+            <!-- Em aberto por estado -->
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-chart-pie" style="color:var(--purple)"></i> Em Aberto por Estado</div>
+              </div>
+              <div id="caixaEmAberto"></div>
+            </div>
+            <!-- Últimas transacções pagas -->
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-check-circle" style="color:var(--teal)"></i> Últimas Pagas</div>
+              </div>
+              <div id="caixaUltimasTx"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
              MARKETING
              ============================================ -->
         <div class="panel" id="panel-marketing">
@@ -1846,6 +2100,14 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn pink" onclick="navigateMore('marketing')">
           <i class="fa-solid fa-bullhorn"></i>
           <span>Marketing</span>
+        </button>
+        <button class="more-btn teal" onclick="navigateMore('caixa')">
+          <i class="fa-solid fa-cash-register"></i>
+          <span>Caixa</span>
+        </button>
+        <button class="more-btn yellow" onclick="navigateMore('fidelizacao')">
+          <i class="fa-solid fa-crown"></i>
+          <span>Fidelização</span>
         </button>
         <button class="more-btn purple" onclick="navigateMore('reports')">
           <i class="fa-solid fa-chart-pie"></i>
@@ -2595,6 +2857,8 @@ function navigate(panel){
   if(panel==='reports')renderReports();
   if(panel==='marketing')renderMarketing();
   if(panel==='stock')renderStock();
+  if(panel==='caixa')renderCaixa();
+  if(panel==='fidelizacao')renderFidelizacao();
 }
 
 function expandSidebar(){$('sidebar').classList.add('expanded');}
@@ -4722,6 +4986,471 @@ applyTheme();
 })();
 
 autoLogin();
+
+/* ============================================================
+   FIDELIZAÇÃO POR PONTOS
+   ============================================================ */
+(function(){
+  /* ---- helpers de config ---- */
+  function cfg(){
+    return {
+      ativo     : !!state.loja.pontos_ativo,
+      nome      : state.loja.pontos_nome      || 'ImperiPoints',
+      kzPorPonto: parseInt(state.loja.pontos_kz_por_ponto) || 100,
+      valorPonto: parseInt(state.loja.pontos_valor_kz)     || 10,
+      minResgate: parseInt(state.loja.pontos_min_resgate)  || 50
+    };
+  }
+
+  function calcPontos(email){
+    const c = cfg();
+    const pagas = (state.encomendas||[]).filter(e=>
+      e.email_cliente===email && (e.pagamento_estado==='pago'||e.estado==='entregue')
+    );
+    const total = pagas.reduce((s,e)=>s+(e.total||0),0);
+    return { total, pontos: Math.floor(total/c.kzPorPonto), encs: pagas.length };
+  }
+
+  /* ---- render principal ---- */
+  window.renderFidelizacao = function(){
+    const c = cfg();
+    const sym = state.loja.simbolo_moeda||'Kz';
+
+    // preencher form
+    const fields = {fidelNome:c.nome, fidelKzPorPonto:c.kzPorPonto, fidelValorPonto:c.valorPonto, fidelMinResgate:c.minResgate};
+    Object.entries(fields).forEach(([id,v])=>{ const el=$(id); if(el&&!el._dirty)el.value=v; });
+    const fa=$('fidelAtivo'); if(fa)fa.checked=c.ativo;
+
+    // status pill
+    const pill=$('fidelStatusPill');
+    if(pill) pill.innerHTML = c.ativo
+      ? '<span class="fidel-active-pill"><i class="fa-solid fa-crown" style="font-size:.5rem"></i> Activo</span>'
+      : '<span class="fidel-inactive-pill"><i class="fa-solid fa-circle"></i> Inactivo</span>';
+
+    renderFidelKPIs(c, sym);
+    updateFidelPreview();
+    renderFidelTable(c, sym);
+  };
+
+  /* ---- KPIs ---- */
+  function renderFidelKPIs(c, sym){
+    const clientes = state.clientes||[];
+    const rows = clientes.map(cl=>calcPontos(cl.email));
+    const totalPontos = rows.reduce((s,r)=>s+r.pontos,0);
+    const comPontos   = rows.filter(r=>r.pontos>0).length;
+    const valorCirc   = totalPontos * c.valorPonto;
+    const aptos       = rows.filter(r=>r.pontos>=c.minResgate).length;
+
+    $('fidelKpis').innerHTML =
+      fKpi('gold','fa-star',totalPontos.toLocaleString('pt'),'Pontos emitidos','Em circulação')+
+      fKpi('teal','fa-users',comPontos,'Clientes com pontos','De '+clientes.length+' total')+
+      fKpi('purple','fa-coins',kz(valorCirc,sym),'Valor em circulação','Equivalente em desconto')+
+      fKpi('pink','fa-gift',aptos,'Aptos para resgate','≥ '+c.minResgate+' pontos');
+  }
+
+  function fKpi(color,icon,val,lbl,sub){
+    return '<div class="fidel-kpi"><div class="fidel-kpi-icon '+color+'"><i class="fa-solid '+icon+'"></i></div>'+
+      '<div class="fidel-kpi-val">'+val+'</div><div class="fidel-kpi-lbl">'+lbl+'</div>'+
+      '<div class="fidel-kpi-sub">'+sub+'</div></div>';
+  }
+
+  /* ---- preview em tempo real ---- */
+  window.updateFidelPreview = function(){
+    const nome  = $('fidelNome')?.value    || 'O teu programa';
+    const kzPP  = parseInt($('fidelKzPorPonto')?.value) || 100;
+    const valP  = parseInt($('fidelValorPonto')?.value) || 10;
+    const minR  = parseInt($('fidelMinResgate')?.value) || 50;
+    const sym   = state.loja.simbolo_moeda||'Kz';
+
+    const set = (id,v)=>{ const el=$(id); if(el)el.textContent=v; };
+    set('pvNome', nome);
+    set('pvKz',   kz(kzPP,sym));
+    set('pvValor',kz(valP,sym));
+    set('pvMin',  minR+' pontos');
+    set('pvMinKz',kz(minR*valP,sym));
+
+    // exemplos: 1000 Kz, 5000 Kz, 20000 Kz
+    [1000,5000,20000].forEach((gasto,i)=>{
+      const pts = Math.floor(gasto/kzPP);
+      set('pvEx'+(i+1), pts+' pt → '+kz(pts*valP,sym));
+    });
+
+    // pill
+    const ativo=$('fidelAtivo')?.checked;
+    const pill=$('fidelStatusPill');
+    if(pill) pill.innerHTML=ativo
+      ?'<span class="fidel-active-pill"><i class="fa-solid fa-crown" style="font-size:.5rem"></i> Activo</span>'
+      :'<span class="fidel-inactive-pill"><i class="fa-solid fa-circle"></i> Inactivo</span>';
+  };
+
+  /* ---- guardar config ---- */
+  window.savePontosConfig = async function(){
+    const btn = event.target;
+    const campos = {
+      pontos_ativo      : $('fidelAtivo').checked?1:0,
+      pontos_nome       : $('fidelNome').value.trim()||'ImperiPoints',
+      pontos_kz_por_ponto: parseInt($('fidelKzPorPonto').value)||100,
+      pontos_valor_kz   : parseInt($('fidelValorPonto').value)||10,
+      pontos_min_resgate: parseInt($('fidelMinResgate').value)||50
+    };
+    if(campos.pontos_kz_por_ponto<1){toast('Kz por ponto deve ser ≥ 1','error');return;}
+    if(campos.pontos_valor_kz<1)   {toast('Valor do ponto deve ser ≥ 1','error');return;}
+    if(campos.pontos_min_resgate<1){toast('Mínimo de resgate deve ser ≥ 1','error');return;}
+    const b=btnBusy(btn);
+    try{
+      await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+      Object.assign(state.loja,campos);
+      renderFidelizacao();
+      toast('🏆 Programa "'+campos.pontos_nome+'" guardado!','success');
+    }catch(e){toast('Erro: '+e.message,'error');}
+    btnDone(b);
+  };
+
+  /* ---- tabela de clientes ---- */
+  function renderFidelTable(c, sym){
+    const tbody=$('fidelTableBody'), cnt=$('fidelTableCount');
+    const clientes=(state.clientes||[]);
+    if(!clientes.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sem clientes</td></tr>';
+      return;
+    }
+
+    // calcular e ordenar por pontos desc
+    const rows = clientes
+      .map(cl=>({...cl,...calcPontos(cl.email)}))
+      .sort((a,b)=>b.pontos-a.pontos);
+
+    const maxPontos = rows[0]?.pontos||1;
+
+    if(cnt) cnt.textContent=clientes.length+' cliente'+(clientes.length!==1?'s':'')+' · '+rows.filter(r=>r.pontos>0).length+' com pontos';
+
+    tbody.innerHTML = rows.map(r=>{
+      const pct = maxPontos?Math.round((r.pontos/maxPontos)*100):0;
+      const equiv= r.pontos * c.valorPonto;
+      const apto = r.pontos >= c.minResgate;
+      const badge = r.pontos>=c.minResgate
+        ? '<span class="fidel-badge-gold"><i class="fa-solid fa-crown" style="font-size:.5rem"></i> Apto</span>'
+        : (r.pontos>0 ? '<span class="fidel-badge-silver">'+r.pontos+'/'+c.minResgate+'</span>' : '');
+      return '<tr>'+
+        '<td>'+
+          '<div style="font-size:.8rem;color:var(--white)">'+esc(r.nome||'—')+'</div>'+
+          '<div style="font-size:.63rem;color:var(--muted)">'+esc(r.email)+'</div>'+
+        '</td>'+
+        '<td style="text-align:right;font-family:var(--ft);font-size:.78rem;color:var(--muted)">'+kz(r.total,sym)+'</td>'+
+        '<td style="text-align:center">'+
+          '<div style="font-family:var(--ft);font-size:.9rem;color:var(--yellow)">'+r.pontos+'</div>'+
+          '<div class="fidel-pts-bar-wrap"><div class="fidel-pts-bar" style="width:'+pct+'%"></div></div>'+
+        '</td>'+
+        '<td style="text-align:right;font-family:var(--ft);font-size:.78rem;color:'+(equiv>0?'var(--teal)':'var(--muted)')+'">'+
+          (equiv>0?kz(equiv,sym):'—')+
+        '</td>'+
+        '<td style="text-align:center;color:var(--muted);font-size:.76rem">'+r.encs+'</td>'+
+        '<td style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+          badge+
+          '<button class="btn btn-outline btn-sm btn-icon" title="Ver histórico"'+
+                  ' onclick="openClientHistory(\''+esc(r.email)+'\')">'+
+            '<i class="fa-solid fa-clock-rotate-left"></i>'+
+          '</button>'+
+          (apto?'<button class="btn btn-sm" style="background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.25);font-size:.62rem"'+
+                        ' onclick="gerarCupaoResgate(\''+esc(r.email)+'\',\''+esc(r.nome||r.email)+'\','+r.pontos+','+c.valorPonto+','+c.minResgate+')">'+
+            '<i class="fa-solid fa-gift"></i> Resgatar</button>':'')+ 
+        '</td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  window.filterFidelTable=function(){
+    const q=($('fidelSearch')?.value||'').toLowerCase().trim();
+    document.querySelectorAll('#fidelTableBody tr').forEach(row=>{
+      const txt=row.textContent.toLowerCase();
+      row.style.display=q&&!txt.includes(q)?'none':'';
+    });
+  };
+
+  /* ---- gerar cupão de resgate ---- */
+  window.gerarCupaoResgate=async function(email,nome,pontos,valorPonto,minResgate){
+    if(pontos<minResgate){toast('Pontos insuficientes para resgate','error');return;}
+    const desconto = pontos * valorPonto;
+    const sym      = state.loja.simbolo_moeda||'Kz';
+    const slug     = nome.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+    const codigo   = 'PONTOS'+slug+Math.random().toString(36).slice(2,5).toUpperCase();
+    if(!confirm('Gerar cupão de resgate '+kz(desconto,sym)+' para '+nome+'?\n\nCódigo: '+codigo+'\n\nAtenção: os pontos são calculados do histórico; confirma que foi acordado com o cliente.'))return;
+    try{
+      await api('/api/admin/cupoes',{method:'POST',body:JSON.stringify({
+        codigo,tipo:'fixo',valor:desconto,
+        minimo_encomenda:0,data_fim:null,max_usos:1,ativo:1
+      })});
+      if(!state.coupons)state.coupons=[];
+      state.coupons.unshift({codigo,tipo:'fixo',valor:desconto,usos:0,ativo:1,max_usos:1});
+      toast('🎁 Cupão '+codigo+' criado — '+kz(desconto,sym)+' de desconto para '+nome,'success');
+      // copiar para clipboard
+      try{await navigator.clipboard.writeText(codigo);}catch(e){}
+    }catch(e){toast('Erro ao criar cupão: '+e.message,'error');}
+  };
+
+  /* ---- exportar CSV ---- */
+  window.exportPontosCSV=function(){
+    const c=cfg();
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const rows=[['Nome','Email','Total Gasto','Pontos','Equivale a ('+sym+')','Encomendas','Apto para Resgate']];
+    (state.clientes||[]).map(cl=>({...cl,...calcPontos(cl.email)}))
+      .sort((a,b)=>b.pontos-a.pontos)
+      .forEach(r=>rows.push([r.nome||'',r.email,r.total,r.pontos,r.pontos*c.valorPonto,r.encs,r.pontos>=c.minResgate?'Sim':'Não']));
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download='pontos_fidelizacao.csv';a.click();
+    toast('CSV exportado','success');
+  };
+})();
+
+/* ============================================================
+   CAIXA & PAGAMENTOS
+   ============================================================ */
+(function(){
+  let _caixaPeriod = 'hoje';
+  let _selectedRefs = new Set();
+
+  function pgDate(e){
+    return new Date(localStorage.getItem('pgdt_'+e.ref) || e.criado_em || Date.now());
+  }
+
+  function getCaixaRange(){
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tom   = new Date(today); tom.setDate(tom.getDate()+1);
+    if(_caixaPeriod==='hoje')   return {from:today, to:tom};
+    if(_caixaPeriod==='semana'){
+      const dow = today.getDay();
+      const mon = new Date(today); mon.setDate(mon.getDate()-((dow+6)%7));
+      const sun = new Date(mon); sun.setDate(sun.getDate()+7);
+      return {from:mon, to:sun};
+    }
+    if(_caixaPeriod==='mes'){
+      return {from:new Date(now.getFullYear(),now.getMonth(),1), to:new Date(now.getFullYear(),now.getMonth()+1,1)};
+    }
+    return {from:new Date(now.getFullYear(),0,1), to:new Date(now.getFullYear()+1,0,1)};
+  }
+
+  function isPending(e){ return e.pagamento_estado!=='pago'&&e.estado!=='entregue'&&e.estado!=='cancelada'; }
+  function isPaid(e)   { return e.pagamento_estado==='pago'||e.estado==='entregue'; }
+
+  function updateCaixaBadge(){
+    const n=(state.encomendas||[]).filter(isPending).length;
+    const b=$('sidebarCaixaBadge');
+    if(b){b.textContent=n;b.style.display=n?'':'none';}
+  }
+
+  window.renderCaixa = function(){
+    _selectedRefs.clear();
+    updateBulkBar();
+    renderCaixaKPIs();
+    renderPendingTable();
+    renderEmAberto();
+    renderUltimasTx();
+    updateCaixaBadge();
+  };
+
+  window.setCaixaPeriod = function(p,btn){
+    _caixaPeriod=p;
+    document.querySelectorAll('.caixa-period-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCaixa();
+  };
+
+  function renderCaixaKPIs(){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const range=getCaixaRange();
+    const encs=state.encomendas||[];
+    const pagas=encs.filter(e=>isPaid(e)&&pgDate(e)>=range.from&&pgDate(e)<range.to);
+    const rev=pagas.reduce((s,e)=>s+(e.total||0),0);
+    const ticket=pagas.length?Math.round(rev/pagas.length):0;
+    const pendAll=encs.filter(isPending);
+    const emAberto=pendAll.reduce((s,e)=>s+(e.total||0),0);
+    $('caixaKpis').innerHTML=
+      cKpi('teal','fa-coins',kz(rev,sym),'Receita confirmada',pagas.length+' paga'+(pagas.length!==1?'s':''))+
+      cKpi('red','fa-clock',pendAll.length,'Pendentes de pagamento',kz(emAberto,sym)+' em aberto')+
+      cKpi('orange','fa-receipt',kz(ticket,sym),'Ticket médio','Encomendas pagas')+
+      cKpi('purple','fa-check-circle',pagas.length,'Pagas no período',_periodLabel());
+  }
+
+  function _periodLabel(){return{hoje:'hoje',semana:'esta semana',mes:'este mês',ano:'este ano'}[_caixaPeriod]||'período';}
+  function cKpi(color,icon,val,lbl,sub){
+    return '<div class="caixa-kpi"><div class="caixa-kpi-icon '+color+'"><i class="fa-solid '+icon+'"></i></div>'+
+      '<div class="caixa-kpi-val">'+val+'</div><div class="caixa-kpi-lbl">'+lbl+'</div>'+
+      '<div class="caixa-kpi-sub">'+sub+'</div></div>';
+  }
+
+  function getPendingList(){
+    return (state.encomendas||[]).filter(isPending).sort((a,b)=>new Date(b.criado_em)-new Date(a.criado_em));
+  }
+
+  function renderPendingTable(q){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const list=getPendingList();
+    const qv=(q!==undefined?q:($('caixaPendSearch')?.value||'')).toLowerCase().trim();
+    const filtered=qv?list.filter(e=>(e.ref||'').toLowerCase().includes(qv)||(e.nome_cliente||'').toLowerCase().includes(qv)):list;
+    $('caixaPendCount').textContent=list.length?'('+list.length+')':'';
+    const tbody=$('caixaPendBody');
+    if(!filtered.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--teal);padding:16px"><i class="fa-solid fa-circle-check"></i> Nenhum pagamento pendente</td></tr>';
+      return;
+    }
+    const entIco=t=>t==='entrega'?'<i class="fa-solid fa-truck" title="Entrega"></i>':'<i class="fa-solid fa-shop" title="Levantamento"></i>';
+    tbody.innerHTML=filtered.map(e=>{
+      const sel=_selectedRefs.has(e.ref);
+      return '<tr class="'+(sel?'pend-selected':'')+'" id="pendRow-'+e.ref+'">'+
+        '<td><input type="checkbox" '+(sel?'checked':'')+' onchange="togglePendRow(\''+esc(e.ref)+'\',this)" style="accent-color:var(--teal)"/></td>'+
+        '<td><div class="pend-ref">'+esc(e.ref)+'</div></td>'+
+        '<td><div style="font-size:.78rem;color:var(--white)">'+esc(e.nome_cliente||'—')+'</div>'+
+             '<div style="font-size:.63rem;color:var(--muted)">'+esc(e.email_cliente||'')+'</div></td>'+
+        '<td style="text-align:center;color:var(--muted)">'+entIco(e.tipo_entrega)+'</td>'+
+        '<td style="text-align:right"><span class="pend-total">'+kz(e.total||0,sym)+'</span></td>'+
+        '<td><div class="pend-date">'+fmtDate(e.criado_em)+'</div></td>'+
+        '<td><button class="btn btn-sm" style="background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.25)"'+
+            ' onclick="markOnePaid(\''+esc(e.ref)+'\',this)"><i class="fa-solid fa-check"></i> Pagar</button></td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  window.filterPendingPayments=function(){renderPendingTable();};
+
+  window.togglePendRow=function(ref,chk){
+    if(chk.checked)_selectedRefs.add(ref);else _selectedRefs.delete(ref);
+    const row=document.getElementById('pendRow-'+ref);
+    if(row)row.classList.toggle('pend-selected',chk.checked);
+    updateBulkBar(); syncSelectAll();
+  };
+
+  window.toggleSelectAll=function(chk){
+    _selectedRefs.clear();
+    if(chk.checked)getPendingList().forEach(e=>_selectedRefs.add(e.ref));
+    renderPendingTable(); updateBulkBar();
+  };
+
+  function syncSelectAll(){
+    const all=getPendingList();
+    const sa=$('caixaSelectAll');
+    if(sa)sa.checked=all.length>0&&all.every(e=>_selectedRefs.has(e.ref));
+  }
+
+  function updateBulkBar(){
+    const n=_selectedRefs.size;
+    const bar=$('caixaBulkBar');const cnt=$('caixaBulkCount');
+    if(bar)bar.style.display=n?'flex':'none';
+    if(cnt)cnt.textContent=n+' encomenda'+(n!==1?'s':'')+' seleccionada'+(n!==1?'s':'');
+  }
+
+  async function _markPaid(refs){
+    let ok=0,fail=0;
+    for(const ref of refs){
+      try{
+        await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({pagamento_estado:'pago'})});
+        const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
+        if(idx>=0){
+          state.encomendas[idx].pagamento_estado='pago';
+          if(!localStorage.getItem('pgdt_'+ref))localStorage.setItem('pgdt_'+ref,new Date().toISOString());
+        }
+        ok++;
+      }catch(e){fail++;}
+    }
+    return {ok,fail};
+  }
+
+  window.markOnePaid=async function(ref,btn){
+    const b=btnBusy(btn);
+    const {ok,fail}=await _markPaid([ref]);
+    _selectedRefs.delete(ref);
+    if(ok)toast('✅ '+ref+' marcada como paga','success');
+    else  toast('Erro ao marcar pagamento','error');
+    renderCaixa();
+    // não precisamos btnDone pois o row vai desaparecer
+  };
+
+  window.markSelectedAsPaid=async function(){
+    const refs=[..._selectedRefs];
+    if(!refs.length){toast('Nenhuma seleccionada','info');return;}
+    const {ok,fail}=await _markPaid(refs);
+    _selectedRefs.clear();
+    if(fail)toast(ok+' pagas, '+fail+' com erro','error');
+    else    toast('✅ '+ok+' encomenda'+(ok!==1?'s':'')+' paga'+(ok!==1?'s':''),'success');
+    renderCaixa();
+  };
+
+  window.markAllPendingAsPaid=async function(){
+    const list=getPendingList();
+    if(!list.length){toast('Nenhum pagamento pendente','info');return;}
+    if(!confirm('Marcar '+list.length+' encomenda'+(list.length!==1?'s':'')+' como paga'+(list.length!==1?'s':'')+'?'))return;
+    list.forEach(e=>_selectedRefs.add(e.ref));
+    await markSelectedAsPaid();
+  };
+
+  function renderEmAberto(){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const pend=(state.encomendas||[]).filter(isPending);
+    const cont=$('caixaEmAberto');
+    if(!pend.length){
+      cont.innerHTML='<p style="font-size:.8rem;color:var(--teal);text-align:center;padding:14px"><i class="fa-solid fa-circle-check"></i> Sem pendentes</p>';
+      return;
+    }
+    const grouped={pendente:[],confirmada:[],pronta:[]};
+    pend.forEach(e=>{if(grouped[e.estado]!==undefined)grouped[e.estado].push(e);});
+    const total=pend.reduce((s,e)=>s+(e.total||0),0);
+    cont.innerHTML=Object.entries(grouped).filter(([,a])=>a.length).map(([estado,arr])=>{
+      const sub=arr.reduce((s,e)=>s+(e.total||0),0);
+      const pct=total?Math.round((sub/total)*100):0;
+      return '<div style="margin-bottom:10px">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
+          '<span style="font-size:.76rem;color:var(--white)">'+estadoLabel(estado)+'</span>'+
+          '<span style="font-size:.74rem;font-family:var(--ft);color:var(--orange)">'+kz(sub,sym)+'</span>'+
+        '</div>'+
+        '<div class="stk-bar-wrap"><div class="stk-bar-fill" style="width:'+pct+'%;background:var(--orange)"></div></div>'+
+        '<div style="font-size:.62rem;color:var(--muted);margin-top:2px">'+arr.length+' enc. · '+pct+'%</div>'+
+      '</div>';
+    }).join('')+
+    '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between">'+
+      '<span style="font-size:.72rem;color:var(--muted)">Total em aberto</span>'+
+      '<span style="font-family:var(--ft);color:var(--red)">'+kz(total,sym)+'</span>'+
+    '</div>';
+  }
+
+  function renderUltimasTx(){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const pagas=(state.encomendas||[]).filter(isPaid).sort((a,b)=>pgDate(b)-pgDate(a)).slice(0,12);
+    const cont=$('caixaUltimasTx');
+    if(!pagas.length){cont.innerHTML='<p style="font-size:.8rem;color:var(--muted);text-align:center;padding:14px">Sem transacções</p>';return;}
+    cont.innerHTML=pagas.map(e=>
+      '<div class="tx-row" style="cursor:pointer" onclick="navigate(\'orders\');setTimeout(()=>toggleOrderDetail(\''+esc(e.ref)+'\'),400)">'+
+        '<div class="tx-ref">'+esc(e.ref)+'</div>'+
+        '<div class="tx-nome">'+esc(e.nome_cliente||'—')+'</div>'+
+        '<div class="tx-data">'+fmtDate(localStorage.getItem('pgdt_'+e.ref)||e.criado_em)+'</div>'+
+        '<div class="tx-total">'+kz(e.total||0,sym)+'</div>'+
+      '</div>'
+    ).join('');
+  }
+
+  window.exportCaixaCSV=function(){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const range=getCaixaRange();
+    const pagas=(state.encomendas||[]).filter(e=>isPaid(e)&&pgDate(e)>=range.from&&pgDate(e)<range.to).sort((a,b)=>pgDate(b)-pgDate(a));
+    if(!pagas.length){toast('Sem transacções no período','error');return;}
+    const rows=[['Referência','Cliente','Email','Total','Estado','Data Pagamento']];
+    pagas.forEach(e=>rows.push([e.ref||'',e.nome_cliente||'',e.email_cliente||'',e.total||0,estadoLabel(e.estado),new Date(localStorage.getItem('pgdt_'+e.ref)||e.criado_em).toLocaleDateString('pt')]));
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download='caixa_'+_caixaPeriod+'.csv';a.click();
+    toast('CSV exportado','success');
+  };
+
+  // badge ao carregar encomendas
+  const _origLoad=window.loadEncomendas;
+  if(typeof _origLoad==='function'){
+    window.loadEncomendas=async function(){
+      await _origLoad.apply(this,arguments);
+      updateCaixaBadge();
+    };
+  }
+})();
 
 /* ============================================================
    GESTÃO DE STOCK
