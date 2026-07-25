@@ -1124,6 +1124,44 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .fidel-tier-val{font-family:var(--ft);font-size:.85rem;color:var(--white)}
 .fidel-active-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);color:var(--yellow);border-radius:50px;padding:3px 10px;font-size:.68rem;font-weight:700}
 .fidel-inactive-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(136,136,170,.08);border:1px solid var(--border);color:var(--muted);border-radius:50px;padding:3px 10px;font-size:.68rem}
+
+/* ============================================================
+   RECUPERAÇÃO / CARRINHO ABANDONADO
+   ============================================================ */
+.recu-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.recu-kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.recu-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.recu-kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;margin-bottom:8px}
+.recu-kpi-icon.red{background:rgba(255,71,87,.1);color:var(--red)}
+.recu-kpi-icon.orange{background:rgba(255,159,67,.1);color:var(--orange)}
+.recu-kpi-icon.teal{background:rgba(6,214,160,.1);color:var(--teal)}
+.recu-kpi-icon.blue{background:rgba(61,158,255,.1);color:var(--blue)}
+.recu-kpi-val{font-family:var(--ft);font-size:1.3rem;color:var(--white);line-height:1.1;margin-bottom:2px}
+.recu-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.recu-kpi-sub{font-size:.62rem;color:var(--muted);margin-top:3px}
+.recu-risk-list{display:flex;flex-direction:column;gap:8px}
+.recu-risk-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px;transition:border-color .2s}
+.recu-risk-card:hover{border-color:rgba(255,71,87,.3)}
+.recu-risk-card.critical{border-left:3px solid var(--red)}
+.recu-risk-card.warning{border-left:3px solid var(--orange)}
+.recu-risk-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.recu-risk-ref{font-family:var(--ft);font-size:.76rem;color:var(--pink)}
+.recu-risk-nome{font-size:.82rem;color:var(--white);font-weight:600}
+.recu-risk-contact{font-size:.65rem;color:var(--muted)}
+.recu-age-badge{border-radius:50px;padding:2px 10px;font-size:.62rem;font-weight:700;flex-shrink:0}
+.recu-age-badge.critical{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.recu-age-badge.warning{background:rgba(255,159,67,.12);color:var(--orange);border:1px solid rgba(255,159,67,.25)}
+.recu-items-preview{font-size:.7rem;color:var(--muted);margin-bottom:8px;padding:6px 8px;background:rgba(0,0,0,.15);border-radius:var(--r)}
+.recu-actions{display:flex;gap:6px;flex-wrap:wrap}
+.recu-tpl-area{font-family:monospace;font-size:.76rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;color:var(--white);width:100%;resize:vertical;min-height:120px;line-height:1.5}
+.recu-tpl-area:focus{border-color:var(--pink);outline:none}
+.recu-placeholder-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.recu-chip{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:.62rem;color:var(--muted);cursor:pointer;font-family:monospace;transition:var(--tr)}
+.recu-chip:hover{border-color:var(--pink);color:var(--pink)}
+.recu-empty{text-align:center;padding:24px;color:var(--teal)}
+.recu-empty i{font-size:1.6rem;margin-bottom:8px;display:block}
+.recu-rate-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:6px 0}
+.recu-rate-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .5s}
 </style>
 </head>
 <body>
@@ -1233,6 +1271,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="sidebar-item" data-panel="cleanup" onclick="navigate('cleanup')">
         <i class="fa-solid fa-broom"></i>
         <span class="sidebar-item-label">Limpeza</span>
+      </button>
+      <button class="sidebar-item" data-panel="recuperacao" onclick="navigate('recuperacao')">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span class="sidebar-item-label">Recuperação</span>
+        <span class="sidebar-badge" id="sidebarRecuBadge" style="display:none;background:var(--red)">0</span>
       </button>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
@@ -1639,6 +1682,68 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             </div>
           </div>
           <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="cleanupInfo"></p>
+        </div>
+
+        <!-- ============================================
+             RECUPERAÇÃO / CARRINHO ABANDONADO
+             ============================================ -->
+        <div class="panel" id="panel-recuperacao">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-rotate-left" style="color:var(--red)"></i> Recuperação de Encomendas</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="renderRecuperacao()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="recu-kpi-grid" id="recuKpis"></div>
+
+          <!-- Taxa de conversão -->
+          <div class="section-card" style="margin-bottom:10px" id="recuTaxaCard"></div>
+
+          <!-- Threshold config + template -->
+          <div class="mkt-section-2col" style="margin-bottom:10px">
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-sliders" style="color:var(--muted)"></i> Limiar de Alerta</div>
+              </div>
+              <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">Uma encomenda pendente é considerada "em risco" após X horas sem progresso.</p>
+              <div class="stk-threshold-row">
+                <input type="range" id="recuThresholdRange" min="1" max="168" value="24"
+                       style="flex:1;accent-color:var(--red)" oninput="onRecuThresholdChange(this.value)"/>
+                <div class="stk-threshold-val" id="recuThresholdVal" style="color:var(--red)">24</div>
+                <span style="font-size:.74rem;color:var(--muted)">horas</span>
+                <button class="btn btn-outline btn-sm" onclick="saveRecuConfig()">Guardar</button>
+              </div>
+              <div style="font-size:.68rem;color:var(--muted);margin-top:8px" id="recuThresholdDesc">Encomendas pendentes há mais de 24 horas são marcadas como "em risco"</div>
+            </div>
+
+            <div class="section-card" style="margin-bottom:0">
+              <div class="section-header">
+                <div class="section-title"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> Mensagem de Recuperação</div>
+              </div>
+              <textarea class="recu-tpl-area" id="recuTemplate"
+                placeholder="Olá {{nome}}! Sobre a sua encomenda {{ref}}..."></textarea>
+              <div class="recu-placeholder-chips">
+                <span style="font-size:.6rem;color:var(--muted);align-self:center">Variáveis:</span>
+                <span class="recu-chip" onclick="insertTplVar('{{nome}}')">{{nome}}</span>
+                <span class="recu-chip" onclick="insertTplVar('{{ref}}')">{{ref}}</span>
+                <span class="recu-chip" onclick="insertTplVar('{{total}}')">{{total}}</span>
+                <span class="recu-chip" onclick="insertTplVar('{{loja}}')">{{loja}}</span>
+                <span class="recu-chip" onclick="insertTplVar('{{itens}}')">{{itens}}</span>
+              </div>
+              <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="saveRecuConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar template</button>
+            </div>
+          </div>
+
+          <!-- Lista de encomendas em risco -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> Encomendas em Risco</div>
+              <span id="recuRiskCount" style="font-size:.7rem;color:var(--muted)"></span>
+            </div>
+            <div id="recuRiskList"><div class="spinner"></div></div>
+          </div>
         </div>
 
         <!-- ============================================
@@ -2096,6 +2201,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn orange" onclick="navigateMore('cleanup')">
           <i class="fa-solid fa-broom"></i>
           <span>Limpeza</span>
+        </button>
+        <button class="more-btn red" onclick="navigateMore('recuperacao')">
+          <span class="more-btn-badge" id="moreRecuBadge" style="display:none">!</span>
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Recuperação</span>
         </button>
         <button class="more-btn pink" onclick="navigateMore('marketing')">
           <i class="fa-solid fa-bullhorn"></i>
@@ -2859,6 +2969,7 @@ function navigate(panel){
   if(panel==='stock')renderStock();
   if(panel==='caixa')renderCaixa();
   if(panel==='fidelizacao')renderFidelizacao();
+  if(panel==='recuperacao')renderRecuperacao();
 }
 
 function expandSidebar(){$('sidebar').classList.add('expanded');}
@@ -4986,6 +5097,239 @@ applyTheme();
 })();
 
 autoLogin();
+
+/* ============================================================
+   RECUPERAÇÃO / CARRINHO ABANDONADO
+   ============================================================ */
+(function(){
+  const DEFAULT_TPL =
+    'Olá {{nome}}! 👋\n\n'+
+    'Vimos que realizou uma encomenda na *{{loja}}* (ref: *{{ref}}*) '+
+    'no valor de *{{total}}*, mas ainda aguardamos confirmação.\n\n'+
+    'Podemos ajudá-lo a concluir a compra? 😊\n\n'+
+    '🛒 *Itens:* {{itens}}\n\n'+
+    'Estamos disponíveis para esclarecer qualquer dúvida!';
+
+  function getThreshold(){ return parseInt(state.loja.recuperacao_threshold)||24; }
+  function getTemplate()  { return state.loja.recuperacao_template||DEFAULT_TPL; }
+  function ageHours(d){ return (Date.now()-new Date(d).getTime())/3600000; }
+
+  function getAtRisk(){
+    const thr=getThreshold();
+    return (state.encomendas||[])
+      .filter(e=>e.estado==='pendente'&&e.pagamento_estado!=='pago'&&ageHours(e.criado_em)>=thr)
+      .sort((a,b)=>new Date(a.criado_em)-new Date(b.criado_em));
+  }
+
+  function fmtAge(d){
+    const h=ageHours(d);
+    if(h<1)  return Math.round(h*60)+'min';
+    if(h<48) return Math.round(h)+'h';
+    if(h<168)return Math.round(h/24)+'d';
+    return  Math.round(h/168)+'sem';
+  }
+  function ageSev(d){ return ageHours(d)>=72?'critical':'warning'; }
+
+  function updateRecuBadge(){
+    const n=getAtRisk().length;
+    ['sidebarRecuBadge','moreRecuBadge'].forEach(id=>{
+      const b=$(id); if(!b)return;
+      b.textContent=n||'!'; b.style.display=n?'':'none';
+    });
+  }
+
+  window.renderRecuperacao=function(){
+    const thr=getThreshold();
+    const r=$('recuThresholdRange'); if(r)r.value=thr;
+    const tv=$('recuThresholdVal');  if(tv)tv.textContent=thr;
+    onRecuThresholdChange(thr,true);
+    const ta=$('recuTemplate'); if(ta&&!ta._dirty)ta.value=getTemplate();
+    renderRecuKPIs();
+    renderRecuTaxa();
+    renderAtRisk();
+    updateRecuBadge();
+  };
+
+  window.onRecuThresholdChange=function(val,silent){
+    const v=parseInt(val);
+    const tv=$('recuThresholdVal'); if(tv)tv.textContent=v;
+    const desc=$('recuThresholdDesc');
+    if(desc){
+      const lbl=v<24?v+'h':v===24?'24h (1 dia)':v<168?Math.round(v/24)+' dias':Math.round(v/168)+'sem';
+      desc.textContent='Encomendas pendentes há mais de '+lbl+' são marcadas como "em risco"';
+    }
+    if(!silent)renderAtRisk();
+  };
+
+  function renderRecuKPIs(){
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const encs=state.encomendas||[];
+    const atRisk=getAtRisk();
+    const valorRisco=atRisk.reduce((s,e)=>s+(e.total||0),0);
+    const total=encs.filter(e=>e.estado!=='cancelada').length;
+    const conv =encs.filter(e=>['confirmada','pronta','entregue'].includes(e.estado)).length;
+    const taxa =total?Math.round((conv/total)*100):0;
+    const now=new Date();
+    const inicioMes=new Date(now.getFullYear(),now.getMonth(),1);
+    const recMes=encs.filter(e=>['confirmada','entregue'].includes(e.estado)&&new Date(e.criado_em)>=inicioMes).length;
+    $('recuKpis').innerHTML=
+      rKpi('red','fa-cart-shopping',atRisk.length,'Em risco agora','Pendentes há +'+getThreshold()+'h')+
+      rKpi('orange','fa-coins',kz(valorRisco,sym),'Valor em risco','Receita potencial')+
+      rKpi('teal','fa-chart-line',taxa+'%','Taxa de conversão',conv+'/'+total+' activas')+
+      rKpi('blue','fa-rotate-left',recMes,'Convertidas este mês','Pendente → Activa');
+  }
+
+  function rKpi(c,i,v,l,s){
+    return '<div class="recu-kpi"><div class="recu-kpi-icon '+c+'"><i class="fa-solid '+i+'"></i></div>'+
+      '<div class="recu-kpi-val">'+v+'</div><div class="recu-kpi-lbl">'+l+'</div>'+
+      '<div class="recu-kpi-sub">'+s+'</div></div>';
+  }
+
+  function renderRecuTaxa(){
+    const encs=state.encomendas||[];
+    const map={pendente:0,confirmada:0,pronta:0,entregue:0,cancelada:0};
+    encs.forEach(e=>{if(map[e.estado]!==undefined)map[e.estado]++;});
+    const total=encs.length||1;
+    const bars=[
+      {label:'Entregues',   count:map.entregue,                   color:'var(--teal)'},
+      {label:'Em progresso',count:map.confirmada+map.pronta,       color:'var(--blue)'},
+      {label:'Pendentes',   count:map.pendente,                    color:'var(--orange)'},
+      {label:'Canceladas',  count:map.cancelada,                   color:'var(--red)'},
+    ];
+    const card=$('recuTaxaCard'); if(!card)return;
+    card.innerHTML='<div class="section-header"><div class="section-title">'+
+      '<i class="fa-solid fa-chart-bar" style="color:var(--blue)"></i> Funil de Encomendas</div></div>'+
+      bars.filter(b=>b.count>0).map(b=>{
+        const pct=Math.round((b.count/total)*100);
+        return '<div style="margin-bottom:8px">'+
+          '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'+
+            '<span style="font-size:.74rem;color:var(--white)">'+b.label+'</span>'+
+            '<span style="font-size:.72rem;font-family:var(--ft);color:var(--muted)">'+b.count+' ('+pct+'%)</span>'+
+          '</div>'+
+          '<div class="recu-rate-bar"><div class="recu-rate-fill" style="width:'+pct+'%;background:'+b.color+'"></div></div>'+
+        '</div>';
+      }).join('')+
+      '<div style="font-size:.66rem;color:var(--muted);margin-top:6px">Total: '+total+' encomenda'+(total!==1?'s':'')+'</div>';
+  }
+
+  function renderAtRisk(){
+    const list=getAtRisk();
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const cnt=$('recuRiskCount');
+    if(cnt)cnt.textContent=list.length+' encomenda'+(list.length!==1?'s':'')+' em risco';
+    const cont=$('recuRiskList');
+    if(!list.length){
+      cont.innerHTML='<div class="recu-empty"><i class="fa-solid fa-circle-check" style="color:var(--teal)"></i>'+
+        'Nenhuma encomenda em risco 🎉</div>'; return;
+    }
+    cont.innerHTML='<div class="recu-risk-list">'+list.map(e=>{
+      const sev=ageSev(e.criado_em);
+      const wa=(e.whatsapp_cliente||e.telefone_cliente||'').replace(/\D/g,'');
+      const itens=(e.itens||[]);
+      const prev=itens.slice(0,2).map(i=>(i.quantidade||1)+'× '+esc(i.nome_produto||'Produto')).join(', ')+
+                 (itens.length>2?' +mais '+(itens.length-2):'');
+      return '<div class="recu-risk-card '+sev+'">'+
+        '<div class="recu-risk-header">'+
+          '<div style="flex:1">'+
+            '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'+
+              '<span class="recu-risk-ref">'+esc(e.ref)+'</span>'+
+              '<span class="recu-age-badge '+sev+'"><i class="fa-solid fa-clock" style="font-size:.5rem"></i> '+fmtAge(e.criado_em)+'</span>'+
+            '</div>'+
+            '<div class="recu-risk-nome">'+esc(e.nome_cliente||'Cliente')+'</div>'+
+            '<div class="recu-risk-contact">'+
+              (e.email_cliente?'<i class="fa-solid fa-envelope" style="font-size:.55rem"></i> '+esc(e.email_cliente)+' ':'')+
+              (e.telefone_cliente?'<i class="fa-solid fa-phone" style="font-size:.55rem"></i> '+esc(e.telefone_cliente):'')+
+            '</div>'+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0">'+
+            '<div style="font-family:var(--ft);font-size:1rem;color:var(--orange)">'+kz(e.total||0,sym)+'</div>'+
+            '<div style="font-size:.62rem;color:var(--muted)">'+fmtDate(e.criado_em)+'</div>'+
+          '</div>'+
+        '</div>'+
+        (prev?'<div class="recu-items-preview"><i class="fa-solid fa-cart-shopping" style="font-size:.6rem;margin-right:4px"></i>'+prev+'</div>':'')+
+        '<div class="recu-actions">'+
+          (wa?'<a href="'+buildWaLink(wa,e,sym)+'" target="_blank" class="btn btn-sm" '+
+              'style="background:rgba(37,211,102,.1);color:#25d366;border:1px solid rgba(37,211,102,.25)">'+
+              '<i class="fa-brands fa-whatsapp"></i> Contactar</a>':'')+
+          '<button class="btn btn-outline btn-sm" onclick="confirmOrderFromRecu(\''+esc(e.ref)+'\',this)">'+
+            '<i class="fa-solid fa-check"></i> Confirmar</button>'+
+          '<button class="btn btn-sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.2)"'+
+                  ' onclick="cancelOrderFromRecu(\''+esc(e.ref)+'\',this)">'+
+            '<i class="fa-solid fa-xmark"></i> Cancelar</button>'+
+          '<button class="btn btn-outline btn-sm btn-icon" title="Ver detalhe"'+
+                  ' onclick="navigate(\'orders\');setTimeout(()=>toggleOrderDetail(\''+esc(e.ref)+'\'),400)">'+
+            '<i class="fa-solid fa-eye"></i></button>'+
+        '</div>'+
+      '</div>';
+    }).join('')+'</div>';
+  }
+
+  function buildWaLink(wa,e,sym){
+    const itens=(e.itens||[]).map(i=>(i.quantidade||1)+'× '+(i.nome_produto||'Produto')).join(', ')||'—';
+    const msg=getTemplate()
+      .replace(/{{nome}}/g,  e.nome_cliente||'Cliente')
+      .replace(/{{ref}}/g,   e.ref||'')
+      .replace(/{{total}}/g, kz(e.total||0,sym))
+      .replace(/{{loja}}/g,  state.loja.nome||'Loja')
+      .replace(/{{itens}}/g, itens);
+    return 'https://wa.me/'+wa+'?text='+encodeURIComponent(msg);
+  }
+
+  window.confirmOrderFromRecu=async function(ref,btn){
+    const b=btnBusy(btn);
+    try{
+      await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({estado:'confirmada'})});
+      const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
+      if(idx>=0)state.encomendas[idx].estado='confirmada';
+      toast('✅ Encomenda '+ref+' confirmada!','success');
+      renderRecuperacao();
+    }catch(err){toast('Erro: '+err.message,'error');btnDone(b);}
+  };
+
+  window.cancelOrderFromRecu=async function(ref,btn){
+    if(!confirm('Cancelar a encomenda '+ref+'? Não pode ser desfeito.'))return;
+    const b=btnBusy(btn);
+    try{
+      await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});
+      const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
+      if(idx>=0)state.encomendas[idx].estado='cancelada';
+      toast('Encomenda '+ref+' cancelada','success');
+      renderRecuperacao();
+    }catch(err){toast('Erro: '+err.message,'error');btnDone(b);}
+  };
+
+  window.insertTplVar=function(v){
+    const ta=$('recuTemplate'); if(!ta)return;
+    const s=ta.selectionStart,e=ta.selectionEnd;
+    ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+    ta.selectionStart=ta.selectionEnd=s+v.length;
+    ta.focus(); ta._dirty=true;
+  };
+
+  window.saveRecuConfig=async function(){
+    const btn=event.target;
+    const thr=parseInt($('recuThresholdRange')?.value)||24;
+    const tpl=($('recuTemplate')?.value||DEFAULT_TPL).trim();
+    const b=btnBusy(btn);
+    try{
+      await api('/api/loja',{method:'PUT',body:JSON.stringify({recuperacao_threshold:thr,recuperacao_template:tpl})});
+      state.loja.recuperacao_threshold=thr; state.loja.recuperacao_template=tpl;
+      const ta=$('recuTemplate');if(ta)ta._dirty=false;
+      toast('Configuração guardada','success');
+      renderRecuperacao();
+    }catch(err){toast('Erro: '+err.message,'error');}
+    btnDone(b);
+  };
+
+  // badge após carregamento de encomendas
+  const _prev=window.loadEncomendas;
+  if(typeof _prev==='function'){
+    window.loadEncomendas=async function(){
+      await _prev.apply(this,arguments);
+      updateRecuBadge();
+    };
+  }
+})();
 
 /* ============================================================
    FIDELIZAÇÃO POR PONTOS

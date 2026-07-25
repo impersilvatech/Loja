@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/favicon.png" type="image/png"/>
+<link rel="icon" href="/favicon.webp" type="image/webp"/>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="apple-touch-icon" href="/icons/icon-192-maskable.png"/>
+<meta name="theme-color" content="#0a66c2"/>
+<title id="pgTitle">Notícia — IMPERSILVA TECH</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin/>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com"/>
+<meta name="description" id="metaDesc" content="Notícias e actualizações da IMPERSILVA TECH."/>
+<meta property="og:type" content="article"/>
+<meta property="og:locale" content="pt_AO"/>
+<meta property="og:site_name" content="IMPERSILVA TECH"/>
+<meta property="og:title" id="ogTitle" content="Notícia — IMPERSILVA TECH"/>
+<meta property="og:description" id="ogDesc" content="Notícias e actualizações da IMPERSILVA TECH."/>
+<meta property="og:url" id="ogUrl" content="https://impersilvatech.pages.dev/noticias.html"/>
+<meta property="og:image" id="ogImg" content="https://impersilvatech.pages.dev/IMPERSILVA_TECH_LOGO.png"/>
+<link rel="canonical" id="canonical" href="https://impersilvatech.pages.dev/noticias.html"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" id="twTitle" content="Notícia — IMPERSILVA TECH"/>
+<meta name="twitter:description" id="twDesc" content="Notícias e actualizações da IMPERSILVA TECH."/>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/fontawesome.min.css" as="style" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/fontawesome.min.css';this.rel='stylesheet'"/>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/solid.min.css" as="style" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/solid.min.css';this.rel='stylesheet'"/>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/brands.min.css" as="style" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/brands.min.css';this.rel='stylesheet'"/>
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/fontawesome.min.css" crossorigin="anonymous"/><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/solid.min.css" crossorigin="anonymous"/><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/brands.min.css" crossorigin="anonymous"/></noscript>
+<script src="/config.js" defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{max-width:100%;overflow-x:hidden}
+body,body *:not(i):not([class*="fa"]){font-family:'Times New Roman',Times,serif}
+:root{
+  --black:#0a0a0c;--dark:#121214;--charcoal:#1e1e22;--charcoal-lt:#2a2a30;
+  --blue:#0a66c2;--blue-lt:#1d8cf8;--blue-dim:rgba(10,102,194,0.12);
+  --silver:#9ba4b5;--silver-lt:#d1d5db;
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --white:#ffffff;--gray:#888896;--gray-lt:#c0c0cc;
+  --divider:rgba(255,255,255,0.07);--border:rgba(255,255,255,0.07);
+}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--white);font-weight:400;line-height:1.6;padding-top:64px}
+
+/* ── NAVBAR ── */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(14,14,14,0.97);border-bottom:1px solid var(--divider);transition:border-color .3s}
+.navbar-inner{max-width:1200px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo-link{display:flex;align-items:center;text-decoration:none}
+.logo-img{height:48px;width:auto;max-width:220px;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(1.6) brightness(1.1)}
+.nav-links{display:none;align-items:center;gap:.1rem;list-style:none}
+.nav-links a{color:var(--gray-lt);text-decoration:none;font-size:.85rem;font-weight:400;padding:.5rem .9rem;border-radius:5px;transition:all .2s}
+.nav-links a:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.nav-cta{background:var(--blue)!important;color:var(--white)!important;font-weight:600!important;padding:.5rem 1.3rem!important;border-radius:5px!important;letter-spacing:.04em!important}
+.nav-cta:hover{background:var(--blue-lt)!important}
+/* Sem hamburger — botão voltar no mobile */
+.nav-back{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);color:var(--white);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.45rem 1rem;border-radius:7px;cursor:pointer;transition:all .22s;font-family:inherit;text-decoration:none}
+.nav-back i{font-size:.72rem;transition:transform .2s}
+.nav-back:hover{background:var(--blue);border-color:var(--blue);color:var(--white)}
+.nav-back:hover i{transform:translateX(-3px)}
+@media(min-width:861px){.nav-back{display:none}.nav-links{display:flex!important}}
+
+/* ── CIRCUIT ── */
+.circuit-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.ct{fill:none;stroke:rgba(50,150,255,0.30);stroke-width:1.5}
+.cn{fill:rgba(60,170,255,0.55)}
+.cp{fill:none;stroke-linecap:round;stroke-width:2.5;stroke:rgba(140,225,255,0.95);stroke-dasharray:20 900}
+@keyframes cFlow{from{stroke-dashoffset:920}to{stroke-dashoffset:0}}
+.cp1{animation:cFlow 4.1s linear infinite}
+.cp2{animation:cFlow 5.3s linear infinite 1.4s}
+.cp3{animation:cFlow 3.8s linear infinite .7s}
+.cp4{animation:cFlow 4.7s linear infinite 2.2s}
+.cp5{animation:cFlow 3.4s linear infinite .3s}
+.cp6{animation:cFlow 5.8s linear infinite 1.9s}
+.cp7{animation:cFlow 4.4s linear infinite 1s}
+.cp8{animation:cFlow 5s linear infinite 2.6s}
+
+/* ── REVEAL ── */
+.reveal{opacity:1;transform:none}
+.js-ready .reveal{opacity:0;transform:translateY(16px);transition:opacity .4s ease,transform .4s ease;will-change:opacity,transform}
+.js-ready .reveal.visible{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.2s}.reveal-delay-3{transition-delay:.3s}
+
+/* ── BOTÕES ── */
+.btn-blue{background:var(--blue);color:var(--white);font-size:.85rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:.8rem 1.8rem;border:none;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:all .22s;font-family:inherit}
+.btn-blue:hover{background:var(--blue-lt);transform:translateY(-2px);box-shadow:0 8px 24px rgba(29,78,216,.3)}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--white);font-size:.82rem;font-weight:500;letter-spacing:.04em;padding:.7rem 1.4rem;border:1.5px solid rgba(255,255,255,.16);border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:all .2s;font-family:inherit}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── PAGE HEAD ── */
+.page-head{position:relative;overflow:hidden;padding:3.2rem 0 0;background:var(--black)}
+.page-inner{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 1.5rem}
+.back-link{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--gray-lt);text-decoration:none;margin-bottom:22px;transition:.2s}
+.back-link:hover{color:var(--blue)}
+.back-link i{font-size:.72rem}
+
+/* ── HERO DO ARTIGO ── */
+.art-hero-wrap{border-radius:14px;overflow:hidden;margin-bottom:32px;position:relative}
+.art-hero-img{width:100%;aspect-ratio:16/7;object-fit:cover;display:block}
+.art-hero-grad{width:100%;aspect-ratio:16/7;display:flex;align-items:center;justify-content:center;position:relative}
+.art-hero-grad-icon{font-size:7rem;opacity:.08;color:var(--white)}
+.art-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.85) 0%,rgba(10,10,12,.25) 50%,transparent 100%)}
+.art-hero-body{position:absolute;bottom:0;left:0;right:0;padding:2rem 2rem 1.8rem}
+.art-badge{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--white);background:var(--blue);padding:.28rem .75rem;border-radius:4px;margin-bottom:.85rem}
+.art-title{font-weight:900;font-size:clamp(1.6rem,3.5vw,2.6rem);line-height:1.08;letter-spacing:-.02em;color:var(--white);margin-bottom:1rem}
+.art-meta-row{display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center}
+.art-meta-item{font-size:.73rem;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:.4rem}
+.art-meta-item i{color:var(--blue-lt);font-size:.68rem}
+@media(max-width:600px){.art-hero-body{padding:1.2rem}.art-title{font-size:1.3rem}}
+
+/* ── GRID PRINCIPAL ── */
+.art-grid{display:grid;grid-template-columns:1fr 300px;gap:40px;margin-bottom:48px}
+@media(max-width:900px){.art-grid{grid-template-columns:1fr}}
+.art-sidebar{display:flex;flex-direction:column;gap:16px}
+@media(max-width:900px){.art-sidebar{display:none}} /* sidebar só no desktop */
+
+/* ── BARRA DE PARTILHA ── */
+.art-share{display:flex;align-items:center;gap:.65rem;padding:14px 0 18px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
+.share-label{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gray)}
+.sbtn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--charcoal);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-lt);font-size:.85rem;text-decoration:none;transition:all .2s}
+.sbtn:hover{transform:translateY(-2px)}
+.sbtn.wa:hover{background:#25d366;border-color:#25d366;color:#fff}
+.sbtn.fb:hover{background:#1877f2;border-color:#1877f2;color:#fff}
+.sbtn.lk:hover{background:#0a66c2;border-color:#0a66c2;color:#fff}
+.sbtn.cp:hover{background:var(--charcoal-lt);border-color:var(--blue-lt);color:var(--blue-lt)}
+.copy-toast{font-size:.7rem;color:var(--blue-lt);opacity:0;transition:opacity .3s;pointer-events:none}
+.copy-toast.show{opacity:1}
+
+/* ── CORPO DO ARTIGO ── */
+.art-body{color:rgba(255,255,255,.82);font-size:.97rem;line-height:1.88}
+.art-body > * + *{margin-top:1.2rem}
+.art-body h2{font-size:1.4rem;font-weight:900;letter-spacing:-.02em;color:var(--white);padding-bottom:.6rem;border-bottom:1px solid var(--divider);margin-top:2.2rem!important}
+.art-body h3{font-size:1.1rem;font-weight:700;color:var(--blue-lt);margin-top:1.8rem!important}
+.art-body h4{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-top:1.6rem!important}
+.art-body p{margin:0}
+.art-body strong{color:var(--white);font-weight:700}
+.art-body em{color:var(--silver-lt)}
+.art-body a{color:var(--blue-lt);text-decoration:underline;text-underline-offset:3px}
+.art-body a:hover{color:var(--white)}
+.art-body img{width:100%;border-radius:10px;border:1px solid var(--border);display:block;margin:1.8rem 0 .4rem}
+.art-body img+em{display:block;text-align:center;font-size:.74rem;color:var(--gray);margin-bottom:1.4rem}
+.art-body ul,.art-body ol{padding-left:1.5rem}
+.art-body li{margin-bottom:.45rem;line-height:1.8}
+.art-body ul li::marker{color:var(--blue-lt)}
+.art-body ol li::marker{color:var(--blue-lt);font-weight:700}
+.art-body blockquote{margin:1.8rem 0!important;padding:1.2rem 1.5rem;background:rgba(10,102,194,.07);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;position:relative}
+.art-body blockquote::before{content:'\201C';position:absolute;top:-8px;left:12px;font-size:3rem;color:var(--blue);opacity:.22;line-height:1;font-family:Georgia,serif}
+.art-body blockquote p{color:var(--silver-lt);font-style:italic;margin:0}
+.art-body blockquote footer,.art-body blockquote cite{display:block;margin-top:.5rem;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-lt);font-style:normal}
+.art-body hr{border:none;border-top:1px solid var(--divider);margin:2.2rem 0}
+.art-body code{font-family:monospace;background:var(--charcoal);padding:.16rem .4rem;border-radius:4px;font-size:.88em;color:var(--blue-lt);border:1px solid var(--border)}
+.art-body pre{background:var(--charcoal);padding:1.2rem 1.4rem;border-radius:10px;overflow-x:auto;border:1px solid var(--border)}
+.art-body pre code{background:none;border:none;padding:0;color:var(--gray-lt)}
+
+/* Tags */
+.art-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.art-tag{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.1);color:var(--gray);background:var(--charcoal)}
+
+/* Sidebar */
+.sidebar-card{background:var(--charcoal);border:1px solid var(--border);border-radius:12px;padding:18px}
+.sidebar-title{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);margin-bottom:14px}
+.sidebar-meta-item{display:flex;align-items:center;gap:.55rem;font-size:.8rem;color:var(--gray-lt);padding:8px 0;border-bottom:1px solid var(--divider)}
+.sidebar-meta-item:last-child{border-bottom:none}
+.sidebar-meta-item i{color:var(--blue-lt);font-size:.75rem;width:14px;flex-shrink:0}
+
+/* Barra de progresso de leitura */
+#rdProgress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--blue),var(--blue-lt));z-index:9999;transition:width .1s linear;pointer-events:none}
+
+/* ── SECÇÕES DE BLOCOS (igual ao portfolio.html) ── */
+.art-sec{padding:0 0 5rem}
+.det-block{margin-bottom:44px}
+.det-block-title{font-weight:800;font-size:1.3rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.det-block-title i{color:var(--blue);font-size:1rem}
+
+/* Relacionados */
+.rel-carousel-wrap{position:relative}
+.rel-grid{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 10px}
+.rel-grid::-webkit-scrollbar{display:none}
+.rel-track{display:flex;gap:14px;width:max-content}
+.rel-card{flex:0 0 240px;scroll-snap-align:start;background:var(--charcoal);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s;text-decoration:none;color:inherit;display:flex;flex-direction:column}
+.rel-card:hover{transform:translateY(-3px);border-color:rgba(10,102,194,.45)}
+@media(min-width:860px){
+  .rel-grid{overflow-x:visible;scroll-snap-type:none}
+  .rel-track{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}
+  .rel-card{flex:none}
+}
+.rel-thumb{height:140px;position:relative;overflow:hidden;flex-shrink:0}
+.rel-thumb-img{width:100%;height:100%;object-fit:cover}
+.rel-thumb-grad{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.rel-thumb-grad i{font-size:3rem;opacity:.08;color:var(--white)}
+.rel-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%)}
+.rel-badge{position:absolute;top:10px;left:10px;font-size:.55rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--white);background:var(--blue);padding:.22rem .6rem;border-radius:4px}
+.rel-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:.5rem;flex:1}
+.rel-title{font-size:.85rem;font-weight:700;line-height:1.35;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rel-card:hover .rel-title{color:var(--blue-lt)}
+.rel-meta{font-size:.68rem;color:var(--gray);display:flex;gap:.7rem;margin-top:auto;padding-top:.5rem;border-top:1px solid var(--divider)}
+.rel-meta span{display:flex;align-items:center;gap:.28rem}
+.rel-meta i{color:var(--blue-lt);font-size:.62rem}
+
+/* ── CTA FINAL (igual ao portfolio.html) ── */
+.cta-final{text-align:center;padding:44px 28px;background:linear-gradient(135deg,var(--blue-dim),var(--blue-dim));border:1px solid rgba(255,255,255,.08);border-radius:16px;margin-bottom:0}
+.cta-final h3{font-weight:900;font-size:clamp(1.6rem,4vw,2.4rem);text-transform:uppercase;margin-bottom:10px}
+.cta-final h3 span{color:var(--blue-lt)}
+.cta-final p{color:var(--gray-lt);font-size:.88rem;font-weight:300;margin-bottom:22px;max-width:460px;margin-left:auto;margin-right:auto}
+.cta-final-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+
+/* ── FOOTER (idêntico ao portfolio.html) ── */
+footer{position:relative;overflow:hidden;background:var(--black);border-top:1px solid var(--divider);padding:4rem 0 2rem}
+.footer-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem}
+.footer-divider{height:1px;background:var(--divider);margin:2.5rem 0 1.5rem}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;font-size:.73rem;color:rgba(255,255,255,.2);flex-wrap:wrap;gap:.5rem}
+.footer-bottom a{color:var(--blue);text-decoration:none}
+
+/* ── PAGE LOADER (idêntico ao portfolio.html) ── */
+#pgLoad{position:fixed;inset:0;background:#0a0a0c;z-index:99999;display:flex;align-items:center;justify-content:center;gap:14px;flex-direction:column;transition:opacity .25s ease,visibility .25s ease}
+#pgLoad.done{opacity:0;visibility:hidden;pointer-events:none}
+.pg-brand{font-family:'Times New Roman',serif;font-size:.95rem;font-weight:900;letter-spacing:.1em;color:#fff}
+.pg-brand span{color:#1d8cf8}
+.pg-ring{width:30px;height:30px;border:2.5px solid rgba(10,102,194,.2);border-top-color:#0a66c2;border-radius:50%;animation:pgSpin .55s linear infinite}
+@keyframes pgSpin{to{transform:rotate(360deg)}}
+#pgBar{position:absolute;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#0a66c2,#1d8cf8);animation:pgBar 1.2s ease-in-out infinite}
+@keyframes pgBar{0%{width:0;left:0}60%{width:70%;left:0}100%{width:0;left:100%}}
+
+/* Acessibilidade */
+a:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div id="pgLoad" role="status" aria-label="A carregar...">
+  <div id="pgBar"></div>
+  <div class="pg-brand">IMPERSILVA <span>TECH</span></div>
+  <div class="pg-ring"></div>
+</div>
+<script>(function(){var s=Date.now();document.addEventListener('DOMContentLoaded',function(){var l=document.getElementById('pgLoad');if(!l)return;var w=Math.max(0,300-(Date.now()-s));setTimeout(function(){l.classList.add('done');setTimeout(function(){l.remove();},280);},w);});})();</script>
+
+<!-- BARRA DE PROGRESSO DE LEITURA -->
+<div id="rdProgress"></div>
+
+<!-- NAVBAR — sem hamburger, botão voltar no mobile -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="logo-link" href="/index.html">
+      <img src="/IMPERSILVA_TECH_LOGO.png" alt="IMPERSILVA TECH" class="logo-img" width="187" height="48" fetchpriority="high"/>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html">Início</a></li>
+      <li><a href="/sobre.html">Sobre</a></li>
+      <li><a href="/tech.html">Tech</a></li>
+      <li><a href="/contacto.html">Contacto</a></li>
+      <li><a href="/verificar-site.html"><i class="fa-solid fa-user" style="font-size:.75rem;opacity:.7"></i> Portal</a></li>
+      <li><a href="/orcamento.html" class="nav-cta">Orçamento</a></li>
+    </ul>
+    <!-- Botão voltar — só mobile, sem hamburger -->
+    <a class="nav-back" href="#" onclick="goBack(event)">
+      <i class="fa-solid fa-arrow-left"></i> Voltar
+    </a>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════
+     CONTEÚDO PRINCIPAL
+══════════════════════════════════════ -->
+
+<!-- PAGE HEAD com circuit + back-link -->
+<section class="page-head">
+  <svg class="circuit-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" style="opacity:.5">
+    <path class="ct" d="M 0 0 H 100 V 55 H 60 V 110 H 130 V 75 H 200 V 145 H 155 V 210 H 110"/>
+    <path class="ct" d="M 800 0 H 700 V 60 H 740 V 120 H 670 V 85 H 610 V 150 H 650 V 200"/>
+    <path class="ct" d="M 0 500 H 90 V 430 H 50 V 370 H 120 V 400 H 180 V 330 H 140 V 270"/>
+    <path class="ct" d="M 800 500 H 710 V 420 H 750 V 360 H 680 V 400 H 630 V 330"/>
+    <path class="ct" d="M 310 0 V 55 H 360 V 30 H 420 V 70 H 470 V 25 H 520 V 65 H 490 V 110 H 540 V 80 H 580"/>
+    <path class="ct" d="M 270 500 V 445 H 330 V 470 H 390 V 430 H 450 V 460 H 510 V 420 H 570 V 450"/>
+    <circle class="cn" cx="100" cy="55" r="2.5"/><circle class="cn" cx="60" cy="110" r="2"/><circle class="cn" cx="130" cy="75" r="2.5"/><circle class="cn" cx="200" cy="145" r="2"/><circle class="cn" cx="155" cy="210" r="2.5"/>
+    <circle class="cn" cx="700" cy="60" r="2.5"/><circle class="cn" cx="740" cy="120" r="2"/><circle class="cn" cx="670" cy="85" r="2.5"/><circle class="cn" cx="610" cy="150" r="2"/><circle class="cn" cx="650" cy="200" r="2.5"/>
+    <circle class="cn" cx="90" cy="430" r="2.5"/><circle class="cn" cx="50" cy="370" r="2"/><circle class="cn" cx="120" cy="400" r="2.5"/><circle class="cn" cx="180" cy="330" r="2"/>
+    <circle class="cn" cx="360" cy="55" r="2.5"/><circle class="cn" cx="420" cy="70" r="2"/><circle class="cn" cx="470" cy="25" r="2.5"/><circle class="cn" cx="490" cy="110" r="2"/>
+    <path class="cp cp1" d="M 0 0 H 100 V 55 H 60 V 110 H 130 V 75 H 200 V 145 H 155 V 210 H 110"/>
+    <path class="cp cp2" d="M 800 0 H 700 V 60 H 740 V 120 H 670 V 85 H 610 V 150 H 650 V 200"/>
+    <path class="cp cp3" d="M 0 500 H 90 V 430 H 50 V 370 H 120 V 400 H 180 V 330 H 140 V 270"/>
+    <path class="cp cp4" d="M 800 500 H 710 V 420 H 750 V 360 H 680 V 400 H 630 V 330"/>
+    <path class="cp cp7" d="M 310 0 V 55 H 360 V 30 H 420 V 70 H 470 V 25 H 520 V 65 H 490 V 110 H 540 V 80 H 580"/>
+  </svg>
+  <div class="page-inner" style="padding-top:2rem;padding-bottom:2rem">
+    <a href="#" class="back-link reveal" onclick="goBack(event)">
+      <i class="fa-solid fa-arrow-left"></i> Voltar às notícias
+    </a>
+  </div>
+</section>
+
+<!-- SECÇÃO DO ARTIGO -->
+<section class="art-sec">
+  <div class="page-inner">
+
+    <!-- Hero do artigo -->
+    <div class="art-hero-wrap reveal">
+      <!-- Renderizado por JS -->
+      <div id="artHeroWrap"></div>
+    </div>
+
+    <!-- Grid: corpo + sidebar -->
+    <div class="art-grid">
+
+      <!-- Coluna principal -->
+      <div>
+        <!-- Barra de partilha -->
+        <div class="art-share">
+          <span class="share-label">Partilhar</span>
+          <a class="sbtn wa" id="shareWA" href="#" target="_blank" rel="noopener" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a class="sbtn fb" id="shareFB" href="#" target="_blank" rel="noopener" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a class="sbtn lk" id="shareLK" href="#" target="_blank" rel="noopener" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <button class="sbtn cp" onclick="copyLink()" title="Copiar link"><i class="fa-solid fa-link"></i></button>
+          <span class="copy-toast" id="copyToast">Link copiado!</span>
+        </div>
+
+        <!-- Corpo do artigo -->
+        <div class="art-body reveal" id="artBody"></div>
+
+        <!-- Tags -->
+        <div class="art-tags" id="artTags"></div>
+      </div>
+
+      <!-- Sidebar (só desktop) -->
+      <div class="art-sidebar">
+        <div class="sidebar-card reveal">
+          <div class="sidebar-title">Sobre este artigo</div>
+          <div id="sidebarMeta"></div>
+        </div>
+        <div class="sidebar-card reveal reveal-delay-1" id="sidebarCta">
+          <div class="sidebar-title">Começa já</div>
+          <p style="font-size:.8rem;color:var(--gray-lt);line-height:1.65;margin-bottom:14px">Cria a tua loja online em menos de 5 minutos, sem código, sem loja física.</p>
+          <a href="/orcamento.html" class="btn-blue" style="width:100%;justify-content:center;font-size:.78rem"><i class="fa-solid fa-rocket"></i> Pedir orçamento</a>
+        </div>
+      </div>
+
+    </div><!-- /art-grid -->
+
+    <!-- Mais notícias -->
+    <div class="det-block reveal" id="relBlock" style="display:none">
+      <div class="det-block-title"><i class="fa-solid fa-newspaper"></i> Mais Notícias</div>
+      <div class="rel-carousel-wrap">
+        <div class="rel-grid">
+          <div class="rel-track" id="relGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA final -->
+    <div class="cta-final reveal">
+      <h3>Lança o teu site <span>online</span></h3>
+      <p>Sem código, sem loja física. A tua presença online fica pronta em menos de 5 minutos.</p>
+      <div class="cta-final-btns">
+        <a href="/orcamento.html" class="btn-blue"><i class="fa-solid fa-rocket"></i> Pedir orçamento</a>
+        <a href="/tech.html" class="btn-ghost"><i class="fa-solid fa-layer-group"></i> Ver templates</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FOOTER (idêntico ao portfolio.html) -->
+<footer>
+  <svg class="circuit-svg" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="opacity:.25">
+    <path class="ct" d="M 788 0 V 55 H 718 V 108 H 768 V 168 H 800"/>
+    <path class="ct" d="M 22 0 V 68 H 84 V 32 H 158 V 94 H 114 V 148"/>
+    <path class="ct" d="M 0 248 H 58 V 206 H 118 V 272 H 198 V 340"/>
+    <path class="ct" d="M 800 225 H 748 V 278 H 686 V 340"/>
+    <path class="ct" d="M 565 340 V 285 H 622 V 248 H 700 V 295 H 800"/>
+    <path class="ct" d="M 500 0 V 36 H 552 V 62 H 508 V 96 H 575 V 0"/>
+    <circle class="cn" cx="788" cy="55" r="2.5"/><circle class="cn" cx="718" cy="108" r="2.5"/><circle class="cn" cx="768" cy="168" r="2.5"/>
+    <circle class="cn" cx="22" cy="68" r="2.5"/><circle class="cn" cx="84" cy="32" r="2.5"/><circle class="cn" cx="158" cy="94" r="2.5"/>
+    <circle class="cn" cx="58" cy="248" r="2.5"/><circle class="cn" cx="198" cy="272" r="2.5"/>
+    <circle class="cn" cx="748" cy="278" r="2"/><circle class="cn" cx="686" cy="278" r="2.5"/>
+    <circle class="cn" cx="622" cy="285" r="2.5"/><circle class="cn" cx="700" cy="248" r="2.5"/>
+    <circle class="cn" cx="552" cy="36" r="2.5"/><circle class="cn" cx="508" cy="62" r="2.5"/><circle class="cn" cx="575" cy="96" r="2.5"/>
+    <path class="cp cp2" d="M 22 0 V 68 H 84 V 32 H 158 V 94 H 114 V 148"/>
+    <path class="cp cp4" d="M 800 225 H 748 V 278 H 686 V 340"/>
+    <path class="cp cp5" d="M 565 340 V 285 H 622 V 248 H 700 V 295 H 800"/>
+    <path class="cp cp6" d="M 500 0 V 36 H 552 V 62 H 508 V 96 H 575 V 0"/>
+  </svg>
+  <div class="footer-inner">
+    <div style="margin-bottom:1.2rem">
+      <img src="/IMPERSILVA_TECH_LOGO.png" alt="IMPERSILVA TECH" style="height:35px;width:auto;display:block;margin-bottom:10px;mix-blend-mode:screen;filter:contrast(1.6) brightness(1.1)" width="136" height="35" loading="lazy"/>
+    </div>
+    <div style="display:flex;gap:.7rem;margin-bottom:0">
+      <a href="https://www.facebook.com/impersilva" target="_blank" style="width:36px;height:36px;border-radius:8px;background:var(--charcoal);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gray-lt);font-size:.9rem;text-decoration:none;transition:all .2s" onmouseover="this.style.background='#1877f2';this.style.color='#fff'" onmouseout="this.style.background='var(--charcoal)';this.style.color='var(--gray-lt)'"><i class="fa-brands fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/impersilva" target="_blank" style="width:36px;height:36px;border-radius:8px;background:var(--charcoal);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gray-lt);font-size:.9rem;text-decoration:none;transition:all .2s" onmouseover="this.style.background='#e1306c';this.style.color='#fff'" onmouseout="this.style.background='var(--charcoal)';this.style.color='var(--gray-lt)'"><i class="fa-brands fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/company/impersilva" target="_blank" style="width:36px;height:36px;border-radius:8px;background:var(--charcoal);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gray-lt);font-size:.9rem;text-decoration:none;transition:all .2s" onmouseover="this.style.background='#0a66c2';this.style.color='#fff'" onmouseout="this.style.background='var(--charcoal)';this.style.color='var(--gray-lt)'"><i class="fa-brands fa-linkedin-in"></i></a>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span>© <span id="yr"></span> IMPERSILVA TECH. Todos os direitos reservados.</span>
+      <span>Desenvolvido por <a href="/tech.html">IMPERSILVA TECH</a></span>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+/* ── UTILITÁRIOS ────────────────────────────────────────── */
+const API  = (window.IMPERSILVA?.api_url)  || 'https://api.impersilvatech.workers.dev';
+const SITE = (window.IMPERSILVA?.site_url) || 'https://impersilvatech.pages.dev';
+
+function slug(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-'); }
+function sOf(n){ return n.slug || slug(n.titulo); }
+
+const NEWS_FB = [
+  {label:'Novidade',titulo:'Lojas online prontas em menos de 5 minutos para qualquer negócio angolano',resumo:'A IMPERSILVA TECH lançou uma plataforma self-service que permite criar uma loja online completa em menos de 5 minutos, sem conhecimentos técnicos.',data:'Jun 2025',cor1:'#050d1f',cor2:'#0f2060',icon:'fa-rocket',autor:'IMPERSILVA TECH',leitura:'3 min'},
+  {label:'Dica',titulo:'Como escolher o template certo para o teu tipo de negócio',resumo:'Dicas práticas para escolher o template ideal consoante o teu sector, público-alvo e objetivos de vendas online.',data:'Mai 2025',cor1:'#0a1a3d',cor2:'#1a0505',icon:'fa-lightbulb',autor:'IMPERSILVA TECH',leitura:'4 min'},
+  {label:'Anúncio',titulo:'Novos métodos de pagamento disponíveis nas lojas IMPERSILVA',resumo:'A partir desta semana, as lojas criadas na plataforma passam a suportar pagamentos via Multicaixa Express, referência bancária e transferência.',data:'Abr 2025',cor1:'#0d2a0a',cor2:'#081a20',icon:'fa-credit-card',autor:'IMPERSILVA TECH',leitura:'2 min'},
+];
+
+/* ── REVEAL ─────────────────────────────────────────────── */
+document.documentElement.classList.add('js-ready');
+const revObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); revObs.unobserve(e.target); } });
+}, { threshold: 0.06 });
+function observeReveals(){ document.querySelectorAll('.reveal:not(.visible)').forEach(el => revObs.observe(el)); }
+
+/* ── ANO ────────────────────────────────────────────────── */
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+/* ── NAVBAR SCROLL ──────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  document.querySelector('.navbar').style.borderBottomColor = window.scrollY > 60 ? 'rgba(10,102,194,0.2)' : 'rgba(255,255,255,0.07)';
+}, { passive: true });
+
+/* ── VOLTAR ─────────────────────────────────────────────── */
+function goBack(e) {
+  if (e) e.preventDefault();
+  if (history.length > 1 && document.referrer && document.referrer.includes(location.hostname)) {
+    history.back();
+  } else {
+    location.href = '/index.html';
+  }
+}
+
+/* ── PARTILHA ───────────────────────────────────────────── */
+let currentUrl = location.href;
+function copyLink() {
+  navigator.clipboard.writeText(currentUrl).then(() => {
+    const t = document.getElementById('copyToast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }).catch(() => {});
+}
+
+/* ── PROGRESSO DE LEITURA ───────────────────────────────── */
+function initProgress() {
+  const bar  = document.getElementById('rdProgress');
+  const body = document.getElementById('artBody');
+  if (!bar || !body) return;
+  window.addEventListener('scroll', () => {
+    const bTop = body.getBoundingClientRect().top + window.scrollY;
+    const bH   = body.offsetHeight;
+    const pct  = Math.min(Math.max((window.scrollY - bTop) / bH * 100, 0), 100);
+    bar.style.width = pct + '%';
+  }, { passive: true });
+}
+
+/* ── RENDERIZAR ARTIGO ──────────────────────────────────── */
+function renderHero(n) {
+  const cor1 = n.cor1 || '#050d1f';
+  const cor2 = n.cor2 || '#0f2060';
+  const wrap  = document.getElementById('artHeroWrap');
+
+  if (n.imagem) {
+    wrap.innerHTML = `
+      <div style="position:relative">
+        <img class="art-hero-img" src="${n.imagem}" alt="${n.titulo}" loading="eager"/>
+        <div class="art-hero-overlay"></div>
+        <div class="art-hero-body">
+          ${n.label ? `<div class="art-badge">${n.label}</div>` : ''}
+          <h1 class="art-title">${n.titulo}</h1>
+          <div class="art-meta-row">${metaHTML(n)}</div>
+        </div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="art-hero-grad" style="background:linear-gradient(135deg,${cor1} 0%,${cor2} 100%)">
+        <i class="fa-solid ${n.icon || 'fa-newspaper'} art-hero-grad-icon"></i>
+        <div class="art-hero-overlay"></div>
+        <div class="art-hero-body">
+          ${n.label ? `<div class="art-badge">${n.label}</div>` : ''}
+          <h1 class="art-title">${n.titulo}</h1>
+          <div class="art-meta-row">${metaHTML(n)}</div>
+        </div>
+      </div>`;
+  }
+}
+
+function metaHTML(n) {
+  return [
+    n.data    ? `<span class="art-meta-item"><i class="fa-solid fa-calendar-days"></i>${n.data}</span>` : '',
+    n.autor   ? `<span class="art-meta-item"><i class="fa-solid fa-user"></i>${n.autor}</span>` : '',
+    n.leitura ? `<span class="art-meta-item"><i class="fa-solid fa-clock"></i>${n.leitura} de leitura</span>` : '',
+  ].join('');
+}
+
+function renderSidebar(n) {
+  const items = [
+    n.data    ? `<div class="sidebar-meta-item"><i class="fa-solid fa-calendar-days"></i>${n.data}</div>` : '',
+    n.autor   ? `<div class="sidebar-meta-item"><i class="fa-solid fa-user"></i>${n.autor}</div>` : '',
+    n.leitura ? `<div class="sidebar-meta-item"><i class="fa-solid fa-clock"></i>${n.leitura} de leitura</div>` : '',
+    n.label   ? `<div class="sidebar-meta-item"><i class="fa-solid fa-tag"></i>${n.label}</div>` : '',
+  ].join('');
+  document.getElementById('sidebarMeta').innerHTML = items;
+}
+
+function renderBody(n) {
+  const body = document.getElementById('artBody');
+  if (n.conteudo) {
+    body.innerHTML = n.conteudo;
+  } else if (n.resumo) {
+    body.innerHTML = `
+      <p style="font-size:1.05rem;line-height:1.9;color:rgba(255,255,255,.78)">${n.resumo}</p>
+      <div style="margin-top:2.5rem;padding:1.8rem;background:var(--charcoal);border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa-solid fa-file-lines" style="font-size:1.8rem;color:var(--blue-lt);opacity:.4;display:block;margin-bottom:.8rem"></i>
+        <p style="color:var(--gray);font-size:.85rem">O conteúdo completo estará disponível em breve.</p>
+      </div>`;
+  } else {
+    body.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray)">
+      <i class="fa-solid fa-file-lines" style="font-size:2rem;opacity:.2;display:block;margin-bottom:1rem"></i>
+      <p style="font-size:.88rem">Conteúdo em breve.</p>
+    </div>`;
+  }
+}
+
+function renderTags(n) {
+  const tags = n.tags || (n.label ? [n.label] : []);
+  if (!tags.length) return;
+  document.getElementById('artTags').innerHTML = tags.map(t => `<span class="art-tag">${t}</span>`).join('');
+}
+
+function renderRelacionadas(items) {
+  if (!items.length) return;
+  const grid = document.getElementById('relGrid');
+  grid.innerHTML = items.map(n => {
+    const href = `/noticias.html?slug=${encodeURIComponent(sOf(n))}`;
+    const thumb = n.imagem
+      ? `<img class="rel-thumb-img" src="${n.imagem}" alt="${n.titulo}" loading="lazy"/>`
+      : `<div class="rel-thumb-grad" style="background:linear-gradient(135deg,${n.cor1||'#050d1f'} 0%,${n.cor2||'#0f2060'} 100%)"><i class="fa-solid ${n.icon||'fa-newspaper'}"></i></div>`;
+    return `
+    <a class="rel-card" href="${href}">
+      <div class="rel-thumb">
+        ${thumb}
+        <div class="rel-overlay"></div>
+        ${n.label ? `<span class="rel-badge">${n.label}</span>` : ''}
+      </div>
+      <div class="rel-body">
+        <div class="rel-title">${n.titulo}</div>
+        <div class="rel-meta">
+          ${n.data    ? `<span><i class="fa-solid fa-calendar-days"></i>${n.data}</span>` : ''}
+          ${n.leitura ? `<span><i class="fa-solid fa-clock"></i>${n.leitura}</span>` : ''}
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+  document.getElementById('relBlock').style.display = 'block';
+}
+
+function setMeta(n, url) {
+  const titulo = n.titulo || 'Notícia';
+  const desc   = n.resumo || titulo;
+  document.getElementById('pgTitle').textContent   = titulo + ' — IMPERSILVA TECH';
+  document.getElementById('metaDesc').content      = desc;
+  document.getElementById('ogTitle').content       = titulo + ' — IMPERSILVA TECH';
+  document.getElementById('ogDesc').content        = desc;
+  document.getElementById('ogUrl').content         = url;
+  document.getElementById('canonical').href        = url;
+  document.getElementById('twTitle').content       = titulo + ' — IMPERSILVA TECH';
+  document.getElementById('twDesc').content        = desc;
+  if (n.imagem) document.getElementById('ogImg').content = n.imagem;
+}
+
+function setShare(n, url) {
+  const msg   = encodeURIComponent(n.titulo + '\n' + url);
+  const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+  const lkUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+  document.getElementById('shareWA').href = 'https://wa.me/?text=' + msg;
+  document.getElementById('shareFB').href = fbUrl;
+  document.getElementById('shareLK').href = lkUrl;
+  currentUrl = url;
+}
+
+/* ── INICIAR ────────────────────────────────────────────── */
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const s      = params.get('slug');
+  if (!s) { location.href = '/index.html'; return; }
+
+  const url = `${SITE}/noticias.html?slug=${encodeURIComponent(s)}`;
+  let art = null, lista = [];
+
+  /* 1. Endpoint directo */
+  try { art = await fetch(API + '/api/site/noticias/' + encodeURIComponent(s), { signal: AbortSignal.timeout(6000) }).then(r => r.ok ? r.json() : null); } catch(_){}
+
+  /* 2. Lista completa */
+  if (!art) {
+    try {
+      const raw  = await fetch(API + '/api/site/noticias', { signal: AbortSignal.timeout(6000) }).then(r => r.ok ? r.json() : null);
+      lista = Array.isArray(raw) ? raw : (raw?.noticias || []);
+      art   = lista.find(n => sOf(n) === s);
+    } catch(_){}
+  }
+
+  /* 3. Home endpoint */
+  if (!art) {
+    try {
+      const raw  = await fetch(API + '/api/site/home', { signal: AbortSignal.timeout(6000) }).then(r => r.ok ? r.json() : null);
+      lista = raw?.noticias || [];
+      art   = lista.find(n => sOf(n) === s);
+    } catch(_){}
+  }
+
+  /* 4. Fallback estático */
+  if (!art) { art = NEWS_FB.find(n => sOf(n) === s); lista = NEWS_FB; }
+  if (!art) { location.href = '/index.html'; return; }
+
+  /* Renderizar */
+  setMeta(art, url);
+  setShare(art, url);
+  renderHero(art);
+  renderSidebar(art);
+  renderBody(art);
+  renderTags(art);
+
+  /* Relacionadas */
+  const outros = (lista.length ? lista : NEWS_FB).filter(n => sOf(n) !== s).slice(0, 3);
+  renderRelacionadas(outros);
+
+  initProgress();
+  observeReveals();
+}
+
+init();
+
+/* ── SERVICE WORKER ─────────────────────────────────────── */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+/* ── PAUSAR CIRCUIT FORA DO VIEWPORT ────────────────────── */
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  document.querySelectorAll('.circuit-svg').forEach(svg => {
+    new IntersectionObserver(([e]) => {
+      svg.querySelectorAll('[class^="cp"],[class*=" cp"]').forEach(el => {
+        el.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
+      });
+    }, { rootMargin: '100px' }).observe(svg);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Editor de Loja — IMPERSILVA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a16;--bg2:#10101f;--bg3:#16162a;
+  --card:#1c1c32;--card2:#22223a;
+  --border:#2a2a45;--border-light:#333355;
+  --pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;
+  --yellow:#ffd166;--red:#ff4757;--blue:#3d9eff;--orange:#ff9f43;
+  --white:#f0f0ff;--muted:#8888aa;--muted2:#44445a;
+  --ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;
+  --r:10px;--r2:15px;--r3:20px;
+  --tr:all .2s cubic-bezier(.4,0,.2,1);
+  --grad:linear-gradient(135deg,#ff6b9d,#b14ae8);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.2);
+  --shadow-md:0 4px 16px rgba(0,0,0,.3);
+  --sidebar-w:220px;--topbar-h:52px;--prevbar-h:54px;
+  --actionbar-h:60px;--mobnav-h:58px;
+}
+[data-theme="light"]{
+  --bg:#f0f4ff;--bg2:#fff;--bg3:#e8eef8;
+  --card:#fff;--card2:#f8faff;
+  --border:#dde5f5;--border-light:#e8eef8;
+  --white:#0a0e1a;--muted:#6070a0;--muted2:#c0c8e0;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;-webkit-text-size-adjust:100%}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);display:flex;flex-direction:column;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.l-box{width:100%;max-width:360px}
+.l-logo{font-family:var(--ft);font-size:1.9rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:2px}
+.l-sub{text-align:center;font-size:.72rem;color:var(--muted);margin-bottom:20px}
+.l-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r3);padding:24px 20px}
+.l-card h2{font-family:var(--ft);font-size:.92rem;color:var(--pink);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── APP ── */
+#editorApp{display:none;flex:1;overflow:hidden;flex-direction:column}
+#editorApp.active{display:flex}
+
+/* ── TOPBAR ── */
+.e-tb{background:var(--bg2);border-bottom:1px solid var(--border);height:var(--topbar-h);padding:0 14px;display:flex;align-items:center;gap:9px;flex-shrink:0;z-index:50}
+.e-tb-logo{font-family:var(--ft);font-size:1.05rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0}
+.e-tb-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.e-tb-tag{font-size:.62rem;color:var(--muted);flex-shrink:0;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.e-tb-nome{font-size:.8rem;font-weight:700;color:var(--white);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.e-tb-btn{width:30px;height:30px;border-radius:var(--r);background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;cursor:pointer;color:var(--muted);transition:var(--tr);flex-shrink:0}
+.e-tb-btn:hover{border-color:var(--pink);color:var(--pink)}
+.e-tb-btn.danger{color:var(--red);border-color:rgba(255,71,87,.3)}
+.e-tb-btn.danger:hover{background:rgba(255,71,87,.08)}
+
+/* ── PREVIEW STRIP ── */
+.e-prev{height:var(--prevbar-h);background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:11px;flex-shrink:0}
+.e-prev-logo{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff;overflow:hidden;flex-shrink:0;border:2px solid transparent}
+.e-prev-logo img{width:100%;height:100%;object-fit:cover;display:none}
+.e-prev-info{flex:1;overflow:hidden}
+.e-prev-nome{font-family:var(--ft);font-size:.85rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.e-prev-url{font-size:.6rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.e-prev-swatches{display:flex;gap:4px;flex-shrink:0}
+.e-prev-sw{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.15);cursor:pointer;transition:var(--tr)}
+.e-prev-sw:hover{transform:scale(1.25)}
+.e-prev-link{color:var(--teal);font-size:.68rem;text-decoration:none;font-family:var(--ft);flex-shrink:0;display:flex;align-items:center;gap:4px;transition:var(--tr)}
+.e-prev-link:hover{color:#fff}
+
+/* ── BODY ── */
+.e-body{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.e-side{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;flex-shrink:0;padding:6px 0 20px}
+@media(max-width:680px){.e-side{display:none}}
+.e-nav-grp{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted2);padding:10px 14px 3px}
+.e-nav-div{height:1px;background:var(--border);margin:5px 12px}
+.e-nav-btn{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;color:var(--muted);font-size:.76rem;transition:var(--tr);border:none;background:none;width:100%;text-align:left;font-family:var(--fb)}
+.e-nav-btn i{width:15px;font-size:.8rem;flex-shrink:0;text-align:center}
+.e-nav-btn:hover{color:var(--pink);background:rgba(255,107,157,.06)}
+.e-nav-btn.active{color:var(--pink);background:rgba(255,107,157,.1);border-left:3px solid var(--pink);padding-left:11px}
+
+/* ── MAIN ── */
+.e-main{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--actionbar-h) + 12px)}
+@media(max-width:680px){.e-main{padding-bottom:calc(var(--actionbar-h)+var(--mobnav-h)+12px)}}
+.e-wrap{padding:14px;max-width:800px;margin:0 auto}
+
+/* ── SECTION HEADER ── */
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-hd-icon{width:34px;height:34px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0}
+.sec-hd-title{font-family:var(--ft);font-size:1.05rem;color:var(--white)}
+.sec-hd-sub{font-size:.68rem;color:var(--muted);margin-top:1px}
+
+/* ── CARDS ── */
+.ec{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+.ec-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.ec-title i{color:var(--pink)}
+
+/* ── FORM ── */
+.fg{margin-bottom:11px}
+.fg:last-child{margin-bottom:0}
+.fl{display:block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.fi,.fta,.fsel{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--white);border-radius:var(--r);padding:8px 11px;font-size:.8rem;font-family:var(--fb);transition:var(--tr);outline:none;-webkit-appearance:none;appearance:none}
+.fi:focus,.fta:focus,.fsel:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,107,157,.12)}
+.fi::placeholder,.fta::placeholder{color:var(--muted2)}
+.fta{resize:vertical;min-height:76px;line-height:1.5}
+.fsel{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238888aa'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:480px){.fr,.fr3{grid-template-columns:1fr}}
+.fhint{font-size:.62rem;color:var(--muted);margin-top:3px;line-height:1.4}
+
+/* ── SWITCH ── */
+.sw-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.sw-row:last-of-type{border-bottom:none}
+.sw-info{flex:1}
+.sw-lbl{font-size:.78rem;font-weight:600;color:var(--white)}
+.sw-hint{font-size:.64rem;color:var(--muted);margin-top:1px}
+.sw{position:relative;display:inline-block;width:38px;height:21px;flex-shrink:0}
+.sw input{display:none}
+.sw-sl{position:absolute;inset:0;background:var(--muted2);border-radius:10px;cursor:pointer;transition:var(--tr)}
+.sw-sl:before{content:'';position:absolute;height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:var(--tr)}
+.sw input:checked+.sw-sl{background:var(--pink)}
+.sw input:checked+.sw-sl:before{transform:translateX(17px)}
+
+/* ── COLOR PICKER ── */
+.cp-wrap{display:flex;align-items:center;gap:9px}
+.cp-sw{width:34px;height:34px;border-radius:var(--r);border:2px solid var(--border-light);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;transition:var(--tr)}
+.cp-sw:hover{border-color:var(--pink);transform:scale(1.05)}
+.cp-sw input[type=color]{position:absolute;inset:-4px;opacity:0;cursor:pointer;width:calc(100%+8px);height:calc(100%+8px);border:none;padding:0}
+.cp-hex{flex:1;font-size:.78rem;font-family:'Courier New',monospace;background:var(--bg2);border:1px solid var(--border);color:var(--white);border-radius:var(--r);padding:6px 10px;outline:none;transition:var(--tr)}
+.cp-hex:focus{border-color:var(--pink)}
+.grad-prev{height:6px;border-radius:3px;margin-top:6px}
+
+/* ── IMAGE UPLOAD ── */
+.img-zone{border:2px dashed var(--border);border-radius:var(--r2);padding:18px;text-align:center;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;background:var(--bg3)}
+.img-zone:hover,.img-zone.drag{border-color:var(--pink);background:rgba(255,107,157,.04)}
+.img-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:1}
+.img-zone-icon{font-size:1.4rem;color:var(--muted);margin-bottom:5px}
+.img-zone-txt{font-size:.7rem;color:var(--muted)}
+.img-zone-txt span{color:var(--pink)}
+.img-zone-hint{font-size:.6rem;color:var(--muted2);margin-top:2px}
+.img-zone-spinner{display:none;align-items:center;justify-content:center;gap:8px;font-size:.72rem;color:var(--muted)}
+.img-prev-wrap{margin-top:10px;display:none;position:relative;display:none;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r)}
+.img-prev-wrap.show{display:flex}
+.img-prev-wrap img{max-height:52px;max-width:120px;border-radius:6px;object-fit:contain}
+.img-prev-url{flex:1;font-size:.62rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.img-prev-rm{width:22px;height:22px;border-radius:50%;background:rgba(255,71,87,.15);border:1px solid rgba(255,71,87,.3);color:var(--red);font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:var(--tr)}
+.img-prev-rm:hover{background:rgba(255,71,87,.3)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:var(--r2);font-family:var(--ft);font-size:.8rem;cursor:pointer;transition:var(--tr);border:none;text-decoration:none;white-space:nowrap;line-height:1}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--grad);color:#fff}
+.btn-primary:hover:not(:disabled){opacity:.88}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover:not(:disabled){border-color:var(--pink);color:var(--pink)}
+.btn-danger{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:var(--red)}
+.btn-danger:hover:not(:disabled){background:rgba(255,71,87,.2)}
+.btn-teal{background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.3);color:var(--teal)}
+.btn-full{width:100%}
+.btn-sm{padding:6px 12px;font-size:.72rem}
+
+/* ── ACTION BAR ── */
+.e-action{position:fixed;bottom:0;left:0;right:0;height:var(--actionbar-h);background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px;z-index:40}
+@media(max-width:680px){.e-action{bottom:var(--mobnav-h)}}
+
+/* ── MOBILE NAV ── */
+.e-mobnav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mobnav-h);background:var(--bg2);border-top:1px solid var(--border);z-index:50}
+@media(max-width:680px){.e-mobnav{display:flex}}
+.e-mob-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:var(--fb);padding:5px 0;transition:var(--tr)}
+.e-mob-btn i{font-size:1.08rem}
+.e-mob-btn span{font-size:.56rem}
+.e-mob-btn.active{color:var(--pink)}
+
+/* ── MORE SHEET ── */
+.more-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-end}
+.more-overlay.open{display:flex;animation:fadeIn .2s ease}
+.more-sheet{background:var(--bg2);border-radius:20px 20px 0 0;padding:12px 12px 24px;width:100%;max-height:65vh;overflow-y:auto}
+.more-handle{width:30px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+.more-title{font-family:var(--ft);font-size:.95rem;color:var(--white);margin-bottom:10px;text-align:center}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.more-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 6px;text-align:center;cursor:pointer;transition:var(--tr)}
+.more-btn:hover,.more-btn.active{border-color:var(--pink);background:rgba(255,107,157,.06)}
+.more-btn i{display:block;font-size:1rem;color:var(--pink);margin-bottom:4px}
+.more-btn span{font-size:.68rem;color:var(--white)}
+
+/* ── INFO BOX ── */
+.ib{padding:10px 13px;border-radius:var(--r);font-size:.71rem;line-height:1.6;display:flex;gap:9px;align-items:flex-start;margin-bottom:11px}
+.ib i{flex-shrink:0;margin-top:2px}
+.ib.warn{background:rgba(255,209,102,.06);border:1px solid rgba(255,209,102,.25);color:var(--yellow)}
+.ib.info{background:rgba(61,158,255,.06);border:1px solid rgba(61,158,255,.25);color:var(--blue)}
+.ib.teal{background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.25);color:var(--teal)}
+
+/* ── TOAST ── */
+#toasts{position:fixed;top:66px;right:12px;z-index:9998;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.toast{background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:9px 14px;font-size:.74rem;color:var(--white);box-shadow:var(--shadow-md);animation:fadeUp .2s ease;display:flex;align-items:center;gap:8px;max-width:290px}
+.toast.ok{border-color:rgba(6,214,160,.35);background:rgba(6,214,160,.07)}
+.toast.err{border-color:rgba(255,71,87,.35);background:rgba(255,71,87,.07)}
+.toast.inf{border-color:rgba(61,158,255,.35);background:rgba(61,158,255,.07)}
+
+/* ── CONFIRM ── */
+.conf-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.conf-ov.open{display:flex}
+.conf-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r3);padding:22px;max-width:320px;width:100%}
+.conf-title{font-family:var(--ft);font-size:.98rem;color:var(--white);margin-bottom:7px}
+.conf-msg{font-size:.74rem;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.conf-btns{display:flex;gap:8px}
+.conf-btns .btn{flex:1}
+
+/* ── HOURS GRID ── */
+.hgrid{display:grid;grid-template-columns:56px 1fr;gap:8px 10px;align-items:center}
+.hday{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+
+/* ── DOMAIN BOX ── */
+.dom-url{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;font-size:.76rem;font-family:'Courier New',monospace;color:var(--teal);display:flex;align-items:center;gap:9px;margin-bottom:10px;overflow:hidden}
+.dom-url i{color:var(--muted);flex-shrink:0}
+.dom-url a{flex:1;color:inherit;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dom-url a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="l-box">
+    <div class="l-logo">IMPERSILVA</div>
+    <div class="l-sub">Editor de Loja</div>
+    <div class="l-card">
+      <h2><i class="fa-solid fa-pen-ruler"></i> Acesso ao Editor</h2>
+      <div id="lSpinner" style="display:flex;align-items:center;gap:10px;padding:10px 0">
+        <div class="spinner"></div>
+        <span id="lMsg" style="font-size:.74rem;color:var(--muted)">A verificar acesso...</span>
+      </div>
+      <div id="lForm" style="display:none">
+        <div class="fg">
+          <label class="fl">Token de acesso</label>
+          <input class="fi" type="password" id="lToken" placeholder="Cole aqui o token"/>
+        </div>
+        <div id="lErr" style="font-size:.7rem;color:var(--red);min-height:16px;margin-bottom:8px"></div>
+        <button class="btn btn-primary btn-full" onclick="login()">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
+        </button>
+        <div style="text-align:center;margin-top:11px">
+          <a href="verificar-site.html" style="font-size:.68rem;color:var(--pink);text-decoration:none">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="editorApp">
+
+  <!-- TOPBAR -->
+  <div class="e-tb">
+    <div class="e-tb-logo">IMPERSILVA</div>
+    <div class="e-tb-sep"></div>
+    <div class="e-tb-tag">Editor</div>
+    <div class="e-tb-sep"></div>
+    <div class="e-tb-nome" id="tbNome">—</div>
+    <button class="e-tb-btn" onclick="toggleTheme()" title="Tema claro/escuro"><i class="fa-solid fa-circle-half-stroke"></i></button>
+    <button class="e-tb-btn" onclick="viewSite()" title="Ver loja"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+    <button class="e-tb-btn danger" onclick="logout()" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+  </div>
+
+  <!-- PREVIEW STRIP -->
+  <div class="e-prev">
+    <div class="e-prev-logo" id="pLogo">
+      <img id="pLogoImg" alt="logo"/>
+      <i class="fa-solid fa-store" id="pLogoIcon"></i>
+    </div>
+    <div class="e-prev-info">
+      <div class="e-prev-nome" id="pNome">Nome da loja</div>
+      <div class="e-prev-url" id="pUrl">sem URL</div>
+    </div>
+    <div class="e-prev-swatches">
+      <div class="e-prev-sw" id="pSwP" title="Cor primária" onclick="navigate('visual')"></div>
+      <div class="e-prev-sw" id="pSwS" title="Cor secundária" onclick="navigate('visual')"></div>
+    </div>
+    <a class="e-prev-link" id="pLink" href="#" target="_blank" rel="noopener" style="display:none">
+      <i class="fa-solid fa-globe"></i> Ver loja
+    </a>
+  </div>
+
+  <!-- BODY -->
+  <div class="e-body">
+
+    <!-- SIDEBAR -->
+    <nav class="e-side">
+      <div class="e-nav-grp">Principal</div>
+      <button class="e-nav-btn active" data-s="identidade" onclick="navigate('identidade')"><i class="fa-solid fa-store"></i>Identidade</button>
+      <button class="e-nav-btn" data-s="visual" onclick="navigate('visual')"><i class="fa-solid fa-palette"></i>Visual & Marca</button>
+      <button class="e-nav-btn" data-s="contactos" onclick="navigate('contactos')"><i class="fa-solid fa-phone"></i>Contactos</button>
+      <button class="e-nav-btn" data-s="entrega" onclick="navigate('entrega')"><i class="fa-solid fa-truck"></i>Entrega</button>
+      <button class="e-nav-btn" data-s="horarios" onclick="navigate('horarios')"><i class="fa-solid fa-clock"></i>Horários</button>
+      <div class="e-nav-div"></div>
+      <div class="e-nav-grp">Conteúdo</div>
+      <button class="e-nav-btn" data-s="homepage" onclick="navigate('homepage')"><i class="fa-solid fa-house"></i>Homepage</button>
+      <button class="e-nav-btn" data-s="paginas" onclick="navigate('paginas')"><i class="fa-solid fa-file-lines"></i>Páginas</button>
+      <div class="e-nav-div"></div>
+      <div class="e-nav-grp">Avançado</div>
+      <button class="e-nav-btn" data-s="notificacoes" onclick="navigate('notificacoes')"><i class="fa-solid fa-bell"></i>Notificações</button>
+      <button class="e-nav-btn" data-s="seo" onclick="navigate('seo')"><i class="fa-solid fa-magnifying-glass"></i>SEO</button>
+      <button class="e-nav-btn" data-s="referidos" onclick="navigate('referidos')"><i class="fa-solid fa-users"></i>Referidos</button>
+      <button class="e-nav-btn" data-s="dominio" onclick="navigate('dominio')"><i class="fa-solid fa-globe"></i>Domínio</button>
+      <button class="e-nav-btn" data-s="seguranca" onclick="navigate('seguranca')"><i class="fa-solid fa-shield"></i>Segurança</button>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="e-main">
+      <div class="e-wrap" id="eWrap"></div>
+    </main>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="e-action">
+    <button class="btn btn-outline" id="btnSave" onclick="saveSection()" style="flex:1">
+      <i class="fa-solid fa-floppy-disk"></i> Guardar
+    </button>
+    <button class="btn btn-primary" id="btnPublish" onclick="publishAll()" style="flex:2">
+      <i class="fa-solid fa-rocket"></i> Guardar &amp; Publicar
+    </button>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="e-mobnav">
+    <button class="e-mob-btn active" data-s="identidade" onclick="navigate('identidade')"><i class="fa-solid fa-store"></i><span>Loja</span></button>
+    <button class="e-mob-btn" data-s="visual" onclick="navigate('visual')"><i class="fa-solid fa-palette"></i><span>Visual</span></button>
+    <button class="e-mob-btn" data-s="contactos" onclick="navigate('contactos')"><i class="fa-solid fa-phone"></i><span>Contactos</span></button>
+    <button class="e-mob-btn" data-s="homepage" onclick="navigate('homepage')"><i class="fa-solid fa-house"></i><span>Homepage</span></button>
+    <button class="e-mob-btn" onclick="openMore()"><i class="fa-solid fa-ellipsis"></i><span>Mais</span></button>
+  </div>
+
+  <!-- MORE SHEET -->
+  <div class="more-overlay" id="moreOv" onclick="if(event.target===this)closeMore()">
+    <div class="more-sheet">
+      <div class="more-handle"></div>
+      <div class="more-title">Mais secções</div>
+      <div class="more-grid">
+        <button class="more-btn" data-s="entrega" onclick="navMore('entrega')"><i class="fa-solid fa-truck"></i><span>Entrega</span></button>
+        <button class="more-btn" data-s="horarios" onclick="navMore('horarios')"><i class="fa-solid fa-clock"></i><span>Horários</span></button>
+        <button class="more-btn" data-s="paginas" onclick="navMore('paginas')"><i class="fa-solid fa-file-lines"></i><span>Páginas</span></button>
+        <button class="more-btn" data-s="notificacoes" onclick="navMore('notificacoes')"><i class="fa-solid fa-bell"></i><span>Notificações</span></button>
+        <button class="more-btn" data-s="seo" onclick="navMore('seo')"><i class="fa-solid fa-magnifying-glass"></i><span>SEO</span></button>
+        <button class="more-btn" data-s="referidos" onclick="navMore('referidos')"><i class="fa-solid fa-users"></i><span>Referidos</span></button>
+        <button class="more-btn" data-s="dominio" onclick="navMore('dominio')"><i class="fa-solid fa-globe"></i><span>Domínio</span></button>
+        <button class="more-btn" data-s="seguranca" onclick="navMore('seguranca')"><i class="fa-solid fa-shield"></i><span>Segurança</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="conf-ov" id="confOv">
+  <div class="conf-box">
+    <div class="conf-title" id="confTitle"></div>
+    <div class="conf-msg" id="confMsg"></div>
+    <div class="conf-btns">
+      <button class="btn btn-outline" onclick="closeConf()">Cancelar</button>
+      <button class="btn btn-danger" id="confOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const API = (window.SITE_CONFIG && window.SITE_CONFIG.api_url)
+  ? window.SITE_CONFIG.api_url
+  : (localStorage.getItem('editor_api') || '');
+
+const S = { token:'', loja:{}, sec:'identidade' };
+
+/* ══════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const esc = v => String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const gv  = id => $(id)?.value?.trim() || null;
+const gn  = id => parseFloat($(id)?.value) || 0;
+const gc  = id => !!($(id)?.checked);
+
+function toast(msg, type='ok', ms=3400){
+  const c=$('toasts'), d=document.createElement('div');
+  d.className='toast '+type; d.innerHTML=msg;
+  c.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity .25s';setTimeout(()=>d.remove(),260);},ms);
+}
+function bb(btn){ if(!btn||btn.disabled)return btn; btn.disabled=true; btn._h=btn.innerHTML; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; return btn; }
+function bd(btn){ if(!btn)return; btn.disabled=false; if(btn._h)btn.innerHTML=btn._h; }
+
+/* ══════════════════════════════════════════════
+   API HELPER
+══════════════════════════════════════════════ */
+async function api(path, opts={}){
+  const h={'Content-Type':'application/json'};
+  if(S.token) h['Authorization']='Bearer '+S.token;
+  const r = await fetch(API+path, {...opts, headers:{...h,...(opts.headers||{})}});
+  const d = await r.json().catch(()=>({}));
+  if(d.erro||!r.ok) throw new Error(d.erro||d.error||'Erro '+r.status);
+  return d;
+}
+
+/* ══════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════ */
+async function login(){
+  const tk = ($('lToken')?.value||'').trim();
+  if(!tk){ $('lErr').textContent='Insere o token.'; return; }
+  $('lSpinner').style.display='flex'; $('lForm').style.display='none';
+  $('lMsg').textContent='A verificar...';
+  try{
+    const r = await fetch(API+'/api/loja',{headers:{'Authorization':'Bearer '+tk}});
+    const d = await r.json();
+    if(d.erro||!r.ok) throw new Error(d.erro||'Token inválido ou expirado');
+    S.token=tk; S.loja=d;
+    localStorage.setItem('editor_tk', tk);
+    initEditor();
+  }catch(e){
+    $('lSpinner').style.display='none'; $('lForm').style.display='block';
+    $('lErr').textContent=e.message;
+  }
+}
+
+function autoLogin(){
+  const tk = sessionStorage.getItem('loja_admin_tok')
+    || sessionStorage.getItem('admin_loja_token')
+    || localStorage.getItem('editor_tk')
+    || localStorage.getItem('adm_tk');
+  if(tk){ $('lToken').value=tk; login(); }
+  else{ $('lSpinner').style.display='none'; $('lForm').style.display='block'; }
+}
+
+function logout(){
+  localStorage.removeItem('editor_tk');
+  S.token=''; S.loja={};
+  $('editorApp').classList.remove('active');
+  $('loginScreen').style.display='flex';
+  $('lSpinner').style.display='none'; $('lForm').style.display='block'; $('lErr').textContent='';
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+function initEditor(){
+  $('loginScreen').style.display='none';
+  $('editorApp').style.display='flex';
+  $('editorApp').classList.add('active');
+  $('tbNome').textContent = S.loja.nome||'—';
+  updatePreview();
+  navigate('identidade');
+}
+
+function toggleTheme(){
+  const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('editor_theme',t);
+}
+
+function viewSite(){
+  const u=S.loja.url_site||S.loja.url||'';
+  if(u) window.open(u,'_blank'); else toast('URL da loja não configurada','inf');
+}
+
+/* ══════════════════════════════════════════════
+   PREVIEW STRIP
+══════════════════════════════════════════════ */
+function updatePreview(){
+  const l=S.loja;
+  $('pNome').textContent = l.nome||'Nome da loja';
+  const u=l.url_site||l.url||'';
+  $('pUrl').textContent = u||'sem URL';
+  const lnk=$('pLink');
+  if(u){ lnk.href=u; lnk.style.display='flex'; } else lnk.style.display='none';
+  const p=l.cor_primaria||'#ff6b9d', sc=l.cor_secundaria||'#b14ae8';
+  $('pSwP').style.background=p; $('pSwS').style.background=sc;
+  $('pLogo').style.background=p+'18'; $('pLogo').style.borderColor=p+'55'; $('pLogo').style.border='2px solid';
+  if(l.logo_url){ $('pLogoImg').src=l.logo_url; $('pLogoImg').style.display='block'; $('pLogoIcon').style.display='none'; }
+  else{ $('pLogoImg').style.display='none'; $('pLogoIcon').style.display='block'; }
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function navigate(sec){
+  S.sec=sec;
+  document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('active',b.dataset.s===sec));
+  render(sec);
+  $('eWrap').parentElement.scrollTop=0;
+}
+function navMore(sec){ closeMore(); navigate(sec); }
+function openMore(){ $('moreOv').classList.add('open'); }
+function closeMore(){ $('moreOv').classList.remove('open'); }
+
+/* ══════════════════════════════════════════════
+   SECTIONS REGISTRY
+══════════════════════════════════════════════ */
+const SECS={
+  identidade:  {icon:'fa-store',   color:'var(--pink)',   label:'Identidade',    render:rIdentidade,   save:sIdentidade},
+  visual:      {icon:'fa-palette', color:'var(--purple)', label:'Visual & Marca', render:rVisual,       save:sVisual},
+  contactos:   {icon:'fa-phone',   color:'var(--teal)',   label:'Contactos',     render:rContactos,    save:sContactos},
+  entrega:     {icon:'fa-truck',   color:'var(--orange)', label:'Entrega',       render:rEntrega,      save:sEntrega},
+  horarios:    {icon:'fa-clock',   color:'var(--blue)',   label:'Horários',      render:rHorarios,     save:sHorarios},
+  homepage:    {icon:'fa-house',   color:'var(--pink)',   label:'Homepage',      render:rHomepage,     save:sHomepage},
+  paginas:     {icon:'fa-file-lines',color:'var(--muted)',label:'Páginas',      render:rPaginas,      save:sPaginas},
+  notificacoes:{icon:'fa-bell',    color:'var(--yellow)', label:'Notificações',  render:rNotifs,       save:sNotifs},
+  seo:         {icon:'fa-magnifying-glass',color:'var(--teal)',label:'SEO',      render:rSeo,          save:sSeo},
+  referidos:   {icon:'fa-users',   color:'var(--purple)', label:'Referidos',    render:rReferidos,    save:sReferidos},
+  dominio:     {icon:'fa-globe',   color:'var(--blue)',   label:'Domínio',      render:rDominio,      save:()=>null},
+  seguranca:   {icon:'fa-shield',  color:'var(--red)',    label:'Segurança',    render:rSeguranca,    save:()=>null},
+};
+
+function render(sec){
+  const s=SECS[sec]; if(!s)return;
+  $('eWrap').innerHTML=`
+    <div class="sec-hd">
+      <div class="sec-hd-icon" style="background:${s.color}18;color:${s.color}">
+        <i class="fa-solid ${s.icon}"></i>
+      </div>
+      <div>
+        <div class="sec-hd-title">${s.label}</div>
+      </div>
+    </div>
+    ${s.render()}
+  `;
+  initZones(); initCPs();
+}
+
+/* ══════════════════════════════════════════════
+   IMAGE UPLOAD HELPERS
+══════════════════════════════════════════════ */
+function zoneHtml(key, previewId, existUrl, hint, urlFieldId){
+  urlFieldId = urlFieldId||('cfg_'+key);
+  const hasImg = !!existUrl;
+  return `
+    <div class="img-zone" id="zone_${key}" ondragover="zoneDrag(event,'zone_${key}')" ondragleave="zoneLeave('zone_${key}')" ondrop="zoneDrop(event,'${key}','${previewId}','${urlFieldId}')">
+      <input type="file" accept="image/*" onchange="handleUpload(this,'${key}','${previewId}','${urlFieldId}')"/>
+      <div class="img-zone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+      <div class="img-zone-txt">Arrasta ou clica para <span>carregar</span></div>
+      <div class="img-zone-hint">${esc(hint)}</div>
+      <div class="img-zone-spinner" id="spin_${key}"><div class="spinner" style="width:18px;height:18px;border-width:2px"></div> A carregar...</div>
+    </div>
+    <div class="img-prev-wrap${hasImg?' show':''}" id="prev_${previewId}">
+      <img src="${esc(existUrl||'')}" id="prevImg_${previewId}" style="max-height:48px;max-width:120px;border-radius:6px;object-fit:contain"/>
+      <span class="img-prev-url" id="prevUrl_${previewId}">${esc(existUrl||'')}</span>
+      <button class="img-prev-rm" onclick="removeImg('${key}','${previewId}','${urlFieldId}')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  `;
+}
+
+function zoneDrag(e,id){e.preventDefault();$(id)?.classList.add('drag');}
+function zoneLeave(id){$(id)?.classList.remove('drag');}
+function zoneDrop(e,key,pid,fid){e.preventDefault();$(('zone_'+key))?.classList.remove('drag');const f=e.dataTransfer?.files?.[0];if(f)handleUpload({files:[f]},key,pid,fid);}
+
+async function handleUpload(input, key, previewId, urlFieldId){
+  const f=input.files?.[0]; if(!f)return;
+  if(f.size>8*1024*1024){toast('Ficheiro muito grande (max 8MB)','err');return;}
+  const zone=$('zone_'+key), spin=$('spin_'+key);
+  if(zone){zone.style.opacity='.4';zone.style.pointerEvents='none';}
+  if(spin)spin.style.display='flex';
+  try{
+    const b64=await toB64(f);
+    const fname=key+'-'+Date.now()+'.'+f.name.split('.').pop();
+    let url='';
+    try{
+      const res=await api('/api/upload',{method:'POST',body:JSON.stringify({filename:fname,base64:b64,tipo:key})});
+      url=res.url||res.imagem_url||'';
+    }catch(e1){
+      url=await ghUpload(f,fname);
+    }
+    if(url){ setImgResult(url,previewId,urlFieldId,key); toast('Imagem carregada!','ok'); }
+    else toast('Upload sem URL — cola manualmente','inf');
+  }catch(e){toast('Erro: '+e.message,'err');}
+  finally{if(zone){zone.style.opacity='1';zone.style.pointerEvents='';}if(spin)spin.style.display='none';}
+}
+
+function setImgResult(url,previewId,urlFieldId,key){
+  const fi=$(urlFieldId); if(fi)fi.value=url;
+  const pw=$('prev_'+previewId), pi=$('prevImg_'+previewId), pu=$('prevUrl_'+previewId);
+  if(pw)pw.classList.add('show');
+  if(pi)pi.src=url; if(pu)pu.textContent=url;
+  if(key==='logo'){S.loja.logo_url=url;updatePreview();}
+}
+
+function removeImg(key,previewId,urlFieldId){
+  const pw=$('prev_'+previewId); if(pw)pw.classList.remove('show');
+  const fi=$(urlFieldId); if(fi)fi.value='';
+  if(key==='logo'){S.loja.logo_url='';updatePreview();}
+}
+
+function syncUrl(fid,previewId,key){
+  const u=$(fid)?.value;
+  const pw=$('prev_'+previewId),pi=$('prevImg_'+previewId),pu=$('prevUrl_'+previewId);
+  if(u&&pw){pw.classList.add('show');if(pi)pi.src=u;if(pu)pu.textContent=u;}
+  if(key==='logo'&&u){S.loja.logo_url=u;updatePreview();}
+}
+
+function toB64(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(f);});}
+
+async function ghUpload(file,fname){
+  const l=S.loja;
+  const tk=l.github_token||localStorage.getItem('adm_gh')||'';
+  const user=l.github_user||localStorage.getItem('adm_gh_user')||'';
+  const repo=l.github_repo||localStorage.getItem('adm_gh_repo')||'';
+  if(!tk||!user||!repo)throw new Error('GitHub não configurado — cola o URL directamente');
+  const b64=await toB64(file);
+  const path='assets/brand/'+fname;
+  let sha='';
+  try{const c=await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${path}`,{headers:{'Authorization':'token '+tk}});if(c.ok){const d=await c.json();sha=d.sha||'';}}catch(e){}
+  const body={message:'Upload '+fname,content:b64};if(sha)body.sha=sha;
+  const r=await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${path}`,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json(); if(!r.ok)throw new Error(d.message||'Erro GitHub');
+  return d.content?.download_url||`https://raw.githubusercontent.com/${user}/${repo}/main/${path}`;
+}
+
+function initZones(){
+  document.querySelectorAll('.img-zone').forEach(z=>{
+    z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
+    z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  });
+}
+
+/* ══════════════════════════════════════════════
+   COLOR PICKER HELPERS
+══════════════════════════════════════════════ */
+function initCPs(){}
+function onCI(colorId, swId, hexId, prevSwId){
+  const v=$(colorId)?.value; if(!v)return;
+  const sw=$(swId); if(sw)sw.style.background=v;
+  const hx=$(hexId); if(hx)hx.value=v;
+  const ps=$(prevSwId); if(ps)ps.style.background=v;
+  refreshGrad();
+}
+function onCT(hexId, colorId, swId, prevSwId){
+  const v=$(hexId)?.value||'';
+  if(/^#[0-9a-fA-F]{6}$/.test(v)){
+    const ci=$(colorId); if(ci)ci.value=v;
+    const sw=$(swId); if(sw)sw.style.background=v;
+    const ps=$(prevSwId); if(ps)ps.style.background=v;
+    refreshGrad();
+  }
+}
+function refreshGrad(){
+  const p=$('hxP')?.value||$('cpP')?.value||'#ff6b9d';
+  const s=$('hxS')?.value||$('cpS')?.value||'#b14ae8';
+  const gp=$('gPrev'); if(gp)gp.style.background=`linear-gradient(135deg,${p},${s})`;
+}
+
+/* ══════════════════════════════════════════════
+   SECTION: IDENTIDADE
+══════════════════════════════════════════════ */
+function rIdentidade(){
+  const l=S.loja;
+  const tipos=['loja','restaurante','hotel','servico','outro'];
+  const topts=tipos.map(t=>`<option value="${t}"${l.tipo===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-pen-to-square"></i>Informações Básicas</div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Nome da Loja *</label><input class="fi" id="cNome" value="${esc(l.nome||'')}"/></div>
+        <div class="fg"><label class="fl">Tipo de Negócio</label><select class="fsel" id="cTipo">${topts}</select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Slogan PT</label><input class="fi" id="cSlogan" value="${esc(l.slogan||'')}" placeholder="O melhor da cidade"/></div>
+        <div class="fg"><label class="fl">Slogan EN</label><input class="fi" id="cSloganEn" value="${esc(l.slogan_en||'')}" placeholder="The best in town"/></div>
+      </div>
+      <div class="fg"><label class="fl">Descrição (breve)</label><textarea class="fta" id="cDesc" rows="2" placeholder="Aparece no SEO e partilhas...">${esc(l.descricao||'')}</textarea></div>
+      <div class="fg"><label class="fl">Sobre (página Sobre)</label><textarea class="fta" id="cSobre" rows="4" placeholder="História, missão, valores da loja...">${esc(l.sobre||'')}</textarea></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-coins"></i>Moeda & Identificação</div>
+      <div class="fr3">
+        <div class="fg"><label class="fl">Moeda</label><input class="fi" id="cMoeda" value="${esc(l.moeda||'AOA')}" placeholder="AOA"/></div>
+        <div class="fg"><label class="fl">Símbolo</label><input class="fi" id="cSimbolo" value="${esc(l.simbolo_moeda||'Kz')}" placeholder="Kz"/></div>
+        <div class="fg"><label class="fl">NIF</label><input class="fi" id="cNif" value="${esc(l.nif||'')}" placeholder="000000000"/></div>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-toggle-on"></i>Estado da Loja</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Loja Activa</div><div class="sw-hint">Visível e acessível ao público</div></div><label class="sw"><input type="checkbox" id="cAtiva" ${l.ativa!==0?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Aceitar Convidados</div><div class="sw-hint">Compras sem registo de conta</div></div><label class="sw"><input type="checkbox" id="cConvidados" ${l.aceita_convidados?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="fg" style="margin-top:12px"><label class="fl">Mensagem quando fechada</label><input class="fi" id="cMsgFecho" value="${esc(l.mensagem_fecho||'')}" placeholder="Voltamos em breve!"/></div>
+    </div>
+  `;
+}
+function sIdentidade(){
+  const n=gv('cNome'); if(!n){toast('Nome obrigatório','err');return null;}
+  return {nome:n,tipo:gv('cTipo'),slogan:gv('cSlogan'),slogan_en:gv('cSloganEn'),descricao:gv('cDesc'),sobre:gv('cSobre'),nif:gv('cNif'),moeda:gv('cMoeda')||'AOA',simbolo_moeda:gv('cSimbolo')||'Kz',ativa:gc('cAtiva')?1:0,aceita_convidados:gc('cConvidados')?1:0,mensagem_fecho:gv('cMsgFecho')};
+}
+
+/* ══════════════════════════════════════════════
+   SECTION: VISUAL
+══════════════════════════════════════════════ */
+function rVisual(){
+  const l=S.loja;
+  const p=l.cor_primaria||'#ff6b9d', sc=l.cor_secundaria||'#b14ae8';
+  return `
+    <div class="ib info"><i class="fa-solid fa-circle-info"></i>As cores actualizam o preview aqui em cima em tempo real. Clica em <b>Guardar & Publicar</b> para aplicar na loja.</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-droplet"></i>Cores da Marca</div>
+      <div class="fr">
+        <div class="fg">
+          <label class="fl">Cor Primária</label>
+          <div class="cp-wrap">
+            <div class="cp-sw" id="swP" style="background:${p}"><input type="color" id="cpP" value="${p}" oninput="onCI('cpP','swP','hxP','pSwP')"></div>
+            <input class="cp-hex" id="hxP" value="${p}" maxlength="7" oninput="onCT('hxP','cpP','swP','pSwP')"/>
+          </div>
+          <div class="fhint">Botões, links e destaques</div>
+        </div>
+        <div class="fg">
+          <label class="fl">Cor Secundária</label>
+          <div class="cp-wrap">
+            <div class="cp-sw" id="swS" style="background:${sc}"><input type="color" id="cpS" value="${sc}" oninput="onCI('cpS','swS','hxS','pSwS')"></div>
+            <input class="cp-hex" id="hxS" value="${sc}" maxlength="7" oninput="onCT('hxS','cpS','swS','pSwS')"/>
+          </div>
+          <div class="fhint">Gradientes e acentos</div>
+        </div>
+      </div>
+      <div class="grad-prev" id="gPrev" style="background:linear-gradient(135deg,${p},${sc})"></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-image"></i>Logótipo</div>
+      ${zoneHtml('logo','logo',l.logo_url||'','PNG, SVG — max 2MB','cLogo')}
+      <div class="fg" style="margin-top:9px"><label class="fl">Ou URL directa</label><input class="fi" id="cLogo" value="${esc(l.logo_url||'')}" placeholder="https://..." oninput="syncUrl('cLogo','logo','logo')"/></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-icons"></i>Favicon & Banner</div>
+      <div class="fg">
+        <label class="fl">Favicon (ícone do browser)</label>
+        ${zoneHtml('favicon','fav',l.favicon_url||'','ICO ou PNG 32×32','cFavicon')}
+        <input class="fi" id="cFavicon" value="${esc(l.favicon_url||'')}" placeholder="https://..." style="margin-top:8px" oninput="syncUrl('cFavicon','fav','favicon')"/>
+      </div>
+      <div class="fg" style="margin-top:11px">
+        <label class="fl">Banner da Homepage</label>
+        ${zoneHtml('banner','banner',l.banner_url||'','1200×400px — max 5MB','cBanner')}
+        <input class="fi" id="cBanner" value="${esc(l.banner_url||'')}" placeholder="https://..." style="margin-top:8px" oninput="syncUrl('cBanner','banner','banner')"/>
+      </div>
+    </div>
+  `;
+}
+function sVisual(){
+  return {cor_primaria:gv('hxP')||gv('cpP')||'#ff6b9d',cor_secundaria:gv('hxS')||gv('cpS')||'#b14ae8',logo_url:gv('cLogo'),favicon_url:gv('cFavicon'),banner_url:gv('cBanner')};
+}
+
+/* ══════════════════════════════════════════════
+   SECTION: CONTACTOS
+══════════════════════════════════════════════ */
+function rContactos(){
+  const l=S.loja;
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-address-card"></i>Informações de Contacto</div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="cEmail" value="${esc(l.email||'')}" placeholder="loja@exemplo.com"/></div>
+        <div class="fg"><label class="fl">Telefone</label><input class="fi" type="tel" id="cTel" value="${esc(l.telefone||'')}" placeholder="+244 9XX XXX XXX"/></div>
+      </div>
+      <div class="fg"><label class="fl">WhatsApp (+244...)</label><input class="fi" type="tel" id="cWa" value="${esc(l.whatsapp||'')}" placeholder="+244 9XX XXX XXX"/><div class="fhint">Número que recebe as encomendas e mensagens</div></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-location-dot"></i>Localização</div>
+      <div class="fg"><label class="fl">Morada</label><input class="fi" id="cMorada" value="${esc(l.morada||'')}" placeholder="Rua / Bairro"/></div>
+      <div class="fr3">
+        <div class="fg"><label class="fl">Cidade</label><input class="fi" id="cCidade" value="${esc(l.cidade||'')}" placeholder="Luanda"/></div>
+        <div class="fg"><label class="fl">Província</label><input class="fi" id="cProv" value="${esc(l.provincia||'')}" placeholder="Luanda"/></div>
+        <div class="fg"><label class="fl">País</label><input class="fi" id="cPais" value="${esc(l.pais||'Angola')}" placeholder="Angola"/></div>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-hashtag"></i>Redes Sociais</div>
+      <div class="fr">
+        <div class="fg"><label class="fl"><i class="fa-brands fa-instagram" style="color:#e1306c"></i> Instagram</label><input class="fi" id="cIg" value="${esc(l.instagram||'')}" placeholder="@minhaloja"/></div>
+        <div class="fg"><label class="fl"><i class="fa-brands fa-facebook" style="color:#1877f2"></i> Facebook</label><input class="fi" id="cFb" value="${esc(l.facebook||'')}" placeholder="minhaloja"/></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl"><i class="fa-brands fa-tiktok"></i> TikTok</label><input class="fi" id="cTk" value="${esc(l.tiktok||'')}" placeholder="@minhaloja"/></div>
+        <div class="fg"><label class="fl"><i class="fa-brands fa-youtube" style="color:#ff0000"></i> YouTube</label><input class="fi" id="cYt" value="${esc(l.youtube||'')}" placeholder="URL do canal"/></div>
+      </div>
+    </div>
+  `;
+}
+function sContactos(){return {email:gv('cEmail'),telefone:gv('cTel'),whatsapp:gv('cWa'),morada:gv('cMorada'),cidade:gv('cCidade'),provincia:gv('cProv'),pais:gv('cPais')||'Angola',instagram:gv('cIg'),facebook:gv('cFb'),tiktok:gv('cTk'),youtube:gv('cYt')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: ENTREGA
+══════════════════════════════════════════════ */
+function rEntrega(){
+  const l=S.loja;
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-truck"></i>Entrega ao Domicílio</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Entrega activa</div><div class="sw-hint">Mostrar opção de entrega no checkout</div></div><label class="sw"><input type="checkbox" id="cEntAtiva" ${l.entrega_ativa?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="fr" style="margin-top:13px">
+        <div class="fg"><label class="fl">Preço (Kz)</label><input class="fi" type="number" id="cEntPreco" value="${l.entrega_preco||0}" min="0"/></div>
+        <div class="fg"><label class="fl">Grátis a partir de (Kz)</label><input class="fi" type="number" id="cEntGratis" value="${l.entrega_gratis_a||0}" min="0"/><div class="fhint">0 = sem entrega grátis</div></div>
+      </div>
+      <div class="fg"><label class="fl">Prazo estimado</label><input class="fi" id="cEntPrazo" value="${esc(l.entrega_prazo||'')}" placeholder="1 a 2 dias úteis"/></div>
+      <div class="fg"><label class="fl">Zonas de entrega</label><input class="fi" id="cEntZonas" value="${esc(l.entrega_zonas||'')}" placeholder="Luanda, Viana, Cazenga..."/></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-bag-shopping"></i>Compra Mínima</div>
+      <div class="fg"><label class="fl">Valor mínimo (Kz)</label><input class="fi" type="number" id="cMinEnc" value="${l.min_encomenda||0}" min="0"/><div class="fhint">0 = sem mínimo</div></div>
+    </div>
+  `;
+}
+function sEntrega(){return {entrega_ativa:gc('cEntAtiva')?1:0,entrega_preco:gn('cEntPreco'),entrega_gratis_a:gn('cEntGratis'),entrega_prazo:gv('cEntPrazo'),entrega_zonas:gv('cEntZonas'),min_encomenda:gn('cMinEnc')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: HORÁRIOS
+══════════════════════════════════════════════ */
+function rHorarios(){
+  const l=S.loja;
+  const ds=[['seg','Segunda'],['ter','Terça'],['qua','Quarta'],['qui','Quinta'],['sex','Sexta'],['sab','Sábado'],['dom','Domingo']];
+  const rows=ds.map(([k,n])=>`<div class="hday">${n}</div><input class="fi" id="cH${k}" value="${esc(l['horario_'+k]||'')}" placeholder="09:00 - 18:00 · Fechado"/>`).join('');
+  return `
+    <div class="ib info"><i class="fa-solid fa-circle-info"></i>Deixa em branco para dias fechados.</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-clock"></i>Horário de Funcionamento</div>
+      <div class="hgrid">${rows}</div>
+    </div>
+  `;
+}
+function sHorarios(){const ds=['seg','ter','qua','qui','sex','sab','dom'],c={};ds.forEach(d=>{c['horario_'+d]=gv('cH'+d);});return c;}
+
+/* ══════════════════════════════════════════════
+   SECTION: HOMEPAGE
+══════════════════════════════════════════════ */
+function rHomepage(){
+  const l=S.loja;
+  return `
+    <div class="ib info"><i class="fa-solid fa-circle-info"></i>O template tem de ler estes campos via <b>/api/loja</b> para os aplicar na homepage.</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-image"></i>Secção Hero (Principal)</div>
+      <div class="fg"><label class="fl">Título principal</label><input class="fi" id="cHeroT" value="${esc(l.hero_titulo||'')}" placeholder="Os melhores produtos para si"/></div>
+      <div class="fg"><label class="fl">Subtítulo</label><input class="fi" id="cHeroS" value="${esc(l.hero_subtitulo||'')}" placeholder="Qualidade e confiança na palma da mão"/></div>
+      <div class="fg"><label class="fl">Texto do botão CTA</label><input class="fi" id="cHeroCta" value="${esc(l.hero_cta||'')}" placeholder="Ver Catálogo"/></div>
+      <div class="fg" style="margin-top:10px">
+        <label class="fl">Imagem de fundo</label>
+        ${zoneHtml('hero','hero',l.hero_imagem_url||'','1600×900px ou 16:9','cHeroImg')}
+        <input class="fi" id="cHeroImg" value="${esc(l.hero_imagem_url||'')}" placeholder="https://..." style="margin-top:8px" oninput="syncUrl('cHeroImg','hero','hero')"/>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-sliders"></i>Visibilidade de Secções</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Produtos em Destaque</div><div class="sw-hint">Secção com tag ⭐</div></div><label class="sw"><input type="checkbox" id="cShowD" ${l.show_destaques!==0?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Produtos Novos</div><div class="sw-hint">Últimas novidades</div></div><label class="sw"><input type="checkbox" id="cShowN" ${l.show_novidades!==0?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Promoções Activas</div><div class="sw-hint">Produtos com desconto</div></div><label class="sw"><input type="checkbox" id="cShowP" ${l.show_promocoes!==0?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Testemunhos / Avaliações</div><div class="sw-hint">Reviews dos clientes na homepage</div></div><label class="sw"><input type="checkbox" id="cShowT" ${l.show_testemunhos!==0?'checked':''}><span class="sw-sl"></span></label></div>
+    </div>
+  `;
+}
+function sHomepage(){return {hero_titulo:gv('cHeroT'),hero_subtitulo:gv('cHeroS'),hero_cta:gv('cHeroCta'),hero_imagem_url:gv('cHeroImg'),show_destaques:gc('cShowD')?1:0,show_novidades:gc('cShowN')?1:0,show_promocoes:gc('cShowP')?1:0,show_testemunhos:gc('cShowT')?1:0};}
+
+/* ══════════════════════════════════════════════
+   SECTION: PÁGINAS
+══════════════════════════════════════════════ */
+function rPaginas(){
+  const l=S.loja;
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-circle-info"></i>Página Sobre</div>
+      <div class="fg"><label class="fl">Conteúdo</label><textarea class="fta" id="cSobrePg" rows="6" placeholder="A nossa história, missão, valores...">${esc(l.sobre||'')}</textarea></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-scale-balanced"></i>Legal</div>
+      <div class="fg"><label class="fl">Política de Privacidade</label><textarea class="fta" id="cPolitica" rows="5" placeholder="A sua privacidade é importante...">${esc(l.politica||'')}</textarea></div>
+      <div class="fg" style="margin-top:10px"><label class="fl">Termos e Condições</label><textarea class="fta" id="cTermos" rows="5" placeholder="Ao fazer uma compra, o cliente aceita...">${esc(l.termos||'')}</textarea></div>
+    </div>
+  `;
+}
+function sPaginas(){return {sobre:gv('cSobrePg'),politica:gv('cPolitica'),termos:gv('cTermos')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: NOTIFICAÇÕES
+══════════════════════════════════════════════ */
+function rNotifs(){
+  const l=S.loja;
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-bell"></i>Notificações Push</div>
+      <div style="font-size:.74rem;color:var(--muted);line-height:1.6">As notificações push são geridas directamente no painel de admin da loja através do botão 🔔 no topo. Não é necessário configurar aqui.</div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-envelope"></i>Email — EmailJS</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Notificações por Email</div><div class="sw-hint">Recebe email em cada nova encomenda</div></div><label class="sw"><input type="checkbox" id="cNotEmail" ${l.notif_email?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg"><label class="fl">Service ID</label><input class="fi" id="cEjsS" value="${esc(l.emailjs_service||'')}" placeholder="service_xxxxxxx"/></div>
+        <div class="fg"><label class="fl">Template ID</label><input class="fi" id="cEjsT" value="${esc(l.emailjs_template||'')}" placeholder="template_xxxxxxx"/></div>
+      </div>
+      <div class="fg"><label class="fl">Public Key</label><input class="fi" id="cEjsK" value="${esc(l.emailjs_pubkey||'')}" placeholder="xxxxxxxxxxxxxxxx"/></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i>WhatsApp — CallMeBot</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Notificações WhatsApp</div><div class="sw-hint">Mensagem no WhatsApp por cada encomenda</div></div><label class="sw"><input type="checkbox" id="cNotWa" ${l.notif_whatsapp?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="fg" style="margin-top:12px"><label class="fl">CallMeBot API Key</label><input class="fi" type="password" id="cCmb" value="${esc(l.callmebot_apikey||'')}" placeholder="xxxxxxxxxx"/><div class="fhint">Gratuito em callmebot.com</div></div>
+    </div>
+  `;
+}
+function sNotifs(){return {notif_email:gc('cNotEmail')?1:0,notif_whatsapp:gc('cNotWa')?1:0,callmebot_apikey:gv('cCmb'),emailjs_service:gv('cEjsS'),emailjs_template:gv('cEjsT'),emailjs_pubkey:gv('cEjsK')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: SEO
+══════════════════════════════════════════════ */
+function rSeo(){
+  const l=S.loja;
+  return `
+    <div class="ib info"><i class="fa-solid fa-circle-info"></i>Campos usados nos meta tags das páginas da loja (SEO e partilha em redes sociais).</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-magnifying-glass"></i>Metadados</div>
+      <div class="fg"><label class="fl">Meta Descrição</label><textarea class="fta" id="cMetaDesc" rows="3" placeholder="Descrição para o Google e redes sociais (max 160 caracteres)" oninput="$('mdCount').textContent=this.value.length+'/160'">${esc(l.meta_descricao||'')}</textarea><div class="fhint" id="mdCount">${(l.meta_descricao||'').length}/160</div></div>
+      <div class="fg"><label class="fl">Palavras-chave</label><input class="fi" id="cKw" value="${esc(l.palavras_chave||'')}" placeholder="loja, produtos, angola, luanda"/><div class="fhint">Separadas por vírgula</div></div>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-share-nodes"></i>Open Graph (Partilha)</div>
+      <div class="fg"><label class="fl">Imagem OG (1200×630)</label><input class="fi" id="cOgImg" value="${esc(l.og_imagem||l.banner_url||'')}" placeholder="https://..."/><div class="fhint">Imagem ao partilhar no WhatsApp, Facebook, etc.</div></div>
+    </div>
+  `;
+}
+function sSeo(){return {meta_descricao:gv('cMetaDesc'),palavras_chave:gv('cKw'),og_imagem:gv('cOgImg')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: REFERIDOS
+══════════════════════════════════════════════ */
+function rReferidos(){
+  const l=S.loja;
+  return `
+    <div class="ib teal"><i class="fa-solid fa-gift"></i>O programa de referidos incentiva os clientes a partilharem a loja. Cada cliente tem um código único.</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-users"></i>Programa de Referidos</div>
+      <div class="sw-row"><div class="sw-info"><div class="sw-lbl">Programa activo</div><div class="sw-hint">Activa os descontos por referido</div></div><label class="sw"><input type="checkbox" id="cRefAtivo" ${l.referidos_ativo?'checked':''}><span class="sw-sl"></span></label></div>
+      <div class="fr" style="margin-top:13px">
+        <div class="fg"><label class="fl">Desconto novo cliente (%)</label><input class="fi" type="number" id="cRefN" value="${l.referidos_desconto_novo||10}" min="0" max="100"/></div>
+        <div class="fg"><label class="fl">Desconto referidor (%)</label><input class="fi" type="number" id="cRefR" value="${l.referidos_desconto_ref||5}" min="0" max="100"/></div>
+      </div>
+      <div class="fg"><label class="fl">Compra mínima (Kz)</label><input class="fi" type="number" id="cRefMin" value="${l.referidos_min||0}" min="0"/></div>
+      <div class="fg"><label class="fl">Mensagem de partilha</label><input class="fi" id="cRefMsg" value="${esc(l.referidos_msg||'Usa o meu código e recebe desconto na tua primeira encomenda!')}"/></div>
+    </div>
+  `;
+}
+function sReferidos(){return {referidos_ativo:gc('cRefAtivo')?1:0,referidos_desconto_novo:gn('cRefN'),referidos_desconto_ref:gn('cRefR'),referidos_min:gn('cRefMin'),referidos_msg:gv('cRefMsg')};}
+
+/* ══════════════════════════════════════════════
+   SECTION: DOMÍNIO
+══════════════════════════════════════════════ */
+function rDominio(){
+  const l=S.loja;
+  const u=l.url_site||l.url||'';
+  const slug=(u||'slug').replace('https://','').replace('.pages.dev/','').replace('/','');
+  return `
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-globe"></i>URL Actual</div>
+      <div class="dom-url">
+        <i class="fa-brands fa-cloudflare" style="color:#f6821f"></i>
+        ${u?`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`:'<span style="color:var(--muted)">Ainda não configurada</span>'}
+        ${u?`<button class="btn btn-sm btn-outline" onclick="navigator.clipboard.writeText('${esc(u)}').then(()=>toast('Copiado!','ok'))"><i class="fa-solid fa-copy"></i></button>`:''}
+      </div>
+      ${!u?'<div class="ib warn"><i class="fa-solid fa-triangle-exclamation"></i>URL ainda não configurada. O site pode ainda estar em deploy.</div>':''}
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-link"></i>Domínio Personalizado</div>
+      <div class="ib info" style="margin-bottom:11px"><i class="fa-solid fa-circle-info"></i>Para usar <b>www.minha-loja.com</b>, aponta o DNS para o Cloudflare Pages e activa aqui.</div>
+      <div class="fg"><label class="fl">Domínio custom</label><input class="fi" id="cDom" value="${esc(l.dominio_custom||'')}" placeholder="www.minha-loja.com"/><div class="fhint">Sem https:// · Precisas de alterar o DNS do teu domínio</div></div>
+      <button class="btn btn-outline btn-full" style="margin-top:9px" onclick="saveDom()"><i class="fa-solid fa-floppy-disk"></i> Guardar Domínio</button>
+    </div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-circle-question"></i>Como configurar o DNS</div>
+      <div style="font-size:.71rem;color:var(--muted);line-height:1.9">
+        <b style="color:var(--white)">1.</b> No teu registrar, adiciona um registo CNAME:<br>
+        &nbsp;&nbsp;&nbsp;<code style="font-size:.66rem;color:var(--teal)">CNAME &nbsp; @ &nbsp; ${esc(slug+'.pages.dev')}</code><br>
+        <b style="color:var(--white)">2.</b> Aguarda a propagação DNS (até 48h)<br>
+        <b style="color:var(--white)">3.</b> HTTPS activado automaticamente pelo Cloudflare
+      </div>
+    </div>
+  `;
+}
+async function saveDom(){
+  const d=gv('cDom'); if(!d){toast('Insere um domínio','inf');return;}
+  const b=bb(document.querySelector('[onclick="saveDom()"]'));
+  try{
+    await api('/api/loja',{method:'PUT',body:JSON.stringify({dominio_custom:d})});
+    S.loja.dominio_custom=d; toast('Domínio guardado!','ok');
+  }catch(e){toast('Erro: '+e.message,'err');}
+  bd(b);
+}
+
+/* ══════════════════════════════════════════════
+   SECTION: SEGURANÇA
+══════════════════════════════════════════════ */
+function rSeguranca(){
+  return `
+    <div class="ib warn"><i class="fa-solid fa-triangle-exclamation"></i>Mudar o token termina todas as sessões activas. Tens de fazer login novamente.</div>
+    <div class="ec">
+      <div class="ec-title"><i class="fa-solid fa-key"></i>Token de Acesso ao Admin</div>
+      <div class="fg"><label class="fl">Novo token</label><input class="fi" type="password" id="cNovaTk" placeholder="Deixa em branco para gerar automaticamente"/></div>
+      <div class="fg"><label class="fl">Confirmar novo token</label><input class="fi" type="password" id="cConfTk" placeholder="Repete o novo token"/></div>
+      <button class="btn btn-danger btn-full" style="margin-top:11px" onclick="confirmToken()">
+        <i class="fa-solid fa-shield-halved"></i> Mudar Token de Admin
+      </button>
+    </div>
+  `;
+}
+function gerarTk(){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let t='';for(let i=0;i<48;i++)t+=c[Math.floor(Math.random()*c.length)];return t;}
+function confirmToken(){
+  const t1=($('cNovaTk')?.value||'').trim(), t2=($('cConfTk')?.value||'').trim();
+  if(t1&&t1!==t2){toast('Os tokens não coincidem','err');return;}
+  showConf('Mudar token de admin?','Todas as sessões activas serão terminadas. Terás de fazer login com o novo token.',async()=>{
+    const ntk=t1||gerarTk();
+    const b=bb($('confOkBtn'));
+    try{
+      await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:ntk})});
+      toast('Token alterado! A terminar sessão...','ok');
+      setTimeout(logout,1800);
+    }catch(e){toast('Erro: '+e.message,'err');bd(b);}
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CONFIRM MODAL
+══════════════════════════════════════════════ */
+let _ccb=null;
+function showConf(title,msg,cb){
+  $('confTitle').textContent=title; $('confMsg').textContent=msg; _ccb=cb;
+  $('confOkBtn').innerHTML='<i class="fa-solid fa-check"></i> Confirmar';
+  $('confOkBtn').onclick=async()=>{if(_ccb)await _ccb();closeConf();};
+  $('confOv').classList.add('open');
+}
+function closeConf(){$('confOv').classList.remove('open');_ccb=null;}
+
+/* ══════════════════════════════════════════════
+   SAVE & PUBLISH
+══════════════════════════════════════════════ */
+const SFNS={identidade:sIdentidade,visual:sVisual,contactos:sContactos,entrega:sEntrega,horarios:sHorarios,homepage:sHomepage,paginas:sPaginas,notificacoes:sNotifs,seo:sSeo,referidos:sReferidos,dominio:()=>null,seguranca:()=>null};
+
+async function saveSection(){
+  const fn=SFNS[S.sec]; if(!fn)return;
+  const campos=fn(); if(!campos||!Object.keys(campos).filter(k=>campos[k]!==null).length){if(S.sec!=='dominio'&&S.sec!=='seguranca')toast('Nada para guardar','inf');return;}
+  const b=bb($('btnSave'));
+  try{
+    await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+    Object.assign(S.loja,campos);
+    updatePreview();
+    if(campos.nome)$('tbNome').textContent=campos.nome;
+    toast('Guardado!','ok');
+  }catch(e){toast('Erro: '+e.message,'err');}
+  bd(b);
+}
+
+async function publishAll(){
+  // Save first
+  const fn=SFNS[S.sec];
+  if(fn){
+    const campos=fn();
+    if(campos&&Object.keys(campos).length){
+      try{
+        await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+        Object.assign(S.loja,campos); updatePreview();
+        if(campos.nome)$('tbNome').textContent=campos.nome;
+      }catch(e){toast('Erro ao guardar: '+e.message,'err');return;}
+    }
+  }
+  const b=bb($('btnPublish'));
+  try{
+    await api('/api/loja/publicar',{method:'POST'});
+    toast('<i class="fa-solid fa-rocket"></i>&nbsp;Publicado! O site actualiza em segundos.','ok',4200);
+  }catch(e){
+    toast('Guardado no D1. Adiciona o endpoint <code>/api/loja/publicar</code> ao worker para sincronizar o config.js.','inf',6000);
+  }
+  bd(b);
+}
+
+/* ══════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  const t=localStorage.getItem('editor_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  autoLogin();
+});
+</script>
+</body>
+</html>
