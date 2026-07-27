@@ -1162,6 +1162,81 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .recu-empty i{font-size:1.6rem;margin-bottom:8px;display:block}
 .recu-rate-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:6px 0}
 .recu-rate-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .5s}
+
+/* ============================================================
+   EDITOR VISUAL
+   ============================================================ */
+.editor-layout{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start}
+@media(max-width:860px){.editor-layout{grid-template-columns:1fr}}
+.editor-controls{display:flex;flex-direction:column;gap:6px}
+.editor-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.editor-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;transition:background .15s}
+.editor-section-hdr:hover{background:var(--bg3)}
+.editor-section-hdr-title{font-size:.8rem;font-weight:700;color:var(--white);display:flex;align-items:center;gap:7px}
+.editor-section-hdr i.toggle-chevron{transition:transform .25s;color:var(--muted);font-size:.7rem}
+.editor-section-hdr.open i.toggle-chevron{transform:rotate(180deg)}
+.editor-section-body{padding:12px 14px;border-top:1px solid var(--border);display:none}
+.editor-section-body.open{display:block}
+/* theme presets */
+.theme-preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.theme-chip{border:2px solid transparent;border-radius:var(--r2);padding:6px 4px;cursor:pointer;text-align:center;transition:border-color .2s,transform .15s;background:var(--bg3)}
+.theme-chip:hover{transform:translateY(-2px);border-color:var(--muted)}
+.theme-chip.active{border-color:var(--pink)}
+.theme-chip-swatch{height:28px;border-radius:6px;margin-bottom:4px}
+.theme-chip-label{font-size:.56rem;color:var(--muted);line-height:1.2}
+/* color rows */
+.color-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.color-row-label{flex:1;font-size:.76rem;color:var(--white)}
+.color-swatch-btn{width:34px;height:34px;border-radius:8px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;position:relative;overflow:hidden}
+.color-swatch-btn input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0}
+.color-hex-input{width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 8px;color:var(--white);font-size:.72rem;font-family:monospace;text-transform:uppercase}
+.color-hex-input:focus{border-color:var(--pink);outline:none}
+/* font selector */
+.font-select-wrap{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}
+.font-preview-text{font-size:.9rem;color:var(--muted);padding:6px 0}
+/* toggle group */
+.toggle-group{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.toggle-group-btn{padding:5px 12px;border-radius:var(--r);border:1px solid var(--border);background:none;font-size:.72rem;font-family:var(--ft);color:var(--muted);cursor:pointer;transition:var(--tr)}
+.toggle-group-btn.active{background:var(--grad);color:#fff;border-color:transparent}
+/* section toggles */
+.sec-toggle-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.sec-toggle-row:last-child{border-bottom:none}
+.sec-toggle-icon{width:28px;height:28px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0}
+.sec-toggle-label{flex:1;font-size:.78rem;color:var(--white)}
+.sec-toggle-hint{font-size:.62rem;color:var(--muted)}
+/* custom css */
+.css-custom-area{font-family:monospace;font-size:.72rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;color:var(--white);width:100%;resize:vertical;min-height:100px;line-height:1.6}
+.css-custom-area:focus{border-color:var(--purple);outline:none}
+/* publish bar */
+.editor-publish-bar{position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;z-index:10}
+/* preview panel */
+.editor-preview-wrap{position:sticky;top:10px}
+.editor-preview-device{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.editor-preview-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.preview-dot{width:8px;height:8px;border-radius:50%}
+.editor-preview-url{flex:1;background:var(--bg3);border-radius:50px;padding:3px 10px;font-size:.6rem;color:var(--muted);text-align:center;margin:0 6px}
+.preview-viewport{height:520px;overflow-y:auto;overflow-x:hidden;font-family:Inter,sans-serif}
+/* mock store elements */
+.pmock{all:initial;display:block;font-family:inherit}
+.pmock-header{display:flex;align-items:center;padding:10px 16px;gap:8px;position:sticky;top:0;z-index:5}
+.pmock-logo{font-weight:800;font-size:1rem;letter-spacing:-.5px;flex:1}
+.pmock-nav{display:flex;gap:10px}
+.pmock-nav span{font-size:.62rem;opacity:.7;cursor:pointer}
+.pmock-hero{padding:30px 16px;text-align:center;background-size:cover;background-position:center;position:relative}
+.pmock-hero-overlay{position:absolute;inset:0}
+.pmock-hero-content{position:relative;z-index:1}
+.pmock-hero-title{font-size:1.4rem;font-weight:800;margin:0 0 6px;line-height:1.2}
+.pmock-hero-sub{font-size:.75rem;opacity:.8;margin:0 0 14px}
+.pmock-cta-btn{border:none;padding:9px 22px;border-radius:50px;font-weight:700;font-size:.75rem;cursor:pointer;display:inline-block}
+.pmock-section-title{font-size:.8rem;font-weight:700;padding:14px 16px 8px;opacity:.9}
+.pmock-products{display:grid;gap:8px;padding:0 12px 16px}
+.pmock-card{border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.pmock-card-img{height:70px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.pmock-card-body{padding:8px}
+.pmock-card-name{font-size:.65rem;font-weight:600;margin-bottom:3px}
+.pmock-card-price{font-size:.7rem;font-weight:800}
+.pmock-card-btn{width:100%;border:none;padding:5px;border-radius:6px;font-size:.58rem;font-weight:700;cursor:pointer;margin-top:5px}
+.pmock-footer{padding:12px 16px;text-align:center;font-size:.58rem;opacity:.5;border-top:1px solid rgba(255,255,255,.06)}
 </style>
 </head>
 <body>
@@ -1282,6 +1357,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="sidebar-item" data-panel="marketing" onclick="navigate('marketing')">
         <i class="fa-solid fa-bullhorn"></i>
         <span class="sidebar-item-label">Marketing</span>
+      </button>
+      <button class="sidebar-item" data-panel="editor" onclick="navigate('editor')">
+        <i class="fa-solid fa-palette"></i>
+        <span class="sidebar-item-label">Editor Visual</span>
       </button>
       <button class="sidebar-item" data-panel="caixa" onclick="navigate('caixa')">
         <i class="fa-solid fa-cash-register"></i>
@@ -1682,6 +1761,181 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             </div>
           </div>
           <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="cleanupInfo"></p>
+        </div>
+
+        <!-- ============================================
+             EDITOR VISUAL
+             ============================================ -->
+        <div class="panel" id="panel-editor">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-palette" style="color:var(--purple)"></i> Editor Visual</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="resetEditorVisual()"><i class="fa-solid fa-rotate-left"></i> Repor</button>
+            </div>
+          </div>
+
+          <div class="editor-layout">
+            <!-- ===== CONTROLS ===== -->
+            <div class="editor-controls">
+
+              <!-- Temas pré-definidos -->
+              <div class="editor-section">
+                <div class="editor-section-hdr open" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title">🎨 Temas Pré-definidos</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body open">
+                  <div class="theme-preset-grid" id="edThemeGrid"></div>
+                </div>
+              </div>
+
+              <!-- Cores -->
+              <div class="editor-section">
+                <div class="editor-section-hdr open" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-droplet" style="color:var(--pink)"></i> Cores</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body open">
+                  <div id="edColorRows"></div>
+                </div>
+              </div>
+
+              <!-- Tipografia -->
+              <div class="editor-section">
+                <div class="editor-section-hdr" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-font" style="color:var(--blue)"></i> Tipografia</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body">
+                  <div class="font-select-wrap">
+                    <select class="form-select" id="edFonte" onchange="onEdChange()">
+                    </select>
+                    <div style="font-size:.6rem;color:var(--muted)">Fonte</div>
+                  </div>
+                  <div class="font-preview-text" id="edFontePreview" style="padding:8px;background:var(--bg3);border-radius:var(--r);text-align:center">
+                    A loja tem um visual incrível!
+                  </div>
+                  <div style="margin-top:10px">
+                    <label class="form-label">Tamanho base</label>
+                    <div class="toggle-group" id="edFontSizeGroup">
+                      <button class="toggle-group-btn" data-val="13px" onclick="setToggleGroup(this,'edFontSizeGroup','edFontSize')">Pequeno</button>
+                      <button class="toggle-group-btn active" data-val="15px" onclick="setToggleGroup(this,'edFontSizeGroup','edFontSize')">Médio</button>
+                      <button class="toggle-group-btn" data-val="17px" onclick="setToggleGroup(this,'edFontSizeGroup','edFontSize')">Grande</button>
+                    </div>
+                    <input type="hidden" id="edFontSize" value="15px"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botões & Layout -->
+              <div class="editor-section">
+                <div class="editor-section-hdr" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-grip" style="color:var(--orange)"></i> Botões & Layout</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body">
+                  <label class="form-label">Estilo dos botões</label>
+                  <div class="toggle-group" id="edBtnStyleGroup" style="margin-bottom:12px">
+                    <button class="toggle-group-btn" data-val="square" onclick="setToggleGroup(this,'edBtnStyleGroup','edBtnStyle')">Quadrado</button>
+                    <button class="toggle-group-btn active" data-val="rounded" onclick="setToggleGroup(this,'edBtnStyleGroup','edBtnStyle')">Arredondado</button>
+                    <button class="toggle-group-btn" data-val="pill" onclick="setToggleGroup(this,'edBtnStyleGroup','edBtnStyle')">Píldora</button>
+                  </div>
+                  <input type="hidden" id="edBtnStyle" value="rounded"/>
+                  <label class="form-label">Grelha de produtos</label>
+                  <div class="toggle-group" id="edGridColsGroup" style="margin-bottom:12px">
+                    <button class="toggle-group-btn" data-val="2" onclick="setToggleGroup(this,'edGridColsGroup','edGridCols')">2 colunas</button>
+                    <button class="toggle-group-btn active" data-val="3" onclick="setToggleGroup(this,'edGridColsGroup','edGridCols')">3 colunas</button>
+                    <button class="toggle-group-btn" data-val="4" onclick="setToggleGroup(this,'edGridColsGroup','edGridCols')">4 colunas</button>
+                  </div>
+                  <input type="hidden" id="edGridCols" value="3"/>
+                  <label class="form-label">Estilo dos cards</label>
+                  <div class="toggle-group" id="edCardStyleGroup">
+                    <button class="toggle-group-btn active" data-val="default" onclick="setToggleGroup(this,'edCardStyleGroup','edCardStyle')">Padrão</button>
+                    <button class="toggle-group-btn" data-val="minimal" onclick="setToggleGroup(this,'edCardStyleGroup','edCardStyle')">Minimal</button>
+                    <button class="toggle-group-btn" data-val="shadow" onclick="setToggleGroup(this,'edCardStyleGroup','edCardStyle')">Sombra</button>
+                  </div>
+                  <input type="hidden" id="edCardStyle" value="default"/>
+                </div>
+              </div>
+
+              <!-- Hero / Banner -->
+              <div class="editor-section">
+                <div class="editor-section-hdr" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-image" style="color:var(--teal)"></i> Hero / Banner</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body">
+                  <div class="form-group" style="margin-bottom:8px">
+                    <label class="form-label">Título principal</label>
+                    <input type="text" class="form-input" id="edHeroTitulo" placeholder="A melhor loja de Angola" maxlength="60" oninput="onEdChange()"/>
+                  </div>
+                  <div class="form-group" style="margin-bottom:8px">
+                    <label class="form-label">Subtítulo</label>
+                    <input type="text" class="form-input" id="edHeroSub" placeholder="Qualidade e entrega rápida" maxlength="80" oninput="onEdChange()"/>
+                  </div>
+                  <div class="form-group" style="margin-bottom:8px">
+                    <label class="form-label">Texto do botão</label>
+                    <input type="text" class="form-input" id="edHeroCta" placeholder="Comprar agora" maxlength="30" oninput="onEdChange()"/>
+                  </div>
+                  <div class="form-group" style="margin-bottom:8px">
+                    <label class="form-label">Imagem de fundo (URL)</label>
+                    <input type="url" class="form-input" id="edBannerUrl" placeholder="https://..." oninput="onEdChange()"/>
+                  </div>
+                  <label class="form-label">Sobreposição escura</label>
+                  <div class="toggle-group" id="edOverlayGroup">
+                    <button class="toggle-group-btn" data-val="0" onclick="setToggleGroup(this,'edOverlayGroup','edOverlay')">Nenhuma</button>
+                    <button class="toggle-group-btn active" data-val="0.35" onclick="setToggleGroup(this,'edOverlayGroup','edOverlay')">Leve</button>
+                    <button class="toggle-group-btn" data-val="0.55" onclick="setToggleGroup(this,'edOverlayGroup','edOverlay')">Média</button>
+                    <button class="toggle-group-btn" data-val="0.75" onclick="setToggleGroup(this,'edOverlayGroup','edOverlay')">Escura</button>
+                  </div>
+                  <input type="hidden" id="edOverlay" value="0.35"/>
+                </div>
+              </div>
+
+              <!-- Secções da loja -->
+              <div class="editor-section">
+                <div class="editor-section-hdr" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-layer-group" style="color:var(--yellow)"></i> Secções da Loja</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body" id="edSeccoesList"></div>
+              </div>
+
+              <!-- CSS personalizado -->
+              <div class="editor-section">
+                <div class="editor-section-hdr" onclick="toggleEdSection(this)">
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-code" style="color:var(--muted)"></i> CSS Personalizado</div>
+                  <i class="fa-solid fa-chevron-down toggle-chevron"></i>
+                </div>
+                <div class="editor-section-body">
+                  <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">CSS avançado aplicado directamente à loja. Tem precedência sobre todas as outras configurações.</p>
+                  <textarea class="css-custom-area" id="edCssCustom" placeholder="/* Ex: mudar o header */&#10;.store-header { box-shadow: 0 2px 20px rgba(0,0,0,.3); }" oninput="onEdChange()"></textarea>
+                </div>
+              </div>
+
+              <!-- Publish bar -->
+              <div class="editor-publish-bar">
+                <div style="flex:1;font-size:.72rem;color:var(--muted)" id="edUnsavedNote"></div>
+                <button class="btn btn-outline btn-sm" onclick="previewEditorFull()"><i class="fa-solid fa-eye"></i> Ver loja</button>
+                <button class="btn btn-primary" onclick="saveEditorVisual()" id="edSaveBtn"><i class="fa-solid fa-rocket"></i> Publicar Alterações</button>
+              </div>
+            </div>
+
+            <!-- ===== LIVE PREVIEW ===== -->
+            <div class="editor-preview-wrap">
+              <div class="editor-preview-device">
+                <div class="editor-preview-bar">
+                  <div class="preview-dot" style="background:#ff5f57"></div>
+                  <div class="preview-dot" style="background:#febc2e"></div>
+                  <div class="preview-dot" style="background:#28c840"></div>
+                  <div class="editor-preview-url" id="edPreviewUrl">a tua loja</div>
+                </div>
+                <div class="preview-viewport" id="editorPreview"></div>
+              </div>
+              <p style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:6px"><i class="fa-solid fa-circle-info"></i> Preview simulado — clica "Ver loja" para ver o resultado real</p>
+              <p style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:2px"><i class="fa-solid fa-palette" style="color:var(--pink)"></i> As cores do admin também se actualizam ao publicar</p>
+            </div>
+          </div>
         </div>
 
         <!-- ============================================
@@ -2210,6 +2464,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn pink" onclick="navigateMore('marketing')">
           <i class="fa-solid fa-bullhorn"></i>
           <span>Marketing</span>
+        </button>
+        <button class="more-btn purple" onclick="navigateMore('editor')">
+          <i class="fa-solid fa-palette"></i>
+          <span>Editor</span>
         </button>
         <button class="more-btn teal" onclick="navigateMore('caixa')">
           <i class="fa-solid fa-cash-register"></i>
@@ -2827,6 +3085,8 @@ async function login(){
     state.token = token;
     localStorage.setItem('adm_tk', token);
     state.loja = data;
+    // Aplicar tema da loja ao admin
+    if(typeof applyLojaThemeToAdmin==='function') applyLojaThemeToAdmin();
 
     // ⚠️ ENRIQUECER state.loja com dados GitHub do localStorage
     //     Agora SEMPRE sobrescreve se houver dados no localStorage
@@ -2970,6 +3230,7 @@ function navigate(panel){
   if(panel==='caixa')renderCaixa();
   if(panel==='fidelizacao')renderFidelizacao();
   if(panel==='recuperacao')renderRecuperacao();
+  if(panel==='editor')renderEditorVisual();
 }
 
 function expandSidebar(){$('sidebar').classList.add('expanded');}
@@ -5097,6 +5358,286 @@ applyTheme();
 })();
 
 autoLogin();
+
+/* ============================================================
+   EDITOR VISUAL
+   ============================================================ */
+(function(){
+  const THEMES=[
+    {id:'noite',    label:'🌙 Noite',      primary:'#b14ae8',secondary:'#ff6b9d',bg:'#0d0d1a',text:'#ffffff'},
+    {id:'oceano',   label:'🌊 Oceano',     primary:'#3d9eff',secondary:'#06d6a0',bg:'#070f1e',text:'#ffffff'},
+    {id:'solpoente',label:'🌅 Sol-poente', primary:'#ff9f43',secondary:'#ff6b9d',bg:'#100a08',text:'#ffffff'},
+    {id:'floresta', label:'🌿 Floresta',   primary:'#06d6a0',secondary:'#3d9eff',bg:'#060f0a',text:'#ffffff'},
+    {id:'dourado',  label:'✨ Dourado',    primary:'#ffd166',secondary:'#ff9f43',bg:'#100e06',text:'#ffffff'},
+    {id:'coral',    label:'🪸 Coral',      primary:'#ff4757',secondary:'#ff9f43',bg:'#10070a',text:'#ffffff'},
+    {id:'lavanda',  label:'💜 Lavanda',   primary:'#a55eea',secondary:'#3d9eff',bg:'#0d0a16',text:'#ffffff'},
+    {id:'minimal',  label:'⬜ Minimal',   primary:'#ffffff',secondary:'#aaaaaa',bg:'#111111',text:'#ffffff'},
+  ];
+  const FONTS=['Inter','Poppins','Roboto','Montserrat','Open Sans','Raleway','Nunito','Lato','DM Sans','Playfair Display','Outfit','Urbanist'];
+  const SECCOES=[
+    {id:'hero',        icon:'🖼️',label:'Hero / Banner',         hint:'Imagem de topo com CTA'},
+    {id:'categorias',  icon:'📂',label:'Categorias em Destaque', hint:'Grelha de categorias'},
+    {id:'destaques',   icon:'⭐',label:'Produtos Destaque',      hint:'Produtos marcados como destaque'},
+    {id:'novidades',   icon:'🆕',label:'Novidades',              hint:'Produtos marcados como novo'},
+    {id:'anuncio',     icon:'📢',label:'Barra de Anúncio',       hint:'Configurada em Marketing'},
+    {id:'testemunhos', icon:'💬',label:'Testemunhos',            hint:'Avaliações de clientes'},
+    {id:'newsletter',  icon:'📧',label:'Newsletter',             hint:'Formulário de subscrição'},
+  ];
+  const COLOR_DEFS=[
+    {id:'edCorPrimaria',   loja:'cor_primaria',   label:'Cor Primária',   def:'#b14ae8'},
+    {id:'edCorSecundaria', loja:'cor_secundaria', label:'Cor Secundária', def:'#ff6b9d'},
+    {id:'edCorFundo',      loja:'cor_fundo',      label:'Fundo',          def:'#0d0d1a'},
+    {id:'edCorTexto',      loja:'cor_texto',      label:'Texto',          def:'#ffffff'},
+  ];
+  let _edUnsaved=false;
+
+  window.renderEditorVisual=function(){
+    renderThemeGrid(); renderColorRows(); renderFontSelect(); renderSeccoesList();
+    loadEditorValues(); updateLivePreview(); markUnsaved(false);
+  };
+
+  function renderThemeGrid(){
+    const g=$('edThemeGrid'); if(!g||g._built)return; g._built=true;
+    g.innerHTML=THEMES.map(t=>
+      '<div class="theme-chip" data-id="'+t.id+'" onclick="applyThemePreset(\''+t.id+'\')">'+
+        '<div class="theme-chip-swatch" style="background:linear-gradient(135deg,'+t.primary+','+t.secondary+')"></div>'+
+        '<div class="theme-chip-label">'+t.label+'</div></div>'
+    ).join('');
+  }
+
+  function renderColorRows(){
+    const c=$('edColorRows'); if(!c||c._built)return; c._built=true;
+    c.innerHTML=COLOR_DEFS.map(cd=>
+      '<div class="color-row">'+
+        '<span class="color-row-label">'+cd.label+'</span>'+
+        '<div class="color-swatch-btn" id="swatch-'+cd.id+'" style="background:'+cd.def+'">'+
+          '<input type="color" id="'+cd.id+'-picker" value="'+cd.def+'"'+
+                 ' oninput="syncColorHex(\''+cd.id+'\')" onchange="onEdChange()"/></div>'+
+        '<input type="text" class="color-hex-input" id="'+cd.id+'-hex" value="'+cd.def+'"'+
+               ' maxlength="7" oninput="syncColorPicker(\''+cd.id+'\')"/></div>'
+    ).join('');
+  }
+
+  function renderFontSelect(){
+    const sel=$('edFonte'); if(!sel||sel._built)return; sel._built=true;
+    sel.innerHTML=FONTS.map(f=>'<option value="'+f+'">'+f+'</option>').join('');
+    sel.addEventListener('change',function(){
+      loadGoogleFont(this.value);
+      const p=$('edFontePreview'); if(p)p.style.fontFamily=this.value+',sans-serif';
+      onEdChange();
+    });
+  }
+
+  function renderSeccoesList(){
+    const c=$('edSeccoesList'); if(!c||c._built)return; c._built=true;
+    c.innerHTML=SECCOES.map(s=>
+      '<div class="sec-toggle-row">'+
+        '<div class="sec-toggle-icon">'+s.icon+'</div>'+
+        '<div style="flex:1"><div class="sec-toggle-label">'+s.label+'</div>'+
+        '<div class="sec-toggle-hint">'+s.hint+'</div></div>'+
+        '<label class="switch"><input type="checkbox" id="edSec-'+s.id+'" checked onchange="onEdChange()"/>'+
+        '<span class="switch-slider"></span></label></div>'
+    ).join('');
+  }
+
+  function loadEditorValues(){
+    const l=state.loja;
+    COLOR_DEFS.forEach(cd=>{
+      const val=l[cd.loja]||cd.def;
+      const pk=$(cd.id+'-picker'),hx=$(cd.id+'-hex'),sw=$('swatch-'+cd.id);
+      if(pk)pk.value=val; if(hx)hx.value=val.toUpperCase(); if(sw)sw.style.background=val;
+    });
+    const fonte=l.fonte_principal||'Inter';
+    const sel=$('edFonte'); if(sel)sel.value=fonte;
+    loadGoogleFont(fonte);
+    const fp=$('edFontePreview'); if(fp)fp.style.fontFamily=fonte+',sans-serif';
+    activateTG('edFontSizeGroup','edFontSize',l.fonte_tamanho||'15px');
+    activateTG('edBtnStyleGroup','edBtnStyle',l.botao_estilo||'rounded');
+    activateTG('edGridColsGroup','edGridCols',String(l.grid_colunas||3));
+    activateTG('edCardStyleGroup','edCardStyle',l.card_estilo||'default');
+    activateTG('edOverlayGroup','edOverlay',String(l.hero_overlay||'0.35'));
+    [{e:'edHeroTitulo',k:'hero_titulo'},{e:'edHeroSub',k:'hero_subtitulo'},
+     {e:'edHeroCta',k:'hero_cta_texto'},{e:'edBannerUrl',k:'banner_url'}].forEach(x=>{
+      const el=$(x.e); if(el)el.value=l[x.k]||'';
+    });
+    SECCOES.forEach(s=>{ const el=$('edSec-'+s.id); if(el)el.checked=l['seccao_'+s.id]!==0; });
+    const cc=$('edCssCustom'); if(cc)cc.value=l.css_custom||'';
+    const pu=$('edPreviewUrl'); if(pu)pu.textContent=l.dominio||l.nome||'a tua loja';
+  }
+
+  function activateTG(gid,hid,val){
+    const g=document.getElementById(gid), h=document.getElementById(hid);
+    if(!g||!h)return; h.value=val;
+    g.querySelectorAll('.toggle-group-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===String(val)));
+  }
+
+  window.setToggleGroup=function(btn,gid,hid){
+    const g=document.getElementById(gid), h=document.getElementById(hid);
+    if(g)g.querySelectorAll('.toggle-group-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); if(h)h.value=btn.dataset.val; onEdChange();
+  };
+
+  window.syncColorHex=function(id){
+    const p=$(id+'-picker'),h=$(id+'-hex'),s=$('swatch-'+id); if(!p)return;
+    if(h)h.value=p.value.toUpperCase(); if(s)s.style.background=p.value; onEdChange();
+  };
+  window.syncColorPicker=function(id){
+    const h=$(id+'-hex'),p=$(id+'-picker'),s=$('swatch-'+id); if(!h)return;
+    const v=h.value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(v)){if(p)p.value=v;if(s)s.style.background=v;onEdChange();}
+  };
+
+  window.applyThemePreset=function(id){
+    const t=THEMES.find(x=>x.id===id); if(!t)return;
+    document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('active',c.dataset.id===id));
+    ({edCorPrimaria:t.primary,edCorSecundaria:t.secondary,edCorFundo:t.bg,edCorTexto:t.text});
+    Object.entries({edCorPrimaria:t.primary,edCorSecundaria:t.secondary,edCorFundo:t.bg,edCorTexto:t.text}).forEach(([cid,val])=>{
+      const p=$(cid+'-picker'),h=$(cid+'-hex'),s=$('swatch-'+cid);
+      if(p)p.value=val; if(h)h.value=val.toUpperCase(); if(s)s.style.background=val;
+    });
+    onEdChange();
+  };
+
+  window.onEdChange=function(){ updateLivePreview(); markUnsaved(true); };
+
+  function getV(){
+    const g=id=>{ const e=$(id); return e?e.value:''; };
+    return {
+      primary:g('edCorPrimaria-picker')||'#b14ae8', secondary:g('edCorSecundaria-picker')||'#ff6b9d',
+      bg:g('edCorFundo-picker')||'#0d0d1a', text:g('edCorTexto-picker')||'#ffffff',
+      fonte:g('edFonte')||'Inter', fontSize:g('edFontSize')||'15px',
+      btnStyle:g('edBtnStyle')||'rounded', gridCols:parseInt(g('edGridCols'))||3,
+      cardStyle:g('edCardStyle')||'default',
+      heroTitulo:g('edHeroTitulo')||state.loja.nome||'A minha loja',
+      heroSub:g('edHeroSub')||'Qualidade e entrega rápida',
+      heroCta:g('edHeroCta')||'Ver produtos',
+      bannerUrl:g('edBannerUrl')||state.loja.banner_url||'',
+      overlay:parseFloat(g('edOverlay'))||0.35,
+    };
+  }
+
+  window.updateLivePreview=function(){
+    const v=getV(); const preview=$('editorPreview'); if(!preview)return;
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const br={square:'4px',rounded:'10px',pill:'50px'}[v.btnStyle]||'10px';
+    const cb={default:'1px solid rgba(255,255,255,.1)',minimal:'none',shadow:'none'}[v.cardStyle];
+    const cs={default:'none',minimal:'none',shadow:'0 4px 20px rgba(0,0,0,.4)'}[v.cardStyle]||'none';
+    const cw=v.gridCols===2?'calc(50% - 4px)':v.gridCols===4?'calc(25% - 6px)':'calc(33.3% - 6px)';
+    const prods=(state.produtos||[]).filter(p=>p.disponivel).slice(0,Math.min(v.gridCols,6));
+    const mkCard=(nome,preco,img)=>
+      '<div style="background:rgba(255,255,255,.05);border:'+cb+';box-shadow:'+cs+';width:'+cw+';flex-shrink:0;border-radius:10px;overflow:hidden">'+
+        '<div style="height:64px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04)">'+
+          (img?'<img src="'+img+'" style="height:64px;width:100%;object-fit:cover" onerror="this.style.display=\'none\'">':'🛍️')+
+        '</div>'+
+        '<div style="padding:6px">'+
+          '<div style="font-size:.62rem;font-weight:600;color:'+v.text+';margin-bottom:2px">'+esc(nome)+'</div>'+
+          '<div style="font-size:.65rem;font-weight:800;color:'+v.primary+'">'+kz(preco,sym)+'</div>'+
+          '<button style="width:100%;border:none;padding:4px;background:'+v.primary+';color:'+v.bg+';border-radius:'+br+';font-size:.56rem;font-weight:700;margin-top:4px;cursor:pointer">Adicionar</button>'+
+        '</div></div>';
+    const cards=prods.length
+      ? prods.map(p=>mkCard(p.nome,p.preco_promocional||p.preco,(p.imagens_json||[])[0]||'')).join('')
+      : ['Produto A 🍕','Produto B 🎧','Produto C 👟'].slice(0,v.gridCols).map(n=>mkCard(n,1500,'')).join('');
+    preview.innerHTML=
+      '<div style="background:'+v.bg+';color:'+v.text+';min-height:100%;font-family:'+v.fonte+',sans-serif;font-size:'+v.fontSize+'">'+
+        '<div style="display:flex;align-items:center;padding:10px 14px;background:'+v.bg+'cc;backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:5">'+
+          '<div style="flex:1;font-weight:800;font-size:13px;color:'+v.primary+'">'+esc(state.loja.nome||'Loja')+'</div>'+
+          '<div style="display:flex;gap:8px;align-items:center">'+
+            '<span style="font-size:8px;color:'+v.text+'99">Produtos</span>'+
+            '<span style="font-size:8px;background:'+v.primary+';color:'+v.bg+';padding:2px 8px;border-radius:'+br+'">Carrinho</span>'+
+          '</div>'+
+        '</div>'+
+        '<div style="position:relative;padding:28px 14px;text-align:center;'+
+          (v.bannerUrl?'background-image:url('+v.bannerUrl+');background-size:cover;background-position:center':'background:linear-gradient(135deg,'+v.primary+'44,'+v.secondary+'22)')+'">'+
+          (v.bannerUrl?'<div style="position:absolute;inset:0;background:rgba(0,0,0,'+v.overlay+')"></div>':'')+
+          '<div style="position:relative;z-index:1">'+
+            '<div style="font-size:15px;font-weight:800;color:'+v.text+';margin-bottom:5px;line-height:1.2">'+esc(v.heroTitulo)+'</div>'+
+            '<div style="font-size:9px;color:'+v.text+'bb;margin-bottom:12px">'+esc(v.heroSub)+'</div>'+
+            '<button style="border:none;padding:7px 18px;background:'+v.primary+';color:'+v.bg+';border-radius:'+br+';font-weight:700;font-size:9px;cursor:pointer">'+esc(v.heroCta)+'</button>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-size:9px;font-weight:700;padding:12px 14px 6px;opacity:.9">Produtos em Destaque</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 14px">'+cards+'</div>'+
+        '<div style="padding:10px 14px;text-align:center;font-size:8px;opacity:.4;border-top:1px solid rgba(255,255,255,.06)">'+
+          '© '+new Date().getFullYear()+' '+esc(state.loja.nome||'Loja')+' · Powered by IMPERSILVA TECH</div>'+
+      '</div>';
+  };
+
+  function loadGoogleFont(f){
+    const id='gf-'+f.replace(/\s/g,'-');
+    if(document.getElementById(id))return;
+    const l=document.createElement('link');
+    l.id=id;l.rel='stylesheet';
+    l.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(f)+':wght@400;600;700;800&display=swap';
+    document.head.appendChild(l);
+  }
+
+  function markUnsaved(v){
+    _edUnsaved=v;
+    const n=$('edUnsavedNote');
+    if(n)n.innerHTML=v?'<i class="fa-solid fa-circle" style="color:var(--orange);font-size:.45rem"></i> Alterações por publicar':'';
+  }
+
+  window.saveEditorVisual=async function(){
+    const btn=$('edSaveBtn'); const v=getV();
+    const seccoes={}; SECCOES.forEach(s=>{ seccoes['seccao_'+s.id]=$('edSec-'+s.id)?.checked?1:0; });
+    const campos={
+      cor_primaria:v.primary,cor_secundaria:v.secondary,cor_fundo:v.bg,cor_texto:v.text,
+      fonte_principal:v.fonte,fonte_tamanho:v.fontSize,
+      botao_estilo:v.btnStyle,grid_colunas:v.gridCols,card_estilo:v.cardStyle,
+      hero_titulo:v.heroTitulo,hero_subtitulo:v.heroSub,hero_cta_texto:v.heroCta,
+      banner_url:v.bannerUrl,hero_overlay:v.overlay,
+      css_custom:$('edCssCustom')?.value||'',...seccoes
+    };
+    const b=btnBusy(btn);
+    try{
+      await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+      Object.assign(state.loja,campos);
+      applyLojaThemeToAdmin();
+      markUnsaved(false);
+      toast('🚀 Alterações publicadas na loja!','success');
+    }catch(err){toast('Erro: '+err.message,'error');}
+    btnDone(b);
+  };
+
+  window.resetEditorVisual=function(){
+    if(!confirm('Repor para os valores guardados? As alterações não publicadas serão perdidas.'))return;
+    ['edColorRows','edThemeGrid','edSeccoesList','edFonte'].forEach(id=>{const e=$(id);if(e)e._built=false;});
+    renderEditorVisual();
+  };
+
+  window.toggleEdSection=function(hdr){
+    const body=hdr.nextElementSibling;
+    const open=body.classList.contains('open');
+    body.classList.toggle('open',!open); hdr.classList.toggle('open',!open);
+  };
+
+  window.previewEditorFull=function(){
+    const url=state.loja.url_loja||state.loja.dominio;
+    if(url)window.open(url,'_blank');
+    else toast('URL da loja não configurado em Configurações','info');
+  };
+
+  /* ---- aplicar tema da loja ao próprio admin ---- */
+  window.applyLojaThemeToAdmin=function(){
+    const primary   = state.loja.cor_primaria;
+    const secondary = state.loja.cor_secundaria;
+    const root = document.documentElement;
+    if(primary && /^#[0-9a-fA-F]{6}$/.test(primary)){
+      root.style.setProperty('--pink', primary);
+      // Derivar rgba para hover/active states
+      const r=parseInt(primary.slice(1,3),16);
+      const g=parseInt(primary.slice(3,5),16);
+      const b=parseInt(primary.slice(5,7),16);
+      root.style.setProperty('--pink-rgb', r+','+g+','+b);
+    }
+    if(secondary && /^#[0-9a-fA-F]{6}$/.test(secondary)){
+      root.style.setProperty('--purple', secondary);
+    }
+    if(primary && secondary && /^#[0-9a-fA-F]{6}$/.test(primary) && /^#[0-9a-fA-F]{6}$/.test(secondary)){
+      root.style.setProperty('--grad','linear-gradient(135deg,'+primary+','+secondary+')');
+    }
+  };
+})();
 
 /* ============================================================
    RECUPERAÇÃO / CARRINHO ABANDONADO
