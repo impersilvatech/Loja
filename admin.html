@@ -1237,6 +1237,106 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .pmock-card-price{font-size:.7rem;font-weight:800}
 .pmock-card-btn{width:100%;border:none;padding:5px;border-radius:6px;font-size:.58rem;font-weight:700;cursor:pointer;margin-top:5px}
 .pmock-footer{padding:12px 16px;text-align:center;font-size:.58rem;opacity:.5;border-top:1px solid rgba(255,255,255,.06)}
+
+/* ============================================================
+   AGENDA / RESERVAS
+   ============================================================ */
+.agenda-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.agenda-kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.agenda-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.agenda-kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;margin-bottom:8px}
+.agenda-kpi-icon.blue{background:rgba(61,158,255,.1);color:var(--blue)}
+.agenda-kpi-icon.teal{background:rgba(6,214,160,.1);color:var(--teal)}
+.agenda-kpi-icon.orange{background:rgba(255,159,67,.1);color:var(--orange)}
+.agenda-kpi-icon.purple{background:rgba(177,74,232,.1);color:var(--purple)}
+.agenda-kpi-val{font-family:var(--ft);font-size:1.3rem;color:var(--white);line-height:1.1;margin-bottom:2px}
+.agenda-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.agenda-kpi-sub{font-size:.62rem;color:var(--muted);margin-top:3px}
+.agenda-day-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.agenda-day-label{font-family:var(--ft);font-size:1rem;color:var(--white);flex:1;text-align:center}
+.agenda-nav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);flex-shrink:0}
+.agenda-nav-btn:hover{border-color:var(--pink);color:var(--pink)}
+.agenda-week-strip{display:flex;gap:4px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.agenda-day-chip{flex:1;min-width:36px;text-align:center;padding:6px 4px;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:var(--tr);user-select:none}
+.agenda-day-chip:hover{border-color:var(--pink)}
+.agenda-day-chip.active{background:var(--grad);border-color:transparent}
+.agenda-day-chip.has-res{border-color:rgba(255,107,157,.4)}
+.agenda-day-chip.today{border-color:var(--teal)}
+.agenda-day-chip-dow{font-size:.58rem;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.agenda-day-chip.active .agenda-day-chip-dow,.agenda-day-chip.active .agenda-day-chip-num{color:#fff}
+.agenda-day-chip-num{font-family:var(--ft);font-size:.88rem;color:var(--white)}
+.agenda-day-chip-dot{width:4px;height:4px;border-radius:50%;background:var(--pink);margin:3px auto 0}
+.agenda-slots{display:flex;flex-direction:column;gap:4px}
+.agenda-slot{display:flex;align-items:stretch;gap:8px;min-height:44px}
+.agenda-slot-time{width:46px;flex-shrink:0;font-size:.65rem;font-family:var(--ft);color:var(--muted);padding-top:10px;text-align:right}
+.agenda-slot-content{flex:1;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;padding:6px 10px;transition:background .15s;position:relative;overflow:hidden}
+.agenda-slot-content.ocupado{border-color:rgba(255,107,157,.3);background:rgba(255,107,157,.05)}
+.agenda-slot-content.confirmada{border-color:rgba(6,214,160,.3);background:rgba(6,214,160,.05)}
+.agenda-slot-content.bloqueado{border-color:rgba(136,136,170,.15);background:rgba(0,0,0,.15)}
+.agenda-slot-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.agenda-slot-bar.ocupado{background:var(--pink)}
+.agenda-slot-bar.confirmada{background:var(--teal)}
+.agenda-slot-bar.bloqueado{background:var(--muted2)}
+.agenda-slot-nome{font-size:.78rem;color:var(--white);font-weight:600;flex:1}
+.agenda-slot-servico{font-size:.63rem;color:var(--muted)}
+.agenda-slot-actions{display:flex;gap:4px;flex-shrink:0}
+.agenda-slot-livre-lbl{font-size:.7rem;color:var(--muted);font-style:italic}
+.agenda-upcoming-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:var(--r);transition:background .15s;border-bottom:1px solid var(--border)}
+.agenda-upcoming-row:last-child{border-bottom:none}
+.agenda-upcoming-row:hover{background:var(--bg3)}
+.agenda-upcoming-date{width:42px;text-align:center;flex-shrink:0}
+.agenda-upcoming-date-day{font-family:var(--ft);font-size:1.1rem;color:var(--pink);line-height:1}
+.agenda-upcoming-date-mon{font-size:.56rem;text-transform:uppercase;color:var(--muted)}
+.agenda-upcoming-info{flex:1;overflow:hidden}
+.agenda-upcoming-nome{font-size:.8rem;color:var(--white);font-weight:600}
+.agenda-upcoming-det{font-size:.64rem;color:var(--muted)}
+.agenda-upcoming-hora{font-family:var(--ft);font-size:.82rem;color:var(--white);flex-shrink:0;min-width:42px;text-align:right}
+.agenda-srv-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.agenda-srv-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)}
+.agenda-srv-nome{flex:1;font-size:.8rem;color:var(--white)}
+.agenda-srv-det{font-size:.64rem;color:var(--muted)}
+.agenda-days-wrap{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.agenda-day-toggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:none;font-size:.7rem;font-family:var(--ft);color:var(--muted);cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center}
+.agenda-day-toggle.active{background:var(--grad);color:#fff;border-color:transparent}
+
+/* ============================================================
+   BLOG / CONTEÚDO
+   ============================================================ */
+.blog-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:560px){.blog-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.blog-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px}
+.blog-kpi-val{font-family:var(--ft);font-size:1.3rem;color:var(--white);line-height:1.1;margin-bottom:2px}
+.blog-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.blog-art-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:8px;transition:border-color .2s}
+.blog-art-card:hover{border-color:rgba(255,107,157,.3)}
+.blog-art-title{font-size:.92rem;font-weight:700;color:var(--white);margin-bottom:4px;line-height:1.3}
+.blog-art-meta{font-size:.64rem;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.blog-art-excerpt{font-size:.74rem;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.blog-art-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.blog-status-pub{background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.25);color:var(--teal);border-radius:50px;padding:2px 8px;font-size:.6rem;font-weight:700}
+.blog-status-draft{background:rgba(136,136,170,.1);border:1px solid var(--border);color:var(--muted);border-radius:50px;padding:2px 8px;font-size:.6rem}
+.blog-editor-back{font-size:.76rem;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:color .15s;margin-bottom:12px}
+.blog-editor-back:hover{color:var(--pink)}
+.blog-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media(max-width:760px){.blog-split{grid-template-columns:1fr}}
+.blog-toolbar{display:flex;gap:3px;flex-wrap:wrap;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;border-bottom:none}
+.blog-tb-btn{padding:4px 8px;border-radius:5px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:.76rem;font-family:var(--ft);transition:var(--tr);min-width:28px;text-align:center}
+.blog-tb-btn:hover{background:var(--bg2);color:var(--white)}
+.blog-tb-sep{width:1px;background:var(--border);margin:2px 3px;align-self:stretch}
+.blog-content-area{width:100%;min-height:260px;background:var(--bg3);border:1px solid var(--border);border-radius:0 0 var(--r) var(--r);padding:10px;color:var(--white);font-size:.82rem;line-height:1.7;resize:vertical;font-family:monospace;box-sizing:border-box}
+.blog-content-area:focus{border-color:var(--pink);outline:none}
+.blog-preview-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;min-height:160px;font-size:.82rem;line-height:1.7;color:var(--white);position:sticky;top:10px}
+.blog-preview-wrap h1,.blog-preview-wrap h2,.blog-preview-wrap h3{color:var(--white);font-family:var(--ft);margin:.6em 0 .3em}
+.blog-preview-wrap blockquote{border-left:3px solid var(--pink);padding-left:10px;color:var(--muted);margin:8px 0}
+.blog-preview-wrap ul,.blog-preview-wrap ol{padding-left:1.2em;margin:.4em 0}
+.blog-preview-wrap a{color:var(--pink)}
+.blog-preview-wrap img{max-width:100%;border-radius:6px;margin:6px 0}
+.blog-preview-wrap code{background:var(--bg2);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:.85em}
+.blog-seo-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-top:10px}
+.blog-seo-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px}
+.blog-char-count{font-size:.6rem;color:var(--muted);text-align:right;margin-top:2px}
+.blog-empty{text-align:center;padding:32px;color:var(--muted)}
+.blog-empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:.4}
 </style>
 </head>
 <body>
@@ -1334,6 +1434,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <i class="fa-solid fa-users"></i>
         <span class="sidebar-item-label">Clientes</span>
       </button>
+      <button class="sidebar-item" data-panel="agenda" onclick="navigate('agenda')">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span class="sidebar-item-label">Agenda</span>
+        <span class="sidebar-badge" id="sidebarAgendaBadge" style="display:none;background:var(--blue)">0</span>
+      </button>
       <button class="sidebar-item" data-panel="reviews" onclick="navigate('reviews')">
         <i class="fa-solid fa-star"></i>
         <span class="sidebar-item-label">Avaliações</span>
@@ -1357,6 +1462,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="sidebar-item" data-panel="marketing" onclick="navigate('marketing')">
         <i class="fa-solid fa-bullhorn"></i>
         <span class="sidebar-item-label">Marketing</span>
+      </button>
+      <button class="sidebar-item" data-panel="blog" onclick="navigate('blog')">
+        <i class="fa-solid fa-newspaper"></i>
+        <span class="sidebar-item-label">Blog</span>
       </button>
       <button class="sidebar-item" data-panel="editor" onclick="navigate('editor')">
         <i class="fa-solid fa-palette"></i>
@@ -1761,6 +1870,87 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             </div>
           </div>
           <p style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px" id="cleanupInfo"></p>
+        </div>
+
+        <!-- ============================================
+             AGENDA / RESERVAS
+             ============================================ -->
+        <div class="panel" id="panel-agenda">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-calendar-check" style="color:var(--blue)"></i> Agenda & Reservas</div>
+            <div class="page-actions">
+              <button class="btn btn-outline btn-sm" onclick="agendaGoToday()"><i class="fa-solid fa-calendar-day"></i> Hoje</button>
+              <button class="btn btn-outline btn-sm" onclick="renderAgenda()"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="agenda-kpi-grid" id="agendaKpis"></div>
+
+          <!-- Week strip + day nav -->
+          <div class="section-card" style="margin-bottom:10px">
+            <div class="agenda-day-nav">
+              <button class="agenda-nav-btn" onclick="agendaNavDay(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="agenda-day-label" id="agendaDayLabel">—</div>
+              <button class="agenda-nav-btn" onclick="agendaNavDay(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="agenda-week-strip" id="agendaWeekStrip"></div>
+            <!-- Time slots -->
+            <div id="agendaSlots"><div class="spinner"></div></div>
+          </div>
+
+          <!-- Próximas reservas -->
+          <div class="section-card" style="margin-bottom:10px">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-list" style="color:var(--purple)"></i> Próximas Reservas</div>
+              <span id="agendaUpcomingCount" style="font-size:.7rem;color:var(--muted)"></span>
+            </div>
+            <div id="agendaUpcomingList"></div>
+          </div>
+
+          <!-- Configuração -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-sliders" style="color:var(--muted)"></i> Configuração da Agenda</div>
+              <label class="switch"><input type="checkbox" id="agendaAtivo" onchange="saveAgendaConfig()"/><span class="switch-slider"></span></label>
+            </div>
+
+            <!-- Serviços -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Serviços</div>
+              <div class="agenda-srv-list" id="agendaSrvList"></div>
+              <div class="form-row" style="margin-bottom:6px">
+                <div class="form-group" style="flex:2"><input type="text" class="form-input" id="newSrvNome" placeholder="Nome do serviço" maxlength="40"/></div>
+                <div class="form-group" style="flex:1"><input type="number" class="form-input" id="newSrvDur" min="15" step="15" placeholder="Min" title="Duração (min)"/></div>
+                <div class="form-group" style="flex:1"><input type="number" class="form-input" id="newSrvPreco" min="0" placeholder="Kz" title="Preço"/></div>
+                <button class="btn btn-outline btn-sm" style="align-self:flex-end" onclick="addAgendaServico()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+
+            <!-- Horário -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Horário</div>
+              <div class="form-row">
+                <div class="form-group" style="flex:1"><label class="form-label">Início</label><input type="time" class="form-input" id="agendaHrInicio" value="09:00"/></div>
+                <div class="form-group" style="flex:1"><label class="form-label">Fim</label><input type="time" class="form-input" id="agendaHrFim" value="18:00"/></div>
+                <div class="form-group" style="flex:1"><label class="form-label">Intervalo</label>
+                  <select class="form-select" id="agendaIntervalo">
+                    <option value="15">15 min</option><option value="30" selected>30 min</option>
+                    <option value="45">45 min</option><option value="60">60 min</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex:1"><label class="form-label">Máx/slot</label><input type="number" class="form-input" id="agendaMaxSlot" min="1" max="20" value="1"/></div>
+              </div>
+            </div>
+
+            <!-- Dias da semana -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Dias disponíveis</div>
+              <div class="agenda-days-wrap" id="agendaDiasWrap"></div>
+            </div>
+
+            <button class="btn btn-primary btn-full" onclick="saveAgendaConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar Configuração</button>
+          </div>
         </div>
 
         <!-- ============================================
@@ -2175,6 +2365,112 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             BLOG / CONTEÚDO
+             ============================================ -->
+        <div class="panel" id="panel-blog">
+          <!-- LIST VIEW -->
+          <div id="blogListView">
+            <div class="page-header">
+              <div class="page-title"><i class="fa-solid fa-newspaper" style="color:var(--blue)"></i> Blog & Conteúdo</div>
+              <div class="page-actions">
+                <button class="btn btn-primary btn-sm" onclick="openBlogEditor(null)"><i class="fa-solid fa-plus"></i> Novo Artigo</button>
+                <button class="btn btn-outline btn-sm" onclick="renderBlog()"><i class="fa-solid fa-rotate"></i></button>
+              </div>
+            </div>
+            <div class="blog-kpi-grid" id="blogKpis"></div>
+            <div class="search-bar" style="margin-bottom:10px">
+              <input class="search-input" type="search" id="blogSearch" placeholder="Pesquisar artigos..." oninput="filterBlog()"/>
+            </div>
+            <div id="blogArtigosList"></div>
+          </div>
+
+          <!-- EDITOR VIEW (hidden by default) -->
+          <div id="blogEditorView" style="display:none">
+            <div class="blog-editor-back" onclick="closeBlogEditor()">
+              <i class="fa-solid fa-arrow-left"></i> Voltar à lista
+            </div>
+            <div class="form-group" style="margin-bottom:10px">
+              <input type="text" class="form-input" id="blogTitulo" placeholder="Título do artigo..."
+                     style="font-size:1.05rem;font-family:var(--ft);font-weight:700"
+                     oninput="onBlogTitleChange()"/>
+            </div>
+            <div class="form-row" style="margin-bottom:10px">
+              <div class="form-group" style="flex:2">
+                <label class="form-label">Slug (URL)</label>
+                <input type="text" class="form-input" id="blogSlug" placeholder="meu-artigo"/>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Categoria</label>
+                <input type="text" class="form-input" id="blogCategoria" placeholder="Dicas, Notícias..."/>
+              </div>
+              <div class="form-group" style="flex:1;align-self:flex-end">
+                <div class="switch-row" style="padding:0">
+                  <div><div class="switch-label">Publicar</div></div>
+                  <label class="switch"><input type="checkbox" id="blogPublicado"/><span class="switch-slider"></span></label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Editor + Preview split -->
+            <div class="blog-split">
+              <div>
+                <div class="blog-toolbar" id="blogToolbar">
+                  <button class="blog-tb-btn" title="Negrito" onclick="blogTag('strong','texto em negrito')"><b>B</b></button>
+                  <button class="blog-tb-btn" title="Itálico" onclick="blogTag('em','texto em itálico')"><i>I</i></button>
+                  <div class="blog-tb-sep"></div>
+                  <button class="blog-tb-btn" title="Título 2" onclick="blogTag('h2','Título')">H2</button>
+                  <button class="blog-tb-btn" title="Título 3" onclick="blogTag('h3','Subtítulo')">H3</button>
+                  <div class="blog-tb-sep"></div>
+                  <button class="blog-tb-btn" title="Parágrafo" onclick="blogTag('p','Parágrafo de texto...')">¶</button>
+                  <button class="blog-tb-btn" title="Citação" onclick="blogTag('blockquote','Citação...')">❝</button>
+                  <button class="blog-tb-btn" title="Código" onclick="blogTag('code','código')"><code style="font-size:.7rem">&lt;/&gt;</code></button>
+                  <div class="blog-tb-sep"></div>
+                  <button class="blog-tb-btn" title="Lista" onclick="blogInsertList('ul')">• —</button>
+                  <button class="blog-tb-btn" title="Lista numerada" onclick="blogInsertList('ol')">1. —</button>
+                  <div class="blog-tb-sep"></div>
+                  <button class="blog-tb-btn" title="Link" onclick="blogInsertLink()">🔗</button>
+                  <button class="blog-tb-btn" title="Imagem" onclick="blogInsertImage()">🖼️</button>
+                </div>
+                <textarea class="blog-content-area" id="blogContent"
+                          placeholder="Começa a escrever o teu artigo em HTML..."
+                          oninput="updateBlogPreview()"></textarea>
+                <p style="font-size:.62rem;color:var(--muted);margin-top:4px">Usa as ferramentas da barra para formatar. O conteúdo é guardado em HTML.</p>
+              </div>
+              <div>
+                <div style="font-size:.62rem;color:var(--muted);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Preview</div>
+                <div class="blog-preview-wrap" id="blogPreview"><span style="color:var(--muted);font-style:italic">O artigo aparece aqui...</span></div>
+              </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="blog-seo-section">
+              <div class="blog-seo-title"><i class="fa-solid fa-magnifying-glass" style="color:var(--blue)"></i> SEO</div>
+              <div class="form-group" style="margin-bottom:8px">
+                <label class="form-label">Meta Título</label>
+                <input type="text" class="form-input" id="blogMetaTitulo" maxlength="60" placeholder="Título para motores de busca..." oninput="$('blogMetaTituloCount').textContent=this.value.length+'/60'"/>
+                <div class="blog-char-count" id="blogMetaTituloCount">0/60</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Meta Descrição</label>
+                <textarea class="form-input" id="blogMetaDesc" rows="2" maxlength="160"
+                          placeholder="Descrição para motores de busca..." style="resize:none"
+                          oninput="$('blogMetaDescCount').textContent=this.value.length+'/160'"></textarea>
+                <div class="blog-char-count" id="blogMetaDescCount">0/160</div>
+              </div>
+            </div>
+
+            <!-- Save bar -->
+            <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-outline" onclick="closeBlogEditor()"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+              <div style="flex:1"></div>
+              <button class="btn btn-primary" onclick="saveBlogArtigo()" id="blogSaveBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Artigo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
              MARKETING
              ============================================ -->
         <div class="panel" id="panel-marketing">
@@ -2447,6 +2743,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
           <i class="fa-solid fa-ticket"></i>
           <span>Cupões</span>
         </button>
+        <button class="more-btn blue" onclick="navigateMore('agenda')">
+          <span class="more-btn-badge" id="moreAgendaBadge" style="display:none">0</span>
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Agenda</span>
+        </button>
         <button class="more-btn orange" onclick="navigateMore('stock')">
           <span class="more-btn-badge" id="moreStockBadge" style="display:none">!</span>
           <i class="fa-solid fa-warehouse"></i>
@@ -2464,6 +2765,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn pink" onclick="navigateMore('marketing')">
           <i class="fa-solid fa-bullhorn"></i>
           <span>Marketing</span>
+        </button>
+        <button class="more-btn blue" onclick="navigateMore('blog')">
+          <i class="fa-solid fa-newspaper"></i>
+          <span>Blog</span>
         </button>
         <button class="more-btn purple" onclick="navigateMore('editor')">
           <i class="fa-solid fa-palette"></i>
@@ -3231,6 +3536,8 @@ function navigate(panel){
   if(panel==='fidelizacao')renderFidelizacao();
   if(panel==='recuperacao')renderRecuperacao();
   if(panel==='editor')renderEditorVisual();
+  if(panel==='agenda')renderAgenda();
+  if(panel==='blog')renderBlog();
 }
 
 function expandSidebar(){$('sidebar').classList.add('expanded');}
@@ -5358,6 +5665,509 @@ applyTheme();
 })();
 
 autoLogin();
+
+/* ============================================================
+   BLOG / CONTEÚDO
+   ============================================================ */
+(function(){
+  let _artigos = [];
+  let _editing = null; // null = new article, object = existing
+
+  /* ---- load ---- */
+  async function loadArtigos(){
+    try{
+      const r = await api('/api/admin/artigos');
+      _artigos = Array.isArray(r) ? r : (Array.isArray(r?.artigos) ? r.artigos : []);
+    }catch(e){ _artigos = []; }
+  }
+
+  /* ---- render principal ---- */
+  window.renderBlog = async function(){
+    await loadArtigos();
+    closeBlogEditor();
+    renderBlogKPIs();
+    renderArtigosList();
+  };
+
+  /* ---- KPIs ---- */
+  function renderBlogKPIs(){
+    const total = _artigos.length;
+    const pub   = _artigos.filter(a=>a.status==='publicado').length;
+    const draft = _artigos.filter(a=>a.status!=='publicado').length;
+    const vis   = _artigos.reduce((s,a)=>s+(a.visitas||0),0);
+    $('blogKpis').innerHTML =
+      bKpi(total,'Artigos','fa-file-lines','var(--blue)')+
+      bKpi(pub,'Publicados','fa-circle-check','var(--teal)')+
+      bKpi(draft,'Rascunhos','fa-pen','var(--orange)')+
+      bKpi(vis,'Visitas totais','fa-eye','var(--purple)');
+  }
+  function bKpi(v,l,i,c){
+    return '<div class="blog-kpi"><div style="color:'+c+';font-size:.8rem;margin-bottom:4px"><i class="fa-solid '+i+'"></i></div>'+
+      '<div class="blog-kpi-val">'+v+'</div><div class="blog-kpi-lbl">'+l+'</div></div>';
+  }
+
+  /* ---- lista ---- */
+  function renderArtigosList(q){
+    const cont=$('blogArtigosList');if(!cont)return;
+    const list=_artigos.filter(a=>{
+      if(!q)return true;
+      const t=(a.titulo||'').toLowerCase();
+      return t.includes(q.toLowerCase());
+    }).sort((a,b)=>new Date(b.criado_em||0)-new Date(a.criado_em||0));
+    if(!list.length){
+      cont.innerHTML='<div class="blog-empty"><i class="fa-solid fa-newspaper"></i>'+
+        (q?'Nenhum artigo encontrado':'Ainda sem artigos. Cria o primeiro!')+'</div>';
+      return;
+    }
+    cont.innerHTML=list.map(a=>{
+      const isPub=a.status==='publicado';
+      const excerpt=stripHtml(a.conteudo||'').slice(0,120)+(stripHtml(a.conteudo||'').length>120?'…':'');
+      return '<div class="blog-art-card">'+
+        '<div class="blog-art-title">'+esc(a.titulo||'Sem título')+'</div>'+
+        '<div class="blog-art-meta">'+
+          '<span class="'+(isPub?'blog-status-pub':'blog-status-draft')+'">'+
+            (isPub?'✓ Publicado':'✎ Rascunho')+'</span>'+
+          (a.categoria?'<span>📂 '+esc(a.categoria)+'</span>':'')+
+          (a.criado_em?'<span>📅 '+fmtDate(a.criado_em)+'</span>':'')+
+          (a.visitas?'<span>👁 '+a.visitas+'</span>':'')+
+        '</div>'+
+        (excerpt?'<div class="blog-art-excerpt">'+esc(excerpt)+'</div>':'')+
+        '<div class="blog-art-actions">'+
+          '<button class="btn btn-outline btn-sm" onclick="openBlogEditor(\''+esc(a.id)+'\')">'+
+            '<i class="fa-solid fa-pen"></i> Editar</button>'+
+          '<button class="btn btn-sm" style="background:rgba('+(isPub?'136,136,170':'6,214,160')+',.1);color:'+(isPub?'var(--muted)':'var(--teal)')+
+                  ';border:1px solid '+(isPub?'var(--border)':'rgba(6,214,160,.25)')+';" '+
+                  'onclick="toggleBlogPublish(\''+esc(a.id)+'\',\''+a.status+'\')">'+
+            (isPub?'<i class="fa-solid fa-eye-slash"></i> Despublicar':'<i class="fa-solid fa-globe"></i> Publicar')+'</button>'+
+          '<button class="btn btn-sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15)"'+
+                  ' onclick="deleteBlogArtigo(\''+esc(a.id)+'\')">'+
+            '<i class="fa-solid fa-trash"></i></button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  function stripHtml(html){ const t=document.createElement('div');t.innerHTML=html;return t.textContent||''; }
+
+  window.filterBlog=function(){renderArtigosList($('blogSearch')?.value||'');};
+
+  /* ---- editor ---- */
+  window.openBlogEditor=function(id){
+    _editing = id ? (_artigos.find(a=>String(a.id)===String(id))||null) : null;
+    // populate form
+    $('blogTitulo').value  = _editing?.titulo||'';
+    $('blogSlug').value    = _editing?.slug||'';
+    $('blogCategoria').value=_editing?.categoria||'';
+    $('blogPublicado').checked=_editing?.status==='publicado';
+    $('blogContent').value = _editing?.conteudo||'';
+    $('blogMetaTitulo').value=_editing?.meta_titulo||'';
+    $('blogMetaDesc').value =_editing?.meta_descricao||'';
+    $('blogMetaTituloCount').textContent=($('blogMetaTitulo').value.length)+'/60';
+    $('blogMetaDescCount').textContent  =($('blogMetaDesc').value.length)+'/160';
+    updateBlogPreview();
+    $('blogListView').style.display='none';
+    $('blogEditorView').style.display='block';
+    $('blogTitulo').focus();
+  };
+
+  window.closeBlogEditor=function(){
+    $('blogListView').style.display='';
+    $('blogEditorView').style.display='none';
+    _editing=null;
+  };
+
+  /* ---- title → slug ---- */
+  window.onBlogTitleChange=function(){
+    const t=$('blogTitulo')?.value||'';
+    const slug=$('blogSlug');
+    if(slug&&(!_editing||!slug.value)){
+      slug.value=t.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,60);
+    }
+    updateBlogPreview();
+  };
+
+  /* ---- toolbar helpers ---- */
+  window.blogTag=function(tag,placeholder){
+    const ta=$('blogContent');if(!ta)return;
+    const s=ta.selectionStart,e=ta.selectionEnd;
+    const sel=ta.value.slice(s,e)||placeholder;
+    const ins='<'+tag+'>'+sel+'</'+tag+'>';
+    ta.value=ta.value.slice(0,s)+ins+ta.value.slice(e);
+    ta.selectionStart=s+'<'+tag+'>'.length;
+    ta.selectionEnd=s+ins.length-('</'+tag+'>'.length);
+    ta.focus();updateBlogPreview();
+  };
+  window.blogInsertList=function(type){
+    const ta=$('blogContent');if(!ta)return;
+    const ins='\n<'+type+'>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</'+type+'>\n';
+    const s=ta.selectionStart;
+    ta.value=ta.value.slice(0,s)+ins+ta.value.slice(s);
+    ta.focus();updateBlogPreview();
+  };
+  window.blogInsertLink=function(){
+    const url=prompt('URL do link:','https://');if(!url)return;
+    const ta=$('blogContent');if(!ta)return;
+    const s=ta.selectionStart,e=ta.selectionEnd;
+    const txt=ta.value.slice(s,e)||'Clica aqui';
+    const ins='<a href="'+url+'" target="_blank">'+txt+'</a>';
+    ta.value=ta.value.slice(0,s)+ins+ta.value.slice(e);
+    ta.focus();updateBlogPreview();
+  };
+  window.blogInsertImage=function(){
+    const url=prompt('URL da imagem:','https://');if(!url)return;
+    const alt=prompt('Texto alternativo:','') || 'Imagem';
+    const ta=$('blogContent');if(!ta)return;
+    const ins='\n<img src="'+url+'" alt="'+alt+'" style="max-width:100%">\n';
+    const s=ta.selectionStart;
+    ta.value=ta.value.slice(0,s)+ins+ta.value.slice(s);
+    ta.focus();updateBlogPreview();
+  };
+
+  /* ---- live preview ---- */
+  window.updateBlogPreview=function(){
+    const cont=$('blogContent')?.value||'';
+    const prev=$('blogPreview');if(!prev)return;
+    prev.innerHTML=cont||'<span style="color:var(--muted);font-style:italic">O artigo aparece aqui...</span>';
+  };
+
+  /* ---- save ---- */
+  window.saveBlogArtigo=async function(){
+    const btn=$('blogSaveBtn');
+    const titulo=($('blogTitulo')?.value||'').trim();
+    if(!titulo){toast('Título obrigatório','error');return;}
+    const body={
+      titulo,
+      slug:$('blogSlug')?.value.trim()||titulo.toLowerCase().replace(/\s+/g,'-').slice(0,60),
+      conteudo:$('blogContent')?.value||'',
+      categoria:$('blogCategoria')?.value.trim()||'',
+      status:$('blogPublicado')?.checked?'publicado':'rascunho',
+      meta_titulo:$('blogMetaTitulo')?.value.trim()||titulo,
+      meta_descricao:$('blogMetaDesc')?.value.trim()||'',
+    };
+    const method=_editing?'PUT':'POST';
+    const url=_editing?'/api/admin/artigos/'+_editing.id:'/api/admin/artigos';
+    const b=btnBusy(btn);
+    try{
+      const saved=await api(url,{method,body:JSON.stringify(body)});
+      if(_editing){
+        const idx=_artigos.findIndex(a=>a.id===_editing.id);
+        if(idx>=0)_artigos[idx]={..._artigos[idx],...body};
+      }else{
+        _artigos.unshift({...(saved||{}), ...body, id:(saved?.id||Date.now()), criado_em:new Date().toISOString(), visitas:0});
+      }
+      toast(body.status==='publicado'?'🌐 Artigo publicado!':'📝 Rascunho guardado','success');
+      closeBlogEditor();
+      renderBlogKPIs();
+      renderArtigosList();
+    }catch(err){toast('Erro ao guardar: '+err.message,'error');}
+    btnDone(btn);
+  };
+
+  /* ---- toggle publish ---- */
+  window.toggleBlogPublish=async function(id,currentStatus){
+    const newStatus=currentStatus==='publicado'?'rascunho':'publicado';
+    try{
+      await api('/api/admin/artigos/'+id,{method:'PUT',body:JSON.stringify({status:newStatus})});
+      const a=_artigos.find(x=>String(x.id)===String(id));
+      if(a)a.status=newStatus;
+      renderBlogKPIs();renderArtigosList();
+      toast(newStatus==='publicado'?'🌐 Artigo publicado!':'Artigo despublicado','success');
+    }catch(e){toast('Erro: '+e.message,'error');}
+  };
+
+  /* ---- delete ---- */
+  window.deleteBlogArtigo=async function(id){
+    const a=_artigos.find(x=>String(x.id)===String(id));
+    if(!confirm('Eliminar "'+(a?.titulo||'artigo')+ '"? Esta acção não pode ser desfeita.'))return;
+    try{
+      await api('/api/admin/artigos/'+id,{method:'DELETE'});
+      _artigos=_artigos.filter(x=>String(x.id)!==String(id));
+      renderBlogKPIs();renderArtigosList();
+      toast('Artigo eliminado','success');
+    }catch(e){toast('Erro: '+e.message,'error');}
+  };
+})();
+
+/* ============================================================
+   AGENDA / RESERVAS
+   ============================================================ */
+(function(){
+  const DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  let _currentDay=new Date();
+  let _reservas=[];
+  let _servicos=[];
+
+  function getCfg(){return{
+    ativo:!!state.loja.agenda_ativo,
+    hrInicio:state.loja.agenda_hr_inicio||'09:00',
+    hrFim:state.loja.agenda_hr_fim||'18:00',
+    intervalo:parseInt(state.loja.agenda_intervalo)||30,
+    maxSlot:parseInt(state.loja.agenda_max_slot)||1,
+    dias:state.loja.agenda_dias||[1,2,3,4,5],
+  };}
+
+  function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function pad(n){return String(n).padStart(2,'0');}
+  function isSameDay(a,b){return dateKey(a)===dateKey(b);}
+
+  async function loadReservas(){
+    try{
+      const r=await api('/api/admin/reservas');
+      _reservas=Array.isArray(r)?r:[];
+    }catch(e){
+      _reservas=(state.encomendas||[])
+        .filter(e=>e.reserva_data||e.data_reserva||e.hora_reserva)
+        .map(e=>({
+          id:e.ref, ref:e.ref,
+          nome_cliente:e.nome_cliente, email_cliente:e.email_cliente,
+          telefone_cliente:e.telefone_cliente||e.whatsapp_cliente,
+          data:e.reserva_data||e.data_reserva,
+          hora:e.hora_reserva||'00:00',
+          servico:e.notas||'Reserva',
+          estado:e.estado==='confirmada'?'confirmada':'pendente',
+          total:e.total||0,
+        }));
+    }
+    updateAgendaBadge();
+  }
+
+  function updateAgendaBadge(){
+    const hoje=dateKey(new Date());
+    const n=_reservas.filter(r=>r.data===hoje&&r.estado!=='cancelada').length;
+    ['sidebarAgendaBadge','moreAgendaBadge'].forEach(id=>{
+      const b=$(id);if(!b)return;
+      b.textContent=n;b.style.display=n?'':'none';
+    });
+  }
+
+  window.renderAgenda=async function(){
+    await loadReservas();
+    loadAgendaConfig();
+    renderAgendaKPIs();
+    renderWeekStrip();
+    renderDaySlots();
+    renderUpcoming();
+    renderSrvList();
+  };
+
+  window.agendaGoToday=function(){_currentDay=new Date();renderWeekStrip();renderDaySlots();};
+  window.agendaNavDay=function(d){_currentDay=new Date(_currentDay);_currentDay.setDate(_currentDay.getDate()+d);renderWeekStrip();renderDaySlots();};
+
+  function renderAgendaKPIs(){
+    const today=dateKey(new Date());
+    const sym=state.loja.simbolo_moeda||'Kz';
+    const hoje=_reservas.filter(r=>r.data===today&&r.estado!=='cancelada');
+    const n=new Date();
+    const mon=new Date(n);mon.setDate(n.getDate()-((n.getDay()+6)%7));
+    const sun=new Date(mon);sun.setDate(sun.getDate()+7);
+    const semana=_reservas.filter(r=>{const d=new Date(r.data);return d>=mon&&d<sun&&r.estado!=='cancelada';});
+    const pendentes=_reservas.filter(r=>r.estado==='pendente'||r.estado==='ocupado');
+    const receita=_reservas.filter(r=>r.estado==='confirmada').reduce((s,r)=>s+(r.total||0),0);
+    $('agendaKpis').innerHTML=
+      aKpi('blue','fa-calendar-day',hoje.length,'Hoje','Para hoje')+
+      aKpi('purple','fa-calendar-week',semana.length,'Esta semana','Reservas na semana')+
+      aKpi('orange','fa-clock',pendentes.length,'Por confirmar','Aguardam confirmação')+
+      aKpi('teal','fa-coins',kz(receita,sym),'Receita confirmada','Reservas pagas');
+  }
+  function aKpi(c,i,v,l,s){
+    return '<div class="agenda-kpi"><div class="agenda-kpi-icon '+c+'"><i class="fa-solid '+i+'"></i></div>'+
+      '<div class="agenda-kpi-val">'+v+'</div><div class="agenda-kpi-lbl">'+l+'</div>'+
+      '<div class="agenda-kpi-sub">'+s+'</div></div>';
+  }
+
+  function renderWeekStrip(){
+    const strip=$('agendaWeekStrip');if(!strip)return;
+    const base=new Date(_currentDay);
+    const mon=new Date(base);mon.setDate(base.getDate()-((base.getDay()+6)%7));
+    const today=dateKey(new Date());
+    strip.innerHTML=Array.from({length:7},(_,i)=>{
+      const d=new Date(mon);d.setDate(mon.getDate()+i);
+      const dk=dateKey(d);
+      const active=isSameDay(d,_currentDay);
+      const isToday=dk===today;
+      const hasRes=_reservas.some(r=>r.data===dk&&r.estado!=='cancelada');
+      return '<div class="agenda-day-chip'+(active?' active':'')+(isToday?' today':'')+(hasRes?' has-res':'')+
+        '" onclick="agendaSelectDay(\''+dk+'\')">'+
+        '<div class="agenda-day-chip-dow">'+DOW[d.getDay()]+'</div>'+
+        '<div class="agenda-day-chip-num">'+d.getDate()+'</div>'+
+        (hasRes&&!active?'<div class="agenda-day-chip-dot"></div>':'<div style="height:7px"></div>')+
+      '</div>';
+    }).join('');
+    $('agendaDayLabel').textContent=DOW[_currentDay.getDay()]+', '+_currentDay.getDate()+' '+
+      MESES[_currentDay.getMonth()]+' '+_currentDay.getFullYear();
+  }
+
+  window.agendaSelectDay=function(dk){_currentDay=new Date(dk+'T12:00:00');renderWeekStrip();renderDaySlots();};
+
+  function renderDaySlots(){
+    const cfg=getCfg();
+    const dk=dateKey(_currentDay);
+    const cont=$('agendaSlots');if(!cont)return;
+    const slots=generateSlots(cfg.hrInicio,cfg.hrFim,cfg.intervalo);
+    if(!slots.length){cont.innerHTML='<p style="font-size:.78rem;color:var(--muted);padding:10px">Configura o horário para ver os slots.</p>';return;}
+    const dayRes=_reservas.filter(r=>r.data===dk&&r.estado!=='cancelada');
+    cont.innerHTML='<div class="agenda-slots">'+slots.map(hora=>{
+      const res=dayRes.filter(r=>r.hora===hora);
+      if(res.length){
+        return res.map(r=>{
+          const cls=r.estado==='confirmada'?'confirmada':'ocupado';
+          const wa=(r.telefone_cliente||'').replace(/\D/g,'');
+          const msg=encodeURIComponent('Olá '+r.nome_cliente+'! Confirmamos a sua reserva para '+hora+' de '+esc(r.servico)+'. Até logo! 😊 — '+(state.loja.nome||''));
+          return '<div class="agenda-slot">'+
+            '<div class="agenda-slot-time">'+hora+'</div>'+
+            '<div class="agenda-slot-content '+cls+'">'+
+              '<div class="agenda-slot-bar '+cls+'"></div>'+
+              '<div style="flex:1">'+
+                '<div class="agenda-slot-nome">'+esc(r.nome_cliente||'—')+'</div>'+
+                '<div class="agenda-slot-servico">'+esc(r.servico||'Reserva')+(r.telefone_cliente?' · '+esc(r.telefone_cliente):'')+'</div>'+
+              '</div>'+
+              '<div class="agenda-slot-actions">'+
+                (wa?'<a href="https://wa.me/'+wa+'?text='+msg+'" target="_blank" class="btn btn-sm" style="background:rgba(37,211,102,.1);color:#25d366;border:1px solid rgba(37,211,102,.2);padding:4px 8px"><i class="fa-brands fa-whatsapp"></i></a>':'')+
+                (cls!=='confirmada'?'<button class="btn btn-sm" style="background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.2);padding:4px 8px" onclick="confirmarReserva(\''+esc(r.id)+'\')"><i class="fa-solid fa-check"></i></button>':'')+
+                '<button class="btn btn-sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15);padding:4px 8px" onclick="cancelarReserva(\''+esc(r.id)+'\')"><i class="fa-solid fa-xmark"></i></button>'+
+              '</div>'+
+            '</div>'+
+          '</div>';
+        }).join('');
+      }
+      return '<div class="agenda-slot">'+
+        '<div class="agenda-slot-time">'+hora+'</div>'+
+        '<div class="agenda-slot-content livre"><div class="agenda-slot-livre-lbl">Disponível</div></div>'+
+      '</div>';
+    }).join('')+'</div>';
+  }
+
+  function generateSlots(inicio,fim,interv){
+    const slots=[];
+    let [h,m]=inicio.split(':').map(Number);
+    const [hf,mf]=fim.split(':').map(Number);
+    const endMin=hf*60+mf;
+    while(h*60+m<endMin){
+      slots.push(pad(h)+':'+pad(m));
+      m+=interv;if(m>=60){h+=Math.floor(m/60);m%=60;}
+    }
+    return slots;
+  }
+
+  function renderUpcoming(){
+    const cont=$('agendaUpcomingList'),cnt=$('agendaUpcomingCount');if(!cont)return;
+    const today=dateKey(new Date());
+    const list=_reservas.filter(r=>r.data>=today&&r.estado!=='cancelada')
+      .sort((a,b)=>a.data.localeCompare(b.data)||a.hora.localeCompare(b.hora)).slice(0,20);
+    if(cnt)cnt.textContent=list.length+' reserva'+(list.length!==1?'s':'');
+    if(!list.length){cont.innerHTML='<p style="font-size:.78rem;color:var(--muted);text-align:center;padding:14px">Sem reservas próximas</p>';return;}
+    cont.innerHTML=list.map(r=>{
+      const d=new Date(r.data+'T12:00:00');
+      const isToday=r.data===today;
+      const isConf=r.estado==='confirmada';
+      return '<div class="agenda-upcoming-row">'+
+        '<div class="agenda-upcoming-date">'+
+          '<div class="agenda-upcoming-date-day" style="color:'+(isToday?'var(--teal)':'var(--pink)')+'">'+d.getDate()+'</div>'+
+          '<div class="agenda-upcoming-date-mon">'+MESES[d.getMonth()]+'</div>'+
+        '</div>'+
+        '<div class="agenda-upcoming-info">'+
+          '<div class="agenda-upcoming-nome">'+esc(r.nome_cliente||'—')+'</div>'+
+          '<div class="agenda-upcoming-det">'+esc(r.servico||'Reserva')+(r.telefone_cliente?' · '+esc(r.telefone_cliente):'')+'</div>'+
+        '</div>'+
+        '<div class="agenda-upcoming-hora">'+r.hora+'</div>'+
+        '<span class="badge '+(isConf?'badge-active':'badge-pending')+'">'+
+          (isConf?'Conf.':'Pend.')+'</span>'+
+      '</div>';
+    }).join('');
+  }
+
+  function renderSrvList(){
+    const cont=$('agendaSrvList');if(!cont)return;
+    _servicos=state.loja.agenda_servicos_json||[];
+    const sym=state.loja.simbolo_moeda||'Kz';
+    if(!_servicos.length){cont.innerHTML='<p style="font-size:.74rem;color:var(--muted)">Sem serviços configurados.</p>';return;}
+    cont.innerHTML=_servicos.map((s,i)=>
+      '<div class="agenda-srv-row">'+
+        '<div style="flex:1"><div class="agenda-srv-nome">'+esc(s.nome)+'</div>'+
+        '<div class="agenda-srv-det">'+s.duracao+'min · '+kz(s.preco,sym)+'</div></div>'+
+        '<button class="btn btn-sm btn-icon" style="color:var(--red)" onclick="removeAgendaServico('+i+')">'+
+          '<i class="fa-solid fa-trash"></i></button>'+
+      '</div>'
+    ).join('');
+  }
+
+  window.addAgendaServico=function(){
+    const nome=$('newSrvNome')?.value.trim();
+    const dur=parseInt($('newSrvDur')?.value)||30;
+    const prec=parseFloat($('newSrvPreco')?.value)||0;
+    if(!nome){toast('Nome obrigatório','error');return;}
+    _servicos.push({nome,duracao:dur,preco:prec});
+    $('newSrvNome').value='';$('newSrvDur').value='';$('newSrvPreco').value='';
+    renderSrvList();
+  };
+  window.removeAgendaServico=function(i){_servicos.splice(i,1);renderSrvList();};
+
+  function renderDiasWrap(dias){
+    const wrap=$('agendaDiasWrap');if(!wrap)return;
+    wrap.innerHTML=DOW.map((d,i)=>
+      '<button class="agenda-day-toggle'+(dias.includes(i)?' active':'')+'\" onclick="toggleAgendaDia(this)">'+d+'</button>'
+    ).join('');
+  }
+  window.toggleAgendaDia=function(btn){btn.classList.toggle('active');};
+  function getSelectedDias(){
+    return [...document.querySelectorAll('#agendaDiasWrap .agenda-day-toggle')]
+      .map((b,i)=>b.classList.contains('active')?i:-1).filter(i=>i>=0);
+  }
+
+  function loadAgendaConfig(){
+    const cfg=getCfg();
+    const ai=$('agendaAtivo');if(ai)ai.checked=cfg.ativo;
+    const hi=$('agendaHrInicio');if(hi)hi.value=cfg.hrInicio;
+    const hf=$('agendaHrFim');if(hf)hf.value=cfg.hrFim;
+    const iv=$('agendaIntervalo');if(iv)iv.value=String(cfg.intervalo);
+    const ms=$('agendaMaxSlot');if(ms)ms.value=String(cfg.maxSlot);
+    renderDiasWrap(cfg.dias);
+    renderSrvList();
+  }
+
+  window.saveAgendaConfig=async function(){
+    const btn=event?.target;
+    const campos={
+      agenda_ativo:$('agendaAtivo')?.checked?1:0,
+      agenda_hr_inicio:$('agendaHrInicio')?.value||'09:00',
+      agenda_hr_fim:$('agendaHrFim')?.value||'18:00',
+      agenda_intervalo:parseInt($('agendaIntervalo')?.value)||30,
+      agenda_max_slot:parseInt($('agendaMaxSlot')?.value)||1,
+      agenda_dias:getSelectedDias(),
+      agenda_servicos_json:_servicos,
+    };
+    const b=btn?btnBusy(btn):null;
+    try{
+      await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+      Object.assign(state.loja,campos);
+      renderDaySlots();
+      toast('📅 Agenda guardada!','success');
+    }catch(err){toast('Erro: '+err.message,'error');}
+    if(b)btnDone(b);
+  };
+
+  window.confirmarReserva=async function(id){
+    try{
+      try{await api('/api/admin/reservas/'+id+'/estado',{method:'PUT',body:JSON.stringify({estado:'confirmada'})});}catch(e){}
+      const r=_reservas.find(x=>x.id===id);if(r)r.estado='confirmada';
+      renderDaySlots();renderUpcoming();renderAgendaKPIs();updateAgendaBadge();
+      toast('✅ Reserva confirmada','success');
+    }catch(e){toast('Erro','error');}
+  };
+
+  window.cancelarReserva=async function(id){
+    if(!confirm('Cancelar esta reserva?'))return;
+    try{
+      try{await api('/api/admin/reservas/'+id+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});}catch(e){}
+      const r=_reservas.find(x=>x.id===id);if(r)r.estado='cancelada';
+      renderDaySlots();renderUpcoming();renderAgendaKPIs();updateAgendaBadge();
+      toast('Reserva cancelada','success');
+    }catch(e){toast('Erro','error');}
+  };
+})();
 
 /* ============================================================
    EDITOR VISUAL
