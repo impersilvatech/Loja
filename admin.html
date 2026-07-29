@@ -1382,14 +1382,132 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
-  <div style="text-align:center;max-width:380px;width:100%">
+  <div style="text-align:center;max-width:400px;width:100%">
 
-    <div style="font-family:var(--ft);font-size:2.2rem;font-weight:900;margin-bottom:4px;letter-spacing:.01em">
+    <!-- Logo -->
+    <div style="font-family:var(--ft);font-size:2rem;font-weight:900;margin-bottom:4px;letter-spacing:.01em">
       <span style="color:#A9A9A9">IMPERSIL</span><span style="color:#e63946">V</span><span style="color:#4a90ff">A</span>
     </div>
-    <div style="font-size:.65rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:28px">Painel de Gestão</div>
+    <div style="font-size:.6rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:28px">Painel de Gestão</div>
 
-    <!-- Ícone cadeado -->
+    <!-- Ícone -->
+    <div id="loginIcon" style="width:68px;height:68px;border-radius:50%;background:rgba(255,107,157,.08);border:2px solid rgba(255,107,157,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:1.7rem;color:var(--pink);transition:all .4s">
+      <i class="fa-solid fa-lock-open"></i>
+    </div>
+
+    <!-- Spinner (carregamento) -->
+    <div id="loginSpinner" style="width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 18px;display:none"></div>
+
+    <!-- Mensagem de estado -->
+    <div id="loginMsg"    style="font-family:var(--ft);font-size:1rem;color:var(--white);margin-bottom:6px;display:none">A verificar acesso...</div>
+    <div id="loginSubMsg" style="font-size:.76rem;color:var(--muted);margin-bottom:18px;line-height:1.5;display:none">Aguarda enquanto validamos as tuas credenciais.</div>
+
+    <!-- Erro inline (fica sobre o form) -->
+    <div id="loginError" style="display:none;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.2);border-radius:var(--r2);padding:14px;margin-bottom:16px;text-align:left">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <i class="fa-solid fa-circle-exclamation" style="color:var(--red)"></i>
+        <div id="loginErrorTitle" style="font-family:var(--ft);font-size:.9rem;color:var(--red)">Acesso Negado</div>
+      </div>
+      <div id="loginErrorMsg" style="font-size:.76rem;color:var(--muted);line-height:1.5;white-space:pre-line"></div>
+    </div>
+
+    <!-- ======= FORMULÁRIO DE LOGIN ======= -->
+    <div id="loginForm">
+
+      <!-- Tabs: Admin / Colaborador -->
+      <div style="display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:50px;padding:4px;margin-bottom:18px">
+        <button id="tabAdmin" onclick="switchLoginTab('admin')"
+          style="flex:1;padding:7px;border-radius:50px;border:none;font-size:.76rem;font-family:var(--ft);cursor:pointer;transition:all .2s;background:var(--grad);color:#fff">
+          <i class="fa-solid fa-crown"></i> Administrador
+        </button>
+        <button id="tabColabo" onclick="switchLoginTab('colabo')"
+          style="flex:1;padding:7px;border-radius:50px;border:none;font-size:.76rem;font-family:var(--ft);cursor:pointer;transition:all .2s;background:none;color:var(--muted)">
+          <i class="fa-solid fa-user-group"></i> Colaborador
+        </button>
+      </div>
+
+      <!-- Modo Administrador -->
+      <div id="loginModeAdmin">
+        <div style="position:relative;margin-bottom:10px">
+          <input type="password" id="loginTokenInput"
+            placeholder="Cole o seu token de administrador..."
+            style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 44px 12px 14px;color:var(--white);font-size:.86rem;box-sizing:border-box;outline:none;transition:border-color .2s;font-family:inherit"
+            onkeydown="if(event.key==='Enter')doManualLogin()"
+            oninput="$('loginError').style.display='none'"
+            onfocus="this.style.borderColor='var(--pink)'"
+            onblur="this.style.borderColor='var(--border)'"/>
+          <button onclick="toggleLoginTokenVis('loginTokenInput',this)"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <div style="font-size:.67rem;color:var(--muted);margin-bottom:14px;line-height:1.5;text-align:left">
+          <i class="fa-solid fa-circle-info" style="color:var(--blue)"></i>
+          O token encontra-se nas <strong style="color:var(--white)">Configurações → Segurança</strong> do teu painel ou foi fornecido pela IMPERSILVA no momento da criação da loja.
+        </div>
+      </div>
+
+      <!-- Modo Colaborador -->
+      <div id="loginModeColabo" style="display:none">
+        <div style="position:relative;margin-bottom:10px">
+          <input type="text" id="loginColaboLoja"
+            placeholder="ID ou slug da loja (ex: minha-loja)..."
+            style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;color:var(--white);font-size:.86rem;box-sizing:border-box;outline:none;transition:border-color .2s;font-family:inherit"
+            oninput="$('loginError').style.display='none'"
+            onfocus="this.style.borderColor='var(--pink)'"
+            onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+        <div style="position:relative;margin-bottom:10px">
+          <input type="password" id="loginColaboToken"
+            placeholder="Token de colaborador..."
+            style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 44px 12px 14px;color:var(--white);font-size:.86rem;box-sizing:border-box;outline:none;transition:border-color .2s;font-family:inherit"
+            onkeydown="if(event.key==='Enter')doManualLogin()"
+            oninput="$('loginError').style.display='none'"
+            onfocus="this.style.borderColor='var(--pink)'"
+            onblur="this.style.borderColor='var(--border)'"/>
+          <button onclick="toggleLoginTokenVis('loginColaboToken',this)"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <div style="font-size:.67rem;color:var(--muted);margin-bottom:14px;line-height:1.5;text-align:left">
+          <i class="fa-solid fa-circle-info" style="color:var(--blue)"></i>
+          O ID da loja e o token foram partilhados pelo administrador da loja. Contacta-o se não os tiveres.
+        </div>
+      </div>
+
+      <!-- Manter sessão -->
+      <label style="display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--muted);cursor:pointer;margin-bottom:16px;user-select:none">
+        <input type="checkbox" id="loginRemember" checked style="accent-color:var(--pink)"/>
+        Manter sessão neste dispositivo
+      </label>
+
+      <!-- Botão entrar -->
+      <button id="loginBtn" onclick="doManualLogin()"
+        style="width:100%;padding:13px;border-radius:50px;border:none;background:var(--grad);color:#fff;font-family:var(--ft);font-size:.92rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
+      </button>
+
+      <!-- Link IMPERSILVA (secundário) -->
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+        <span style="font-size:.68rem;color:var(--muted)">Criaste a tua loja na IMPERSILVA? </span>
+        <a href="https://impersilvatech.github.io/IMPERSILVA/verificar-site.html"
+           style="font-size:.68rem;color:var(--pink);text-decoration:none">
+          Aceder pelo portal →
+        </a>
+      </div>
+    </div>
+    <!-- /formulário -->
+
+    <!-- Token oculto para compatibilidade com login() -->
+    <input type="hidden" id="loginToken" value="">
+    <!-- Back (mantido por compatibilidade, oculto) -->
+    <a id="loginBack" style="display:none"></a>
+
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+</div>
     <div id="loginIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(255,107,157,.08);border:2px solid rgba(255,107,157,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;color:var(--pink);transition:all .3s">
       <i class="fa-solid fa-lock-open"></i>
     </div>
@@ -3420,196 +3538,234 @@ function showSpinner(id){$(id).innerHTML='<div class="spinner"></div>';}
    AUTH
    ============================================================ */
 function setLoginMsg(msg, subMsg){
-  var el = $('loginMsg');
-  var subEl = $('loginSubMsg');
-  if(el) el.textContent = msg;
-  if(subEl) subEl.textContent = subMsg || '';
+  var el=$('loginMsg'),subEl=$('loginSubMsg');
+  if(el)el.textContent=msg;
+  if(subEl)subEl.textContent=subMsg||'';
+}
+
+function showLoginForm(){
+  var f=$('loginForm'),sp=$('loginSpinner'),m=$('loginMsg'),sm=$('loginSubMsg');
+  if(f)f.style.display='';
+  if(sp)sp.style.display='none';
+  if(m)m.style.display='none';
+  if(sm)sm.style.display='none';
+  var icon=$('loginIcon');
+  if(icon){icon.innerHTML='<i class="fa-solid fa-lock-open"></i>';icon.style.background='rgba(255,107,157,.08)';icon.style.borderColor='rgba(255,107,157,.2)';icon.style.color='var(--pink)';}
+  setTimeout(()=>{ var inp=$('loginTokenInput');if(inp)inp.focus(); },100);
+}
+
+function showLoginLoading(msg,sub){
+  $('loginForm').style.display='none';
+  $('loginError').style.display='none';
+  $('loginSpinner').style.display='block';
+  $('loginMsg').style.display='block';
+  $('loginSubMsg').style.display='block';
+  setLoginMsg(msg||'A verificar acesso...',sub||'Aguarda enquanto validamos as tuas credenciais.');
 }
 
 function showLoginError(title, msg){
-  var spinner = $('loginSpinner');
-  var msgEl = $('loginMsg');
-  var subMsgEl = $('loginSubMsg');
-  var errEl = $('loginError');
-  var errTitle = $('loginErrorTitle');
-  var errMsg = $('loginErrorMsg');
-  var backEl = $('loginBack');
-  var iconEl = $('loginIcon');
-
-  if(spinner) spinner.style.display = 'none';
-  if(msgEl) msgEl.style.display = 'none';
-  if(subMsgEl) subMsgEl.style.display = 'none';
-
-  if(iconEl){
-    iconEl.innerHTML = '<i class="fa-solid fa-lock"></i>';
-    iconEl.style.background = 'rgba(255,71,87,.08)';
-    iconEl.style.borderColor = 'rgba(255,71,87,.2)';
-    iconEl.style.color = 'var(--red)';
-  }
-
-  if(errEl) errEl.style.display = 'block';
-  if(errTitle) errTitle.textContent = title || 'Acesso Restrito';
-  if(errMsg) errMsg.textContent = msg || 'Não foi possível verificar o teu acesso.';
-  if(backEl) backEl.style.display = 'inline-block';
-
+  $('loginSpinner').style.display='none';
+  $('loginMsg').style.display='none';
+  $('loginSubMsg').style.display='none';
+  var icon=$('loginIcon');
+  if(icon){icon.innerHTML='<i class="fa-solid fa-lock"></i>';icon.style.background='rgba(255,71,87,.08)';icon.style.borderColor='rgba(255,71,87,.2)';icon.style.color='var(--red)';}
+  var err=$('loginError'),et=$('loginErrorTitle'),em=$('loginErrorMsg');
+  if(err)err.style.display='block';
+  if(et)et.textContent=title||'Acesso Negado';
+  if(em)em.textContent=msg||'Não foi possível verificar o teu acesso.';
   $('app').classList.remove('active');
-  $('app').style.display = 'none';
-  $('loginScreen').style.display = 'flex';
+  $('app').style.display='none';
+  $('loginScreen').style.display='flex';
+  // mostra o form para poder tentar de novo
+  var f=$('loginForm');if(f)f.style.display='';
 }
 
-async function login(){
-  const token = $('loginToken').value.trim();
+/* ---- tab admin / colaborador ---- */
+window.switchLoginTab=function(tab){
+  var isAdmin=tab==='admin';
+  $('tabAdmin').style.background=isAdmin?'var(--grad)':'none';
+  $('tabAdmin').style.color=isAdmin?'#fff':'var(--muted)';
+  $('tabColabo').style.background=!isAdmin?'var(--grad)':'none';
+  $('tabColabo').style.color=!isAdmin?'#fff':'var(--muted)';
+  $('loginModeAdmin').style.display=isAdmin?'':'none';
+  $('loginModeColabo').style.display=!isAdmin?'':'none';
+  $('loginError').style.display='none';
+  setTimeout(()=>{
+    var inp=isAdmin?$('loginTokenInput'):$('loginColaboLoja');
+    if(inp)inp.focus();
+  },50);
+};
 
-  // ⚠️ SEM TOKEN = NÃO ABRIR
-  if(!token){
-    showLoginError(
-      'Sem Autenticação',
-      'Não foi encontrado nenhum token de acesso válido.\n\nPara aceder a este painel, faz login na Área de Cliente IMPERSILVA e clica em "Gerir Loja".'
-    );
-    return; // ⚠️ NUNCA AVANÇA
-  }
+window.toggleLoginTokenVis=function(inputId,btn){
+  var inp=$(inputId);if(!inp)return;
+  var show=inp.type==='password';
+  inp.type=show?'text':'password';
+  btn.innerHTML='<i class="fa-solid '+(show?'fa-eye-slash':'fa-eye')+'"></i>';
+};
 
-  // Mostrar loading
-  $('loginSpinner').style.display = 'block';
-  $('loginMsg').style.display = 'block';
-  $('loginSubMsg').style.display = 'block';
-  $('loginError').style.display = 'none';
-  $('loginBack').style.display = 'none';
-  
-  // Reset ícone para cadeado aberto
-  var iconEl = $('loginIcon');
-  if(iconEl){
-    iconEl.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
-    iconEl.style.background = 'rgba(255,107,157,.08)';
-    iconEl.style.borderColor = 'rgba(255,107,157,.2)';
-    iconEl.style.color = 'var(--pink)';
-  }
-  
-  setLoginMsg('A verificar acesso...', 'A validar as tuas credenciais junto do servidor.');
-
-  // Mostrar botão de escape após 8 segundos
-  var escapeTimer = setTimeout(function(){
-    var sub = $('loginSubMsg');
-    if(sub){
-      sub.textContent = 'A demorar mais que o esperado...';
-      var btn = document.createElement('button');
-      btn.textContent = 'Limpar e tentar novamente';
-      btn.style.cssText = 'margin-top:8px;display:block;background:none;border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.75rem';
-      btn.onclick = function(){ localStorage.removeItem('adm_tk'); location.reload(); };
-      sub.appendChild(btn);
+/* ---- login manual (form submit) ---- */
+window.doManualLogin=async function(){
+  var isColabo=$('loginModeColabo')?.style.display!=='none';
+  if(isColabo){
+    await doColaboLogin();
+  } else {
+    var token=($('loginTokenInput')?.value||'').trim();
+    if(!token){
+      showLoginError('Token em falta','Insere o token de administrador para continuar.');
+      return;
     }
-  }, 8000);
+    $('loginToken').value=token;
+    if($('loginRemember')?.checked) localStorage.setItem('adm_tk',token);
+    await login();
+  }
+};
 
+/* ---- login como colaborador ---- */
+async function doColaboLogin(){
+  var lojaId=($('loginColaboLoja')?.value||'').trim();
+  var token =($('loginColaboToken')?.value||'').trim();
+  if(!lojaId){showLoginError('ID da loja em falta','Insere o ID ou slug da loja.');return;}
+  if(!token) {showLoginError('Token em falta','Insere o token de colaborador.');return;}
+  showLoginLoading('A verificar colaborador...','A validar as tuas credenciais de equipa.');
   try{
-    // Timeout de 15 segundos para não ficar preso
-    const controller = new AbortController();
-    const fetchTimer = setTimeout(function(){ controller.abort(); }, 15000);
-
-    const res = await fetch(API+'/api/loja',{
-      headers:{'Authorization':'Bearer '+token},
-      signal: controller.signal
+    const controller=new AbortController();
+    const ft=setTimeout(()=>controller.abort(),12000);
+    // Tenta endpoint dedicado de colaboradores
+    const res=await fetch(API+'/api/colaborador/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({loja_id:lojaId,token}),
+      signal:controller.signal
     });
-    clearTimeout(fetchTimer);
-    clearTimeout(escapeTimer);
-    const data = await res.json();
-
-    // ⚠️ TOKEN INVÁLIDO = NÃO ABRIR
-    if(data.erro || !res.ok){
-      localStorage.removeItem('adm_tk');
-      sessionStorage.removeItem('loja_admin_tok');
-      $('loginToken').value = ''; // Limpar token inválido
-      showLoginError(
-        'Acesso Negado',
-        'O token de acesso é inválido ou expirou.\n\nCertifica-te de que acedes através do portal IMPERSILVA:\n1. Faz login na Área de Cliente\n2. Clica em "Gerir Loja"'
-      );
-      return; // ⚠️ NUNCA AVANÇA
+    clearTimeout(ft);
+    if(!res.ok){throw new Error('invalid');}
+    const data=await res.json();
+    if(!data.loja){throw new Error('invalid');}
+    // Sucesso como colaborador
+    await enterApp(data.loja, token, {papel:data.papel, nome:data.nome||'Colaborador'});
+    if($('loginRemember')?.checked){
+      localStorage.setItem('adm_colabo_tk', token);
+      localStorage.setItem('adm_colabo_loja', lojaId);
     }
-
-    // ✅ SUCESSO — mudar ícone para check verde
-    if(iconEl){
-      iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
-      iconEl.style.background = 'rgba(6,214,160,.06)';
-      iconEl.style.borderColor = 'rgba(6,214,160,.2)';
-      iconEl.style.color = 'var(--teal)';
-    }
-    
-    // Esconder loading
-    $('loginSpinner').style.display = 'none';
-    $('loginError').style.display = 'none';
-    $('loginBack').style.display = 'none';
-    setLoginMsg('Acesso Confirmado', 'Painel carregado com sucesso!');
-
-    // Guardar token
-    state.token = token;
-    localStorage.setItem('adm_tk', token);
-    state.loja = data;
-    // Aplicar tema da loja ao admin
-    if(typeof applyLojaThemeToAdmin==='function') applyLojaThemeToAdmin();
-
-    // ⚠️ ENRIQUECER state.loja com dados GitHub do localStorage
-    //     Agora SEMPRE sobrescreve se houver dados no localStorage
-    var ghToken = localStorage.getItem('adm_gh');
-    var ghUser = localStorage.getItem('adm_gh_user');
-    var ghRepo = localStorage.getItem('adm_gh_repo');
-    var ghBranch = localStorage.getItem('adm_gh_branch');
-
-    if (ghToken !== null) state.loja.github_token = ghToken || '';
-    if (ghUser !== null) state.loja.github_user = ghUser || '';
-    if (ghRepo !== null) state.loja.github_repo = ghRepo || '';
-    if (ghBranch !== null) state.loja.github_branch = ghBranch || 'main';
-
-    // Pequena pausa para mostrar o check verde
-    setTimeout(function(){
-      $('loginScreen').style.display = 'none';
-      $('app').style.display = 'flex'; // ⚠️ SÓ AQUI O APP APARECE
-      $('app').classList.add('active');
-      initApp();
-    }, 800);
-
-  } catch(e) {
-    clearTimeout(escapeTimer);
-    if(e.name === 'AbortError'){
-      localStorage.removeItem('adm_tk');
-      sessionStorage.removeItem('loja_admin_tok');
-      showLoginError('Servidor Sem Resposta','O servidor demorou demasiado a responder. Insere o token manualmente ou tenta novamente.');
+  }catch(err){
+    if(err.message==='invalid'||err.name==='AbortError'){
+      showLoginError('Acesso Negado','Token inválido ou ID de loja incorrecto.\n\nPede ao administrador da loja para confirmar os teus dados de acesso.');
     } else {
-      showLoginError('Erro de Ligação','Não foi possível contactar o servidor. Verifica a tua ligação à internet e tenta novamente.');
+      showLoginError('Endpoint não disponível','O servidor ainda não suporta login de colaboradores.\n\nPede ao administrador da loja para activar esta funcionalidade ou fornece-te o token de administrador.');
     }
   }
+}
+
+/* ---- login como admin (fluxo existente) ---- */
+async function login(){
+  var token=$('loginToken')?.value.trim()||'';
+  if(!token){showLoginForm();return;}
+  showLoginLoading('A verificar acesso...','A validar as tuas credenciais junto do servidor.');
+  var escapeTimer=setTimeout(function(){
+    var sub=$('loginSubMsg');
+    if(sub){sub.textContent='A demorar mais que o esperado...';
+      var btn=document.createElement('button');
+      btn.textContent='Cancelar e tentar novamente';
+      btn.style.cssText='margin-top:8px;display:block;background:none;border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.75rem';
+      btn.onclick=function(){localStorage.removeItem('adm_tk');location.reload();};
+      sub.appendChild(btn);}
+  },8000);
+  try{
+    var controller=new AbortController();
+    var fetchTimer=setTimeout(function(){controller.abort();},15000);
+    var res=await fetch(API+'/api/loja',{headers:{'Authorization':'Bearer '+token},signal:controller.signal});
+    clearTimeout(fetchTimer);clearTimeout(escapeTimer);
+    var data=await res.json();
+    if(data.erro||!res.ok){
+      localStorage.removeItem('adm_tk');
+      $('loginToken').value='';
+      showLoginError('Acesso Negado','Token inválido ou expirado.\n\nVerifica se copiaste correctamente o token das Configurações → Segurança.');
+      return;
+    }
+    await enterApp(data, token, null);
+  }catch(e){
+    clearTimeout(escapeTimer);
+    localStorage.removeItem('adm_tk');
+    if(e.name==='AbortError'){
+      showLoginError('Sem Resposta do Servidor','O servidor demorou demasiado. Verifica a tua ligação e tenta novamente.');
+    }else{
+      showLoginError('Erro de Ligação','Não foi possível contactar o servidor. Verifica a tua ligação à internet.');
+    }
+    showLoginForm();
+  }
+}
+
+/* ---- entrar na app (admin ou colaborador) ---- */
+async function enterApp(lojaData, token, colaborador){
+  var icon=$('loginIcon');
+  if(icon){icon.innerHTML='<i class="fa-solid fa-check"></i>';icon.style.background='rgba(6,214,160,.06)';icon.style.borderColor='rgba(6,214,160,.2)';icon.style.color='var(--teal)';}
+  $('loginSpinner').style.display='none';
+  $('loginError').style.display='none';
+  setLoginMsg('Acesso Confirmado','Painel carregado com sucesso!');
+  $('loginMsg').style.display='block';
+  $('loginSubMsg').style.display='block';
+  state.token=token;
+  localStorage.setItem('adm_tk',token);
+  state.loja=lojaData;
+  state.currentRole=colaborador?.papel||'admin';
+  state.currentUserName=colaborador?.nome||(lojaData.nome_admin||lojaData.nome||'Admin');
+  if(typeof applyLojaThemeToAdmin==='function')applyLojaThemeToAdmin();
+  // enriquecer com GitHub do localStorage
+  var ghToken=localStorage.getItem('adm_gh'),ghUser=localStorage.getItem('adm_gh_user'),ghRepo=localStorage.getItem('adm_gh_repo'),ghBranch=localStorage.getItem('adm_gh_branch');
+  if(ghToken!==null)state.loja.github_token=ghToken||'';
+  if(ghUser!==null)state.loja.github_user=ghUser||'';
+  if(ghRepo!==null)state.loja.github_repo=ghRepo||'';
+  if(ghBranch!==null)state.loja.github_branch=ghBranch||'main';
+  setTimeout(function(){
+    $('loginScreen').style.display='none';
+    $('app').style.display='flex';
+    $('app').classList.add('active');
+    // aplicar restrições de papel se colaborador
+    if(colaborador?.papel&&typeof applyRoleRestrictions==='function'){
+      applyRoleRestrictions(colaborador.papel);
+    }
+    initApp();
+  },700);
 }
 
 function autoLogin(){
-  var token = sessionStorage.getItem('loja_admin_tok') ||
-              localStorage.getItem('adm_tk') ||
-              sessionStorage.getItem('admin_loja_token');
-
+  // Tenta token de admin guardado
+  var token=sessionStorage.getItem('loja_admin_tok')||localStorage.getItem('adm_tk')||sessionStorage.getItem('admin_loja_token');
   if(token){
-    $('loginToken').value = token;
+    $('loginToken').value=token;
     login();
-  } else {
-    showLoginError(
-      'Acesso Restrito',
-      'Este painel é exclusivo para administradores da loja.\n\nPara aceder, faz login na Área de Cliente IMPERSILVA e clica em "Gerir Loja".'
-    );
+    return;
   }
+  // Tenta token de colaborador guardado
+  var cToken=localStorage.getItem('adm_colabo_tk');
+  var cLoja =localStorage.getItem('adm_colabo_loja');
+  if(cToken&&cLoja){
+    if($('loginColaboToken'))$('loginColaboToken').value=cToken;
+    if($('loginColaboLoja'))$('loginColaboLoja').value=cLoja;
+    switchLoginTab('colabo');
+    doColaboLogin();
+    return;
+  }
+  // Sem token guardado — mostrar formulário
+  showLoginForm();
 }
 
 function logout(){
   localStorage.removeItem('adm_tk');
+  localStorage.removeItem('adm_colabo_tk');
+  localStorage.removeItem('adm_colabo_loja');
   sessionStorage.removeItem('loja_admin_tok');
+  sessionStorage.removeItem('admin_loja_token');
   state.token='';
+  state.currentRole='admin';
   $('app').classList.remove('active');
+  $('app').style.display='none';
   $('loginScreen').style.display='flex';
-  $('loginToken').value='';
-  var errEl=$('loginError'),spinner=$('loginSpinner'),msgEl=$('loginMsg'),subMsgEl=$('loginSubMsg'),backEl=$('loginBack'),iconEl=$('loginIcon');
-  if(errEl)errEl.style.display='none';
-  if(spinner)spinner.style.display='block';
-  if(msgEl){msgEl.textContent='A verificar acesso...';msgEl.style.display='block';}
-  if(subMsgEl){subMsgEl.textContent='Aguarda enquanto validamos as tuas credenciais.';subMsgEl.style.display='block';}
-  if(backEl)backEl.style.display='none';
-  if(iconEl){iconEl.innerHTML='<i class="fa-solid fa-lock-open"></i>';iconEl.style.background='rgba(255,107,157,.08)';iconEl.style.borderColor='rgba(255,107,157,.2)';iconEl.style.color='var(--pink)';}
-  if(state.refreshInterval)clearInterval(state.refreshInterval);
+  var inp=$('loginTokenInput');if(inp)inp.value='';
+  switchLoginTab('admin');
+  showLoginForm();
 }
+
 
 /* ============================================================
    INIT
