@@ -1337,6 +1337,44 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .blog-char-count{font-size:.6rem;color:var(--muted);text-align:right;margin-top:2px}
 .blog-empty{text-align:center;padding:32px;color:var(--muted)}
 .blog-empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:.4}
+
+/* ============================================================
+   MULTI-COLABORADOR
+   ============================================================ */
+.colabo-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:500px){.colabo-kpi-grid{grid-template-columns:1fr 1fr}}
+.colabo-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.colabo-kpi-val{font-family:var(--ft);font-size:1.4rem;color:var(--white);line-height:1;margin-bottom:2px}
+.colabo-kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.colabo-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;transition:border-color .2s}
+.colabo-card:hover{border-color:rgba(255,107,157,.3)}
+.colabo-card.inactive{opacity:.5}
+.colabo-avatar{width:40px;height:40px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:1rem;color:#fff;flex-shrink:0}
+.colabo-info{flex:1;min-width:0}
+.colabo-nome{font-size:.88rem;font-weight:700;color:var(--white)}
+.colabo-email{font-size:.66rem;color:var(--muted)}
+.colabo-meta{font-size:.62rem;color:var(--muted);margin-top:2px}
+.colabo-role-badge{border-radius:50px;padding:2px 10px;font-size:.6rem;font-weight:700;flex-shrink:0;white-space:nowrap}
+.colabo-role-badge.admin  {background:rgba(255,107,157,.12);color:var(--pink);border:1px solid rgba(255,107,157,.25)}
+.colabo-role-badge.gestor {background:rgba(177,74,232,.12);color:var(--purple);border:1px solid rgba(177,74,232,.25)}
+.colabo-role-badge.operador{background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.25)}
+.colabo-role-badge.conteudo{background:rgba(61,158,255,.1);color:var(--blue);border:1px solid rgba(61,158,255,.25)}
+.colabo-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.perm-matrix{width:100%;border-collapse:collapse;font-size:.74rem}
+.perm-matrix th{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);font-size:.6rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.perm-matrix th:first-child{text-align:left;color:var(--white)}
+.perm-matrix td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:center}
+.perm-matrix td:first-child{text-align:left;color:var(--white);font-size:.76rem}
+.perm-matrix tr:last-child td{border-bottom:none}
+.perm-matrix tr:hover td{background:var(--bg3)}
+.perm-check{color:var(--teal)} .perm-cross{color:var(--border)}
+.activity-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.activity-row:last-child{border-bottom:none}
+.activity-icon{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0}
+.activity-text{flex:1;font-size:.76rem;color:var(--white);line-height:1.4}
+.activity-who{font-size:.62rem;color:var(--muted)}
+.activity-when{font-size:.6rem;color:var(--muted);flex-shrink:0;white-space:nowrap}
+.token-display{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;font-family:monospace;font-size:.76rem;color:var(--teal);display:flex;align-items:center;gap:8px;margin-top:6px;word-break:break-all}
 </style>
 </head>
 <body>
@@ -1483,6 +1521,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="sidebar-item" data-panel="reports" onclick="navigate('reports')">
         <i class="fa-solid fa-chart-pie"></i>
         <span class="sidebar-item-label">Relatórios</span>
+      </button>
+      <button class="sidebar-item" data-panel="colaboradores" onclick="navigate('colaboradores')">
+        <i class="fa-solid fa-user-group"></i>
+        <span class="sidebar-item-label">Colaboradores</span>
       </button>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
@@ -2620,6 +2662,113 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         </div>
 
         <!-- ============================================
+             COLABORADORES
+             ============================================ -->
+        <div class="panel" id="panel-colaboradores">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-user-group" style="color:var(--pink)"></i> Colaboradores</div>
+            <div class="page-actions">
+              <button class="btn btn-primary btn-sm" onclick="openColaboForm(null)"><i class="fa-solid fa-user-plus"></i> Adicionar</button>
+              <button class="btn btn-outline btn-sm" onclick="renderColaboradores()"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="colabo-kpi-grid" id="colaboKpis"></div>
+
+          <!-- Lista -->
+          <div class="section-card" style="margin-bottom:10px" id="colaboListSection">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-users"></i> Equipa</div>
+            </div>
+            <!-- Admin fixo -->
+            <div class="colabo-card" id="colaboAdminCard">
+              <div class="colabo-avatar" id="colaboAdminAvatar">A</div>
+              <div class="colabo-info">
+                <div class="colabo-nome" id="colaboAdminNome">—</div>
+                <div class="colabo-email">Administrador da conta</div>
+                <div class="colabo-meta">Acesso total · Token de administrador</div>
+              </div>
+              <span class="colabo-role-badge admin"><i class="fa-solid fa-crown" style="font-size:.5rem"></i> Admin</span>
+            </div>
+            <!-- Colaboradores dinâmicos -->
+            <div id="colaboList"></div>
+          </div>
+
+          <!-- Formulário add/edit (oculto) -->
+          <div class="section-card" id="colaboFormSection" style="display:none;margin-bottom:10px">
+            <div class="section-header">
+              <div class="section-title" id="colaboFormTitle"><i class="fa-solid fa-user-plus"></i> Novo Colaborador</div>
+              <button class="btn btn-outline btn-sm" onclick="closeColaboForm()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-row" style="margin-bottom:10px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-input" id="colaboNome" placeholder="João Silva" maxlength="60"/>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="colaboEmail" placeholder="joao@email.com"/>
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:10px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Papel</label>
+                <select class="form-select" id="colaboPapel" onchange="updateColaboPermPreview()">
+                  <option value="gestor">Gestor — acesso amplo</option>
+                  <option value="operador">Operador — encomendas e clientes</option>
+                  <option value="conteudo">Conteúdo — produtos e blog</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="colaboAtivo">
+                  <option value="1">Activo</option>
+                  <option value="0">Inactivo</option>
+                </select>
+              </div>
+            </div>
+            <!-- Token -->
+            <div style="margin-bottom:12px">
+              <label class="form-label">Token de acesso</label>
+              <div class="token-display">
+                <span id="colaboTokenDisplay">—</span>
+                <div style="display:flex;gap:6px;flex-shrink:0">
+                  <button class="btn btn-outline btn-sm" onclick="regenerateColaboToken()" title="Gerar novo token"><i class="fa-solid fa-rotate"></i></button>
+                  <button class="btn btn-outline btn-sm" onclick="copyColaboToken()" title="Copiar token"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+              <div class="form-hint" style="margin-top:4px">O colaborador usa este token para aceder ao admin. Partilha-o de forma segura.</div>
+            </div>
+            <!-- Permissões do papel seleccionado -->
+            <div id="colaboPermPreview" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:12px;font-size:.72rem;color:var(--muted)"></div>
+            <input type="hidden" id="colaboEditToken"/>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline" onclick="closeColaboForm()">Cancelar</button>
+              <div style="flex:1"></div>
+              <button class="btn btn-primary" onclick="saveColabo()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+            </div>
+          </div>
+
+          <!-- Matriz de permissões -->
+          <div class="section-card" style="margin-bottom:10px">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-shield" style="color:var(--blue)"></i> Matriz de Permissões</div>
+            </div>
+            <div style="overflow-x:auto" id="colaboPermMatrix"></div>
+          </div>
+
+          <!-- Registo de actividade -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--orange)"></i> Registo de Actividade</div>
+              <button class="btn btn-outline btn-sm" onclick="clearActivityLog()"><i class="fa-solid fa-trash"></i> Limpar</button>
+            </div>
+            <div id="colaboActivityLog"></div>
+          </div>
+        </div>
+
+        <!-- ============================================
              RELATÓRIOS
              ============================================ -->
         <div class="panel" id="panel-reports">
@@ -2785,6 +2934,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn purple" onclick="navigateMore('reports')">
           <i class="fa-solid fa-chart-pie"></i>
           <span>Relatórios</span>
+        </button>
+        <button class="more-btn pink" onclick="navigateMore('colaboradores')">
+          <i class="fa-solid fa-user-group"></i>
+          <span>Equipa</span>
         </button>
         <button class="more-btn" onclick="navigateMore('settings')">
           <i class="fa-solid fa-gear"></i>
@@ -3538,6 +3691,7 @@ function navigate(panel){
   if(panel==='editor')renderEditorVisual();
   if(panel==='agenda')renderAgenda();
   if(panel==='blog')renderBlog();
+  if(panel==='colaboradores')renderColaboradores();
 }
 
 function expandSidebar(){$('sidebar').classList.add('expanded');}
@@ -5665,6 +5819,304 @@ applyTheme();
 })();
 
 autoLogin();
+
+/* ============================================================
+   MULTI-COLABORADOR
+   ============================================================ */
+(function(){
+  const PAPEIS = {
+    gestor  : { nome:'Gestor',   icon:'🧑‍💼', color:'var(--purple)', desc:'Acesso amplo: tudo excepto configurações e colaboradores',
+                panels:['dashboard','orders','products','stock','categories','clients','agenda','reviews','coupons','blog','marketing','caixa','fidelizacao','recuperacao','reports'] },
+    operador: { nome:'Operador', icon:'📦', color:'var(--teal)',   desc:'Foco em encomendas, clientes e caixa',
+                panels:['dashboard','orders','clients','caixa','recuperacao'] },
+    conteudo: { nome:'Conteúdo', icon:'✍️', color:'var(--blue)',   desc:'Gestão de produtos, categorias e blog',
+                panels:['dashboard','products','stock','categories','blog','marketing'] },
+  };
+
+  const FEATURES = [
+    {id:'orders',     label:'Encomendas'},
+    {id:'products',   label:'Produtos'},
+    {id:'stock',      label:'Stock'},
+    {id:'clients',    label:'Clientes'},
+    {id:'agenda',     label:'Agenda'},
+    {id:'caixa',      label:'Caixa'},
+    {id:'reports',    label:'Relatórios'},
+    {id:'marketing',  label:'Marketing'},
+    {id:'blog',       label:'Blog'},
+    {id:'settings',   label:'Configurações'},
+    {id:'colaboradores',label:'Colaboradores'},
+  ];
+
+  let _colaboradores = [];
+  let _editingColabo = null;
+  let _currentToken  = '';
+
+  /* ---- load ---- */
+  async function loadColaboradores(){
+    try{
+      const r = await api('/api/admin/colaboradores');
+      _colaboradores = Array.isArray(r) ? r : [];
+    }catch(e){
+      _colaboradores = state.loja.colaboradores_json || [];
+    }
+  }
+
+  /* ---- render principal ---- */
+  window.renderColaboradores = async function(){
+    await loadColaboradores();
+    renderColaboKPIs();
+    renderColaboList();
+    renderPermMatrix();
+    renderActivityLog();
+    renderColaboAdminCard();
+  };
+
+  /* ---- KPIs ---- */
+  function renderColaboKPIs(){
+    const total  = _colaboradores.length;
+    const ativos = _colaboradores.filter(c=>c.ativo!==0&&c.ativo!=='0').length;
+    const papeis = new Set(_colaboradores.map(c=>c.papel)).size;
+    $('colaboKpis').innerHTML =
+      cKpi(total,     'Colaboradores', 'fa-users','var(--pink)')+
+      cKpi(ativos,    'Activos',       'fa-circle-check','var(--teal)')+
+      cKpi(papeis,    'Papéis usados', 'fa-shield','var(--purple)');
+  }
+  function cKpi(v,l,i,c){
+    return '<div class="colabo-kpi">'+
+      '<div style="color:'+c+';font-size:.9rem;margin-bottom:6px"><i class="fa-solid '+i+'"></i></div>'+
+      '<div class="colabo-kpi-val">'+v+'</div>'+
+      '<div class="colabo-kpi-lbl">'+l+'</div></div>';
+  }
+
+  /* ---- admin card ---- */
+  function renderColaboAdminCard(){
+    const nome = state.loja.nome_admin || state.loja.nome || 'Administrador';
+    const init = nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+    const av   = $('colaboAdminAvatar'); if(av)av.textContent=init;
+    const nm   = $('colaboAdminNome');   if(nm)nm.textContent=nome;
+  }
+
+  /* ---- lista ---- */
+  function renderColaboList(){
+    const cont=$('colaboList'); if(!cont)return;
+    if(!_colaboradores.length){
+      cont.innerHTML='<p style="font-size:.78rem;color:var(--muted);text-align:center;padding:12px">Sem colaboradores adicionados.</p>';
+      return;
+    }
+    cont.innerHTML=_colaboradores.map(c=>{
+      const p = PAPEIS[c.papel] || PAPEIS.operador;
+      const active = c.ativo!==0&&c.ativo!=='0';
+      const init = (c.nome||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+      return '<div class="colabo-card'+(active?'':' inactive')+'" id="colaboCard-'+c.id+'">'+
+        '<div class="colabo-avatar" style="background:'+(active?p.color:'var(--muted2)')+'">'+init+'</div>'+
+        '<div class="colabo-info">'+
+          '<div class="colabo-nome">'+esc(c.nome||'—')+'</div>'+
+          '<div class="colabo-email">'+esc(c.email||'—')+'</div>'+
+          '<div class="colabo-meta">'+p.icon+' '+p.nome+' · '+(active?'<span style="color:var(--teal)">Activo</span>':'<span style="color:var(--muted)">Inactivo</span>')+'</div>'+
+        '</div>'+
+        '<span class="colabo-role-badge '+c.papel+'">'+p.icon+' '+p.nome+'</span>'+
+        '<div class="colabo-actions">'+
+          '<button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="openColaboForm(\''+c.id+'\')"><i class="fa-solid fa-pen"></i></button>'+
+          '<button class="btn btn-outline btn-sm btn-icon" title="Copiar token" onclick="copyColaboTokenById(\''+c.id+'\')"><i class="fa-solid fa-key"></i></button>'+
+          '<button class="btn btn-sm btn-icon" style="color:'+(active?'var(--orange)':'var(--teal)')+';border:1px solid '+(active?'rgba(255,159,67,.25)':'rgba(6,214,160,.25)')+';" title="'+(active?'Desactivar':'Activar')+'" onclick="toggleColaboAtivo(\''+c.id+'\','+active+')">'+
+            '<i class="fa-solid '+(active?'fa-user-slash':'fa-user-check')+'"></i></button>'+
+          '<button class="btn btn-sm btn-icon" style="color:var(--red);border:1px solid rgba(255,71,87,.2)" title="Eliminar" onclick="deleteColabo(\''+c.id+'\')"><i class="fa-solid fa-trash"></i></button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  /* ---- open form ---- */
+  window.openColaboForm = function(id){
+    _editingColabo = id ? _colaboradores.find(c=>String(c.id)===String(id)) : null;
+    const form=$('colaboFormSection'); if(!form)return;
+    form.style.display='';
+    $('colaboFormTitle').innerHTML='<i class="fa-solid '+(id?'fa-pen':'fa-user-plus')+'"></i> '+(id?'Editar Colaborador':'Novo Colaborador');
+    $('colaboNome').value      = _editingColabo?.nome||'';
+    $('colaboEmail').value     = _editingColabo?.email||'';
+    $('colaboPapel').value     = _editingColabo?.papel||'operador';
+    $('colaboAtivo').value     = String(_editingColabo?.ativo??1);
+    _currentToken = _editingColabo?.token || generateToken();
+    $('colaboTokenDisplay').textContent = _currentToken;
+    $('colaboEditToken').value = _currentToken;
+    updateColaboPermPreview();
+    form.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
+  window.closeColaboForm = function(){
+    const form=$('colaboFormSection'); if(form)form.style.display='none';
+    _editingColabo=null;
+  };
+
+  /* ---- token helpers ---- */
+  function generateToken(){
+    try{
+      return Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){
+      return Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+    }
+  }
+
+  window.regenerateColaboToken = function(){
+    _currentToken = generateToken();
+    $('colaboTokenDisplay').textContent = _currentToken;
+    $('colaboEditToken').value = _currentToken;
+    toast('Novo token gerado','info');
+  };
+
+  window.copyColaboToken = function(){
+    const t=$('colaboTokenDisplay')?.textContent||'';
+    navigator.clipboard.writeText(t).then(()=>toast('Token copiado!','success')).catch(()=>toast('Copia manualmente: '+t,'info'));
+  };
+
+  window.copyColaboTokenById = function(id){
+    const c=_colaboradores.find(x=>String(x.id)===String(id));
+    if(!c?.token){toast('Token não disponível','error');return;}
+    navigator.clipboard.writeText(c.token).then(()=>toast('Token de '+esc(c.nome)+' copiado!','success')).catch(()=>{});
+  };
+
+  /* ---- permissões preview ---- */
+  window.updateColaboPermPreview = function(){
+    const papel=$('colaboPapel')?.value||'operador';
+    const p=PAPEIS[papel]||PAPEIS.operador;
+    const preview=$('colaboPermPreview'); if(!preview)return;
+    preview.innerHTML='<strong style="color:var(--white)">'+p.icon+' '+p.nome+'</strong> — '+p.desc+'<br>'+
+      '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+
+      p.panels.map(pid=>{
+        const f=FEATURES.find(x=>x.id===pid);
+        return f?'<span style="background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.2);border-radius:4px;padding:1px 7px;font-size:.6rem">'+f.label+'</span>':'';
+      }).join('')+
+      '</div>';
+  };
+
+  /* ---- save ---- */
+  window.saveColabo = async function(){
+    const btn=document.querySelector('#colaboFormSection .btn-primary');
+    const nome  = $('colaboNome')?.value.trim();
+    const email = $('colaboEmail')?.value.trim();
+    const papel = $('colaboPapel')?.value||'operador';
+    const ativo = parseInt($('colaboAtivo')?.value)||0;
+    const token = $('colaboEditToken')?.value||generateToken();
+    if(!nome){toast('Nome obrigatório','error');return;}
+    const body={nome,email,papel,ativo,token};
+    const method=_editingColabo?'PUT':'POST';
+    const url=_editingColabo?'/api/admin/colaboradores/'+_editingColabo.id:'/api/admin/colaboradores';
+    const b=btn?btnBusy(btn):null;
+    try{
+      const saved = await api(url,{method,body:JSON.stringify(body)}).catch(async()=>{
+        // fallback: guardar em loja config
+        const lista=state.loja.colaboradores_json||[];
+        if(_editingColabo){
+          const idx=lista.findIndex(c=>String(c.id)===String(_editingColabo.id));
+          if(idx>=0)lista[idx]={...lista[idx],...body};
+        }else{
+          lista.push({...body,id:Date.now()});
+        }
+        await api('/api/loja',{method:'PUT',body:JSON.stringify({colaboradores_json:lista})});
+        state.loja.colaboradores_json=lista;
+        return lista[lista.length-1];
+      });
+      if(_editingColabo){
+        const idx=_colaboradores.findIndex(c=>String(c.id)===String(_editingColabo.id));
+        if(idx>=0)_colaboradores[idx]={..._colaboradores[idx],...body};
+      }else{
+        _colaboradores.push({...(saved||{}), ...body, id:(saved?.id||Date.now())});
+      }
+      closeColaboForm();
+      renderColaboKPIs();
+      renderColaboList();
+      toast(_editingColabo?'Colaborador actualizado':'✅ Colaborador adicionado!','success');
+    }catch(err){toast('Erro: '+err.message,'error');}
+    if(b)btnDone(btn);
+  };
+
+  /* ---- toggle activo ---- */
+  window.toggleColaboAtivo = async function(id,currentlyActive){
+    const newVal = currentlyActive?0:1;
+    try{
+      try{await api('/api/admin/colaboradores/'+id,{method:'PUT',body:JSON.stringify({ativo:newVal})});}catch(e){}
+      const c=_colaboradores.find(x=>String(x.id)===String(id));
+      if(c)c.ativo=newVal;
+      renderColaboList(); renderColaboKPIs();
+      toast(newVal?'Colaborador activado':'Colaborador desactivado','success');
+    }catch(e){toast('Erro','error');}
+  };
+
+  /* ---- delete ---- */
+  window.deleteColabo = async function(id){
+    const c=_colaboradores.find(x=>String(x.id)===String(id));
+    if(!confirm('Eliminar colaborador "'+(c?.nome||'?')+'"?'))return;
+    try{
+      try{await api('/api/admin/colaboradores/'+id,{method:'DELETE'});}catch(e){}
+      _colaboradores=_colaboradores.filter(x=>String(x.id)!==String(id));
+      // also update loja fallback
+      state.loja.colaboradores_json=_colaboradores;
+      try{await api('/api/loja',{method:'PUT',body:JSON.stringify({colaboradores_json:_colaboradores})});}catch(e){}
+      renderColaboKPIs(); renderColaboList();
+      toast('Colaborador eliminado','success');
+    }catch(e){toast('Erro','error');}
+  };
+
+  /* ---- matriz de permissões ---- */
+  function renderPermMatrix(){
+    const cont=$('colaboPermMatrix'); if(!cont)return;
+    const roles=[
+      {id:'admin',   nome:'👑 Admin'},
+      {id:'gestor',  nome:'🧑‍💼 Gestor'},
+      {id:'operador',nome:'📦 Operador'},
+      {id:'conteudo',nome:'✍️ Conteúdo'},
+    ];
+    const adminPanels=FEATURES.map(f=>f.id);
+    const allPanels={admin:adminPanels,...Object.fromEntries(Object.entries(PAPEIS).map(([k,v])=>[k,v.panels]))};
+    cont.innerHTML='<table class="perm-matrix">'+
+      '<thead><tr><th>Funcionalidade</th>'+roles.map(r=>'<th>'+r.nome+'</th>').join('')+'</tr></thead>'+
+      '<tbody>'+FEATURES.map(f=>
+        '<tr><td>'+f.label+'</td>'+
+        roles.map(r=>{
+          const has=(allPanels[r.id]||[]).includes(f.id);
+          return '<td class="'+(has?'perm-check':'perm-cross')+'">'+
+            (has?'<i class="fa-solid fa-check"></i>':'<i class="fa-solid fa-minus"></i>')+'</td>';
+        }).join('')+
+        '</tr>'
+      ).join('')+'</tbody></table>';
+  }
+
+  /* ---- activity log (local session) ---- */
+  function renderActivityLog(){
+    const cont=$('colaboActivityLog'); if(!cont)return;
+    const log=JSON.parse(sessionStorage.getItem('colabo_activity')||'[]').slice(-10).reverse();
+    if(!log.length){
+      cont.innerHTML='<p style="font-size:.76rem;color:var(--muted);text-align:center;padding:10px">Sem actividade registada nesta sessão.</p>';
+      return;
+    }
+    cont.innerHTML=log.map(ev=>
+      '<div class="activity-row">'+
+        '<div class="activity-icon">'+ev.icon+'</div>'+
+        '<div style="flex:1">'+
+          '<div class="activity-text">'+esc(ev.msg)+'</div>'+
+          '<div class="activity-who">'+esc(ev.who||'Admin')+'</div>'+
+        '</div>'+
+        '<div class="activity-when">'+ev.when+'</div>'+
+      '</div>'
+    ).join('');
+  }
+
+  /* ---- aplicar restrições de papel ---- */
+  window.applyRoleRestrictions = function(papel){
+    if(!papel||papel==='admin')return;
+    const p=PAPEIS[papel];
+    if(!p)return;
+    const allowed=new Set(p.panels);
+    allowed.add('settings'); // sempre visível para logout
+    document.querySelectorAll('.sidebar-item[data-panel]').forEach(btn=>{
+      const panel=btn.dataset.panel;
+      if(panel&&!allowed.has(panel)&&panel!=='dashboard'){
+        btn.style.display='none';
+      }
+    });
+    toast('Sessão iniciada como '+p.icon+' '+p.nome,'info');
+  };
+})();
 
 /* ============================================================
    BLOG / CONTEÚDO
