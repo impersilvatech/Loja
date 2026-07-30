@@ -3544,17 +3544,24 @@ function setLoginMsg(msg, subMsg){
 }
 
 function showLoginForm(){
+  var app=$('app');
+  if(app){app.style.display='none';app.classList.remove('active');}
+  var ls=$('loginScreen');if(ls)ls.style.display='flex';
   var f=$('loginForm'),sp=$('loginSpinner'),m=$('loginMsg'),sm=$('loginSubMsg');
   if(f)f.style.display='';
   if(sp)sp.style.display='none';
   if(m)m.style.display='none';
   if(sm)sm.style.display='none';
+  $('loginError').style.display='none';
   var icon=$('loginIcon');
   if(icon){icon.innerHTML='<i class="fa-solid fa-lock-open"></i>';icon.style.background='rgba(255,107,157,.08)';icon.style.borderColor='rgba(255,107,157,.2)';icon.style.color='var(--pink)';}
   setTimeout(()=>{ var inp=$('loginTokenInput');if(inp)inp.focus(); },100);
 }
 
 function showLoginLoading(msg,sub){
+  var app=$('app');
+  if(app){app.style.display='none';app.classList.remove('active');}
+  var ls=$('loginScreen');if(ls)ls.style.display='flex';
   $('loginForm').style.display='none';
   $('loginError').style.display='none';
   $('loginSpinner').style.display='block';
@@ -3720,15 +3727,19 @@ async function enterApp(lojaData, token, colaborador){
     $('loginScreen').style.display='none';
     $('app').style.display='flex';
     $('app').classList.add('active');
-    // aplicar restrições de papel se colaborador
     if(colaborador?.papel&&typeof applyRoleRestrictions==='function'){
       applyRoleRestrictions(colaborador.papel);
     }
     initApp();
-  },700);
+  },300);
 }
 
 function autoLogin(){
+  // Garantir estado inicial correcto — app escondido, login visível
+  var app=$('app');
+  if(app){app.style.display='none';app.classList.remove('active');}
+  var ls=$('loginScreen');if(ls)ls.style.display='flex';
+
   // Tenta token de admin guardado
   var token=sessionStorage.getItem('loja_admin_tok')||localStorage.getItem('adm_tk')||sessionStorage.getItem('admin_loja_token');
   if(token){
