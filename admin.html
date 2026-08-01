@@ -3165,6 +3165,30 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </div>
 
 <!-- ============================================================
+     MODAL - EXPORTAÇÃO DE DADOS
+     ============================================================ -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-download" style="color:var(--teal)"></i> Exportar Dados</div>
+      <button class="modal-close" onclick="closeModal('exportModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.76rem;color:var(--muted);margin-bottom:14px">Exporta os dados da tua loja em formato CSV ou JSON para backup ou migração.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-outline btn-full" onclick="exportAllData('encomendas')"><i class="fa-solid fa-inbox" style="color:var(--pink)"></i> Exportar Encomendas (.csv)</button>
+        <button class="btn btn-outline btn-full" onclick="exportAllData('produtos')"><i class="fa-solid fa-box" style="color:var(--purple)"></i> Exportar Produtos (.csv)</button>
+        <button class="btn btn-outline btn-full" onclick="exportAllData('clientes')"><i class="fa-solid fa-users" style="color:var(--blue)"></i> Exportar Clientes (.csv)</button>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+          <button class="btn btn-primary btn-full" onclick="exportAllData('backup')"><i class="fa-solid fa-database"></i> Backup Completo (.json)</button>
+          <div style="font-size:.66rem;color:var(--muted);margin-top:6px;text-align:center">Inclui encomendas, produtos, clientes e configurações</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      MODAL - NOVA DEVOLUÇÃO / TROCA
      ============================================================ -->
 <div class="modal-overlay" id="novaDevolucaoModal">
@@ -3360,6 +3384,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             <div class="form-group">
               <label>Preço Original <span class="optional">(deixa em branco se sem desconto)</span></label>
               <input class="form-input" type="number" id="productOrigPrice" placeholder="0" min="0" oninput="updatePricePreview()"/>
+            </div>
+            <div class="form-group">
+              <label>Custo de aquisição (Kz) <span class="optional">para calcular margem</span></label>
+              <input class="form-input" type="number" id="productCostPrice" placeholder="0" min="0" oninput="updateMarginPreview()"/>
+              <div class="form-hint" id="marginPreviewHint" style="color:var(--teal)"></div>
             </div>
           </div>
           <div id="discountPreview" style="display:none">
@@ -3648,8 +3677,21 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <span class="drawer-item-text">Sistema de Referidos</span>
       <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
     </button>
-
-    <div class="drawer-section-label">Acções</div>
+    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('webhooks')">
+      <span class="drawer-item-icon"><i class="fa-solid fa-webhook"></i></span>
+      <span class="drawer-item-text">Webhooks & Integrações</span>
+      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
+    </button>
+    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('analytics')">
+      <span class="drawer-item-icon"><i class="fa-brands fa-meta"></i></span>
+      <span class="drawer-item-text">Pixel & Analytics</span>
+      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
+    </button>
+    <button class="drawer-item" onclick="closeDrawer();openExportModal()">
+      <span class="drawer-item-icon"><i class="fa-solid fa-download"></i></span>
+      <span class="drawer-item-text">Exportar Dados</span>
+      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
+    </button>
     <a href="index.html" target="_blank" class="drawer-item drawer-item-ext">
       <span class="drawer-item-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
       <span class="drawer-item-text">Ver Site ao Vivo</span>
@@ -4602,6 +4644,177 @@ function emitirFatura(ref){
 })();
 
 /* ============================================================
+   CUSTO / MARGEM
+   ============================================================ */
+window.updateMarginPreview=function(){
+  const preco=parseFloat($('productPrice')?.value)||0;
+  const custo=parseFloat($('productCostPrice')?.value)||0;
+  const hint=$('marginPreviewHint');
+  if(!hint)return;
+  if(!custo||!preco){hint.textContent='';return;}
+  const margem=Math.round(((preco-custo)/preco)*100);
+  const lucro=preco-custo;
+  const sym=state.loja.simbolo_moeda||'Kz';
+  hint.textContent='Margem: '+margem+'% · Lucro por unidade: '+kz(lucro,sym);
+  hint.style.color=margem>=30?'var(--teal)':margem>=10?'var(--orange)':'var(--red)';
+};
+
+/* ============================================================
+   EXPORTAÇÃO COMPLETA
+   ============================================================ */
+window.openExportModal=function(){openModal('exportModal');};
+
+window.exportAllData=function(tipo){
+  const sym=state.loja.simbolo_moeda||'Kz';
+  const ts=new Date().toISOString().slice(0,10);
+
+  if(tipo==='backup'){
+    const backup={
+      exportado_em:new Date().toISOString(),
+      loja:state.loja,
+      encomendas:state.encomendas||[],
+      produtos:state.produtos||[],
+      clientes:state.clientes||[],
+      categorias:state.categorias||[],
+      cupoes:state.coupons||[],
+    };
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='backup_'+ts+'.json';a.click();
+    toast('Backup completo exportado!','success');return;
+  }
+
+  let rows=[], filename='';
+  if(tipo==='encomendas'){
+    filename='encomendas_'+ts+'.csv';
+    rows=[['Ref','Cliente','Email','Telefone','Total','Estado','Pagamento','Data']];
+    (state.encomendas||[]).forEach(e=>rows.push([e.ref,e.nome_cliente,e.email_cliente,e.telefone_cliente,e.total,e.estado,e.pagamento_estado,fmtDate(e.criado_em)]));
+  } else if(tipo==='produtos'){
+    filename='produtos_'+ts+'.csv';
+    rows=[['ID','Nome','Categoria','Preço','Preco Orig','Custo','Stock','Disponível','Destaque']];
+    const cats={};(state.categorias||[]).forEach(c=>{cats[c.id]=c.nome;});
+    (state.produtos||[]).forEach(p=>rows.push([p.id,p.nome,cats[p.categoria_id]||'',p.preco_base,p.preco_original||0,p.preco_custo||0,p.stock,p.disponivel?'Sim':'Não',p.destaque?'Sim':'Não']));
+  } else if(tipo==='clientes'){
+    filename='clientes_'+ts+'.csv';
+    rows=[['Nome','Email','Telefone','Total Encomendas','Total Gasto']];
+    (state.clientes||[]).forEach(c=>{
+      const encs=(state.encomendas||[]).filter(e=>e.email_cliente===c.email);
+      const gasto=encs.filter(e=>e.pagamento_estado==='pago'||e.estado==='entregue').reduce((s,e)=>s+(e.total||0),0);
+      rows.push([c.nome,c.email,c.tel||'',encs.length,gasto]);
+    });
+  }
+  const csv=rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  toast('Exportado: '+filename,'success');
+};
+
+/* ============================================================
+   WEBHOOKS
+   ============================================================ */
+window.saveWebhooks=async function(){
+  const campos={
+    webhook_url_1:$('webhook1_url')?.value.trim()||null,
+    webhook_ev_1: $('webhook1_ev')?.value||'nova_encomenda',
+    webhook_url_2:$('webhook2_url')?.value.trim()||null,
+    webhook_ev_2: $('webhook2_ev')?.value||'pagamento',
+    webhook_url_3:$('webhook3_url')?.value.trim()||null,
+    webhook_ev_3: $('webhook3_ev')?.value||'estado',
+  };
+  try{
+    await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+    Object.assign(state.loja,campos);
+    toast('Webhooks guardados!','success');
+  }catch(e){toast('Erro: '+e.message,'error');}
+};
+
+window.testWebhook=async function(slotId){
+  const url=$(`${slotId}_url`)?.value.trim();
+  if(!url){toast('Insere uma URL para testar','error');return;}
+  toast('A enviar teste...','info');
+  try{
+    const payload={evento:'teste',timestamp:new Date().toISOString(),loja:state.loja.nome||'Loja',mensagem:'Webhook de teste da IMPERSILVA TECH'};
+    await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    toast('✅ Webhook enviado! Verifica o teu servidor.','success');
+  }catch(e){
+    toast('Erro ao enviar (CORS pode bloquear o browser). Testa via backend.','error');
+  }
+};
+
+window.fireWebhook=async function(evento,data){
+  const slots=[{url:state.loja.webhook_url_1,ev:state.loja.webhook_ev_1},{url:state.loja.webhook_url_2,ev:state.loja.webhook_ev_2},{url:state.loja.webhook_url_3,ev:state.loja.webhook_ev_3}];
+  slots.filter(s=>s.url&&(s.ev===evento||s.ev==='todos')).forEach(s=>{
+    fetch(s.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({evento,...data})}).catch(()=>{});
+  });
+};
+
+/* ============================================================
+   ANALYTICS / PIXEL
+   ============================================================ */
+window.saveAnalytics=async function(){
+  const campos={pixel_meta_id:$('cfgPixelMeta')?.value.trim()||null,analytics_ga4_id:$('cfgGA4')?.value.trim()||null,gtm_id:$('cfgGTM')?.value.trim()||null};
+  try{
+    await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
+    Object.assign(state.loja,campos);
+    toast('Tracking guardado!','success');
+  }catch(e){toast('Erro: '+e.message,'error');}
+};
+
+/* ============================================================
+   LTV — TOP CLIENTES (injectado no Relatórios)
+   ============================================================ */
+// Chamado após renderReports
+const _origRenderReports=window.renderReports;
+if(typeof _origRenderReports==='function'){
+  window.renderReports=function(){
+    _origRenderReports.apply(this,arguments);
+    renderTopClientesLTV();
+  };
+}
+
+function renderTopClientesLTV(){
+  const sym=state.loja.simbolo_moeda||'Kz';
+  const encs=state.encomendas||[];
+  const clientes=state.clientes||[];
+  if(!clientes.length)return;
+  const ltvMap={};
+  clientes.forEach(c=>{
+    const paid=encs.filter(e=>e.email_cliente===c.email&&(e.pagamento_estado==='pago'||e.estado==='entregue'));
+    ltvMap[c.email]={nome:c.nome||c.email,ltv:paid.reduce((s,e)=>s+(e.total||0),0),n:paid.length};
+  });
+  const sorted=Object.values(ltvMap).sort((a,b)=>b.ltv-a.ltv).slice(0,8);
+  const maxLtv=sorted[0]?.ltv||1;
+
+  // Inject into rptBreakdown area or append after it
+  const existing=document.getElementById('rptLTV');
+  const parent=$('rptBreakdown')?.parentNode;
+  if(!parent)return;
+  let card=existing;
+  if(!card){
+    card=document.createElement('div');
+    card.id='rptLTV';
+    card.className='section-card';
+    card.style.marginTop='14px';
+    parent.appendChild(card);
+  }
+  card.innerHTML='<div class="section-header"><div class="section-title">'+
+    '<i class="fa-solid fa-trophy" style="color:var(--yellow)"></i> Top Clientes por LTV</div></div>'+
+    '<table class="rpt-top-table"><thead><tr>'+
+      '<th>#</th><th>Cliente</th>'+
+      '<th style="text-align:center">Encomendas</th>'+
+      '<th style="text-align:right">LTV Total</th>'+
+      '<th style="width:120px"></th>'+
+    '</tr></thead><tbody>'+
+    sorted.map((c,i)=>'<tr>'+
+      '<td style="color:var(--muted);font-size:.7rem">'+(i+1)+'</td>'+
+      '<td>'+esc(c.nome)+'</td>'+
+      '<td style="text-align:center;color:var(--muted)">'+c.n+'</td>'+
+      '<td style="text-align:right;font-family:var(--ft);color:var(--teal)">'+kz(c.ltv,sym)+'</td>'+
+      '<td><div class="rpt-top-bar-wrap"><div class="rpt-top-bar" style="width:'+Math.round((c.ltv/maxLtv)*100)+'%"></div></div></td>'+
+    '</tr>').join('')+'</tbody></table>';
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 async function initApp(){
@@ -5106,11 +5319,13 @@ function renderProducts(){
   
   tbody.innerHTML=prods.map(p=>{
     const pct=p.preco_original&&p.preco_original>p.preco_base?Math.round((1-p.preco_base/p.preco_original)*100):0;
+    const margem=p.preco_custo>0?Math.round(((p.preco_base-p.preco_custo)/p.preco_base)*100):null;
     const isNew=p.etiqueta==='novo'||(p.criado_em&&(Date.now()-new Date(p.criado_em).getTime())<7*24*60*60*1000);
     const tags=[];
     if(p.destaque)tags.push('<span class="badge badge-featured">Destaque</span>');
     if(pct>0||p.etiqueta==='promocao')tags.push('<span class="badge badge-promo">-'+(pct||0)+'%</span>');
     if(isNew)tags.push('<span class="badge badge-new">Novo</span>');
+    if(margem!==null)tags.push('<span class="badge" style="background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.2)">M '+margem+'%</span>');
     
     return '<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="table-img">'+(p.imagem_url&&!p.imagem_url.startsWith('data:')?'<img src="'+esc(p.imagem_url)+'" alt="" onerror="this.innerHTML=\'<i class=fa-solid fa-image></i>\'">':'<i class="fa-solid fa-image"></i>')+'</div><div><div class="table-name">'+esc(p.nome)+'</div></div></td>'+
       '<td style="font-size:.76rem;color:var(--muted)">'+(catMap[p.categoria_id]||'—')+'</td>'+
@@ -5366,6 +5581,7 @@ async function loadProductForEdit(id){
     $('productDesc').value=p.descricao||'';
     $('productPrice').value=p.preco_base||'';
     $('productOrigPrice').value=p.preco_original||'';
+    if($('productCostPrice'))$('productCostPrice').value=p.preco_custo||'';
     $('productStock').value=p.stock!==undefined?p.stock:-1;
     $('productAvailable').checked=p.disponivel!==0;
     $('productFeatured').checked=!!p.destaque;
@@ -5458,6 +5674,7 @@ async function saveProduct(){
     descricao:$('productDesc').value.trim()||null,
     preco_base:preco,
     preco_original:precoOrig||null,
+    preco_custo:parseFloat($('productCostPrice')?.value)||0,
     categoria_id:parseInt($('productCategory').value)||null,
     imagem_url:mainImage||null,
     imagens_extra:extraImages,
@@ -5766,6 +5983,60 @@ const settingsSections={
         '<div class="form-group"><label>Mínimo de encomenda para activar (Kz)</label><input class="form-input" type="number" id="cfgRefMin" value="'+(l.referidos_min||2000)+'" min="0"/></div>'+
         '<div class="form-group"><label>Mensagem de partilha</label><input class="form-input" id="cfgRefMsg" value="'+esc(l.referidos_msg||'Usa o meu código e recebe desconto na tua primeira encomenda!')+'" placeholder="Mensagem quando o cliente partilha"/></div>'+
         '</div>';
+    }
+  },
+  webhooks:{
+    name:'Webhooks & Integrações', icon:'fa-solid fa-webhook',
+    render(){
+      const l=state.loja;
+      const slots=[
+        {id:'webhook1', label:'Webhook 1', val:l.webhook_url_1||'', ev:l.webhook_ev_1||'nova_encomenda'},
+        {id:'webhook2', label:'Webhook 2', val:l.webhook_url_2||'', ev:l.webhook_ev_2||'pagamento'},
+        {id:'webhook3', label:'Webhook 3', val:l.webhook_url_3||'', ev:l.webhook_ev_3||'estado'},
+      ];
+      const evOpts='<option value="nova_encomenda">Nova encomenda</option><option value="pagamento">Pagamento confirmado</option><option value="estado">Mudança de estado</option><option value="todos">Todos os eventos</option>';
+      return '<div class="section-card">'+
+        '<p style="font-size:.74rem;color:var(--muted);margin-bottom:14px">Configura URLs que são notificadas automaticamente quando ocorrem eventos na loja. O servidor receberá um POST com os dados da encomenda em JSON.</p>'+
+        slots.map(s=>'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:10px">'+
+          '<div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:8px">'+s.label+'</div>'+
+          '<div class="form-row">'+
+            '<div class="form-group" style="flex:2"><label class="form-label">URL (https://)</label>'+
+              '<input class="form-input" id="'+s.id+'_url" value="'+esc(s.val)+'" placeholder="https://meu-servidor.com/webhook" type="url"/></div>'+
+            '<div class="form-group" style="flex:1"><label class="form-label">Evento</label>'+
+              '<select class="form-select" id="'+s.id+'_ev">'+evOpts.replace('value="'+s.ev+'"','value="'+s.ev+'" selected')+
+              '</select></div>'+
+            '<div class="form-group" style="flex:0 0 auto;align-self:flex-end">'+
+              '<button class="btn btn-outline btn-sm" onclick="testWebhook(\''+s.id+'\')"><i class="fa-solid fa-paper-plane"></i> Testar</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>').join('')+
+        '<button class="btn btn-primary" onclick="saveWebhooks()"><i class="fa-solid fa-floppy-disk"></i> Guardar Webhooks</button>'+
+      '</div>';
+    }
+  },
+  analytics:{
+    name:'Pixel & Analytics', icon:'fa-brands fa-meta',
+    render(){
+      const l=state.loja;
+      return '<div class="section-card">'+
+        '<p style="font-size:.74rem;color:var(--muted);margin-bottom:14px">Adiciona os teus códigos de rastreio. São injectados automaticamente na loja para análise de tráfego e conversões.</p>'+
+        '<div class="form-group" style="margin-bottom:10px">'+
+          '<label class="form-label"><i class="fa-brands fa-meta"></i> Meta Pixel ID</label>'+
+          '<input class="form-input" id="cfgPixelMeta" value="'+esc(l.pixel_meta_id||'')+'" placeholder="123456789012345"/>'+
+          '<div class="form-hint">Encontra-o em Meta Business Suite → Pixels (formato numérico, 15-16 dígitos)</div>'+
+        '</div>'+
+        '<div class="form-group" style="margin-bottom:10px">'+
+          '<label class="form-label"><i class="fa-brands fa-google"></i> Google Analytics 4 (GA4)</label>'+
+          '<input class="form-input" id="cfgGA4" value="'+esc(l.analytics_ga4_id||'')+'" placeholder="G-XXXXXXXXXX"/>'+
+          '<div class="form-hint">Encontra em Google Analytics → Admin → Fluxos de dados (formato G-XXXXXXXX)</div>'+
+        '</div>'+
+        '<div class="form-group" style="margin-bottom:14px">'+
+          '<label class="form-label"><i class="fa-brands fa-google"></i> Google Tag Manager (GTM)</label>'+
+          '<input class="form-input" id="cfgGTM" value="'+esc(l.gtm_id||'')+'" placeholder="GTM-XXXXXXX"/>'+
+          '<div class="form-hint">Opcional. Se usares GTM, os outros podem ser geridos por lá</div>'+
+        '</div>'+
+        '<button class="btn btn-primary" onclick="saveAnalytics()"><i class="fa-solid fa-floppy-disk"></i> Guardar Tracking</button>'+
+      '</div>';
     }
   }
 };
