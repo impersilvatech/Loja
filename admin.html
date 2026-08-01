@@ -83,6 +83,7 @@ body{
    4. APP CONTAINER
    ============================================================ */
 #app{display:none;flex:1;overflow:hidden;flex-direction:column}
+#loginScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;overflow-y:auto}
 #app.active{display:flex}
 
 /* ============================================================
@@ -1444,7 +1445,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <!-- Push Notifications Nativas (Web Push API) -->
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;overflow-y:auto">
   <div style="text-align:center;max-width:400px;width:100%">
 
     <!-- Logo -->
@@ -4001,11 +4002,12 @@ async function login(){
 
 /* ---- entrar na app (admin ou colaborador) ---- */
 async function enterApp(lojaData, token, colaborador){
+  // Mostrar check verde
   var icon=$('loginIcon');
   if(icon){icon.innerHTML='<i class="fa-solid fa-check"></i>';icon.style.background='rgba(6,214,160,.06)';icon.style.borderColor='rgba(6,214,160,.2)';icon.style.color='var(--teal)';}
   $('loginSpinner').style.display='none';
   $('loginError').style.display='none';
-  setLoginMsg('Acesso Confirmado','Painel carregado com sucesso!');
+  setLoginMsg('Acesso Confirmado','A carregar o painel...');
   $('loginMsg').style.display='block';
   $('loginSubMsg').style.display='block';
   state.token=token;
@@ -4020,15 +4022,15 @@ async function enterApp(lojaData, token, colaborador){
   if(ghUser!==null)state.loja.github_user=ghUser||'';
   if(ghRepo!==null)state.loja.github_repo=ghRepo||'';
   if(ghBranch!==null)state.loja.github_branch=ghBranch||'main';
+  // loginScreen é position:fixed z-index:9999 — ao escondê-lo o app aparece instantaneamente
   setTimeout(function(){
-    $('loginScreen').style.display='none';
-    $('app').style.display='flex';
-    $('app').classList.add('active');
+    var ls=$('loginScreen');if(ls)ls.style.display='none';
+    var app=$('app');if(app){app.style.display='flex';app.classList.add('active');}
     if(colaborador?.papel&&typeof applyRoleRestrictions==='function'){
       applyRoleRestrictions(colaborador.papel);
     }
     initApp();
-  },300);
+  },400);
 }
 
 function autoLogin(){
@@ -4066,12 +4068,16 @@ function logout(){
   sessionStorage.removeItem('admin_loja_token');
   state.token='';
   state.currentRole='admin';
-  $('app').classList.remove('active');
-  $('app').style.display='none';
-  $('loginScreen').style.display='flex';
+  // Esconder app, mostrar login
+  var app=$('app');
+  if(app){app.style.display='none';app.classList.remove('active');}
+  var ls=$('loginScreen');
+  if(ls)ls.style.display='flex';
+  // Limpar inputs
   var inp=$('loginTokenInput');if(inp)inp.value='';
-  switchLoginTab('admin');
-  showLoginForm();
+  if(typeof switchLoginTab==='function')switchLoginTab('admin');
+  if(typeof showLoginForm==='function')showLoginForm();
+  if(state.refreshInterval)clearInterval(state.refreshInterval);
 }
 
 
