@@ -615,7 +615,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   .mobile-nav{display:flex}
   html{height:auto;overflow:visible}
   body{height:auto;overflow-y:auto}
-  #app,.app-body,.main-content{height:auto}
+  #app,.app-body,.main-content{height:auto;overflow:visible}
   body{padding-bottom:72px}
   .topbar{position:sticky;top:0;z-index:200}
   .mobile-nav{padding:8px 0 16px}
@@ -1491,8 +1491,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
    Quando existe token guardado (detectado pelo script abaixo ANTES
    de o body ser pintado), escondemos o formulário e mostramos o
    spinner desde o primeiro frame — eliminando o "flash" do campo
-   de senha. Os display:none inline definidos por showLoginLoading()
-   e showLoginForm() sobrepõem-se a estas regras (inline > class).
+   de senha. ATENÇÃO: !important vence inline styles. Para sair deste
+   estado é obrigatório remover o atributo data-auto-login do <html>
+   (feito em showLoginForm e showLoginError).
 ──────────────────────────────────────────────────────────────── */
 [data-auto-login] #loginForm   { display: none   !important }
 [data-auto-login] #loginSpinner{ display: block  !important }
@@ -3819,6 +3820,7 @@ function hideSplash(){
 
 function showLoginForm(){
   hideSplash();
+  document.documentElement.removeAttribute('data-auto-login');
   var app=$('app');
   if(app){app.style.display='none';app.classList.remove('active');}
   var ls=$('loginScreen');if(ls)ls.style.display='flex';
@@ -3847,6 +3849,7 @@ function showLoginLoading(msg,sub){
 
 function showLoginError(title, msg){
   hideSplash();
+  document.documentElement.removeAttribute('data-auto-login');
   $('loginSpinner').style.display='none';
   $('loginMsg').style.display='none';
   $('loginSubMsg').style.display='none';
