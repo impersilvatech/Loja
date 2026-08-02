@@ -1679,8 +1679,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
       <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:11px;padding:4px 8px">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
-      <button class="topbar-btn" onclick="refreshData()" title="Actualizar dados"><i class="fa-solid fa-rotate"></i></button>
-      <button class="topbar-btn" onclick="openDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+      <button class="topbar-btn" onclick="openExportModal()" title="Exportar dados"><i class="fa-solid fa-download"></i></button>
+      <button class="topbar-btn" onclick="logout()" title="Terminar sessão" style="color:var(--red);border-color:rgba(255,71,87,.3)"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </div>
 
@@ -1792,6 +1792,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
           <div class="page-header">
             <div class="page-title"><i class="fa-solid fa-gauge"></i> Dashboard</div>
             <div class="page-actions">
+              <a href="index.html" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Loja</a>
               <button class="btn btn-outline btn-sm" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
             </div>
           </div>
@@ -3676,35 +3677,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <!-- ============================================================
      DRAWER (aberto pelos 3 pontinhos no topbar)
      ============================================================ -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-header">
-    <div class="drawer-header-icon"><i class="fa-solid fa-sliders"></i></div>
-    <div class="drawer-header-info">
-      <div class="drawer-header-title">Configurações</div>
-      <div class="drawer-header-sub" id="drawerLojaName">—</div>
-    </div>
-    <button class="drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
-  </div>
 
-  <div class="drawer-body">
-    <button class="drawer-item" onclick="closeDrawer();openExportModal()">
-      <span class="drawer-item-icon"><i class="fa-solid fa-download"></i></span>
-      <span class="drawer-item-text">Exportar Dados</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <a href="index.html" target="_blank" class="drawer-item drawer-item-ext">
-      <span class="drawer-item-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-      <span class="drawer-item-text">Ver Site ao Vivo</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </a>
-    <div class="drawer-divider"></div>
-    <button class="drawer-item danger" onclick="closeDrawer();logout()">
-      <span class="drawer-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
-      <span class="drawer-item-text">Terminar Sessão</span>
-    </button>
-  </div>
-</div>
 
 <!-- ============================================================
      TOAST
@@ -4828,7 +4801,6 @@ function renderTopClientesLTV(){
    ============================================================ */
 async function initApp(){
   $('topbarLoja').textContent=state.loja.nome||'Sem nome';
-  $('drawerLojaName').textContent=state.loja.nome||'—';
   
   await Promise.all([loadCategorias(),loadProdutos(),loadEncomendas(),loadReviews(),loadCoupons()]);
   
@@ -4910,15 +4882,7 @@ function navigate(panel){
 function expandSidebar(){$('sidebar').classList.add('expanded');}
 function collapseSidebar(){$('sidebar').classList.remove('expanded');}
 
-function openDrawer(){
-  $('drawerOverlay').classList.add('active');
-  $('drawer').classList.add('open');
-  $('drawerLojaName').textContent=state.loja?.nome||'—';
-}
-function closeDrawer(){
-  $('drawerOverlay').classList.remove('active');
-  $('drawer').classList.remove('open');
-}
+
 
 function settingsSection(section){
   state.settingsSection=section;
@@ -6159,7 +6123,7 @@ async function saveSettings(){
   try{
     await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
     Object.assign(state.loja,campos);
-    if(campos.nome){$('topbarLoja').textContent=state.loja.nome;$('drawerLojaName').textContent=state.loja.nome;}
+    if(campos.nome){$('topbarLoja').textContent=state.loja.nome;}
     if(typeof invalidarCache==='function')invalidarCache();
     toast('Configurações guardadas!','success');
   }catch(e){toast('Erro: '+e.message,'error');}
