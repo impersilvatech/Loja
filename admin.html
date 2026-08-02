@@ -614,10 +614,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   .sidebar{display:none!important}
   .mobile-nav{display:flex}
   html{height:auto;overflow:visible}
-  body{height:auto;overflow-y:auto}
-  #app,.app-body,.main-content{height:auto;overflow:visible}
+  body{height:auto;overflow-y:auto;overflow-x:hidden}
+  #app,.app-body,.main-content{height:auto}
   body{padding-bottom:72px}
-  .topbar{position:sticky;top:0;z-index:200}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:200}
+  .app-body{padding-top:52px}
   .mobile-nav{padding:8px 0 16px}
   .mobile-nav-btn{font-size:.54rem;padding:0 10px;min-width:52px}
   .mobile-nav-btn i{font-size:1.35rem}
@@ -1687,7 +1688,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:11px;padding:4px 8px">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="openExportModal()" title="Exportar dados"><i class="fa-solid fa-download"></i></button>
-      <button class="topbar-btn" onclick="logout()" title="Terminar sessão" style="color:var(--red);border-color:rgba(255,71,87,.3)"><i class="fa-solid fa-right-from-bracket"></i></button>
+      <button class="topbar-btn" onclick="confirmLogout()" title="Terminar sessão" style="color:var(--red);border-color:rgba(255,71,87,.3)"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </div>
 
@@ -1782,7 +1783,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <span class="sidebar-item-label">Colaboradores</span>
       </button>
       <div class="sidebar-divider"></div>
-      <button class="sidebar-item" onclick="logout()" style="color:var(--red)">
+      <button class="sidebar-item" onclick="confirmLogout()" style="color:var(--red)">
         <i class="fa-solid fa-right-from-bracket"></i>
         <span class="sidebar-item-label">Sair</span>
       </button>
@@ -3403,6 +3404,26 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 </div>
 
 <!-- ============================================================
+     MODAL - CONFIRMAÇÃO DE LOGOUT
+     ============================================================ -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-right-from-bracket" style="color:var(--red)"></i> Terminar Sessão</div>
+      <button class="modal-close" onclick="closeModal('logoutModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:4px">Tens a certeza que queres terminar sessão?</p>
+      <p style="font-size:.76rem;color:var(--muted2)">Terás de introduzir o teu token novamente para voltar a entrar.</p>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('logoutModal')"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+        <button class="btn" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="closeModal('logoutModal');logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      MODAL - PRODUTO
      ============================================================ -->
 <div class="modal-overlay" id="productModal">
@@ -4042,6 +4063,10 @@ function autoLogin(){
   }
   // Sem token guardado — mostrar formulário
   showLoginForm();
+}
+
+function confirmLogout(){
+  openModal('logoutModal');
 }
 
 function logout(){
