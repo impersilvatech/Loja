@@ -1248,6 +1248,10 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .css-custom-area:focus{border-color:var(--purple);outline:none}
 /* publish bar */
 .editor-publish-bar{position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;z-index:10}
+.editor-tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--bg3);padding:4px;border-radius:var(--r2);border:1px solid var(--border)}
+.editor-tab{flex:1;padding:8px 12px;border-radius:var(--r);border:none;background:transparent;color:var(--muted);font-family:var(--fb);font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:var(--tr)}
+.editor-tab.active{background:var(--card);color:var(--white);box-shadow:var(--shadow-sm)}
+.editor-tab:hover:not(.active){color:var(--white)}
 /* preview panel */
 .editor-preview-wrap{position:sticky;top:10px}
 .editor-preview-device{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
@@ -1751,8 +1755,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <span class="sidebar-item-label">Blog</span>
       </button>
       <button class="sidebar-item" data-panel="editor" onclick="navigate('editor')">
-        <i class="fa-solid fa-palette"></i>
-        <span class="sidebar-item-label">Editor Visual</span>
+        <i class="fa-solid fa-store"></i>
+        <span class="sidebar-item-label">Editor da Loja</span>
       </button>
       <button class="sidebar-item" data-panel="caixa" onclick="navigate('caixa')">
         <i class="fa-solid fa-cash-register"></i>
@@ -1772,10 +1776,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <span class="sidebar-item-label">Colaboradores</span>
       </button>
       <div class="sidebar-divider"></div>
-      <button class="sidebar-item" data-panel="settings" onclick="navigate('settings')">
-        <i class="fa-solid fa-gear"></i>
-        <span class="sidebar-item-label">Configurações</span>
-      </button>
       <button class="sidebar-item" onclick="logout()" style="color:var(--red)">
         <i class="fa-solid fa-right-from-bracket"></i>
         <span class="sidebar-item-label">Sair</span>
@@ -2270,12 +2270,18 @@ select.form-input option{background:var(--bg2);color:var(--white)}
              ============================================ -->
         <div class="panel" id="panel-editor">
           <div class="page-header">
-            <div class="page-title"><i class="fa-solid fa-palette" style="color:var(--purple)"></i> Editor Visual</div>
-            <div class="page-actions">
+            <div class="page-title"><i class="fa-solid fa-store" style="color:var(--purple)"></i> Editor da Loja</div>
+            <div class="page-actions" id="edPageActions">
               <button class="btn btn-outline btn-sm" onclick="resetEditorVisual()"><i class="fa-solid fa-rotate-left"></i> Repor</button>
             </div>
           </div>
 
+          <div class="editor-tabs">
+            <button class="editor-tab active" id="edTabVisual" onclick="switchEditorTab('visual')"><i class="fa-solid fa-palette"></i> Visual</button>
+            <button class="editor-tab" id="edTabLoja" onclick="switchEditorTab('loja')"><i class="fa-solid fa-gear"></i> Loja</button>
+          </div>
+
+          <div id="edPaneVisual">
           <div class="editor-layout">
             <!-- ===== CONTROLS ===== -->
             <div class="editor-controls">
@@ -2437,6 +2443,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <p style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:6px"><i class="fa-solid fa-circle-info"></i> Preview simulado — clica "Ver loja" para ver o resultado real</p>
               <p style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:2px"><i class="fa-solid fa-palette" style="color:var(--pink)"></i> As cores do admin também se actualizam ao publicar</p>
             </div>
+          </div>
+          </div><!-- /edPaneVisual -->
+
+          <div id="edPaneLoja" style="display:none">
+            <div id="edLojaAccordions" class="editor-controls"></div>
           </div>
         </div>
 
@@ -3107,17 +3118,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <!-- ============================================
              CONFIGURAÇÕES
              ============================================ -->
-        <div class="panel" id="panel-settings">
-          <div class="page-header">
-            <div class="page-title"><i class="fa-solid fa-gear"></i> Configurações da Loja</div>
-          </div>
-          <div class="cfg-section-label" id="cfgSectionLabel">
-            <i class="fa-solid fa-store" id="cfgSectionIcon"></i>
-            <span id="cfgSectionName">Identidade</span>
-            <button onclick="openDrawer()">Mudar secção <i class="fa-solid fa-chevron-right"></i></button>
-          </div>
-          <div id="settingsForm"><div class="spinner"></div></div>
-        </div>
+        <!-- panel-settings migrado para o tab "Loja" no Editor da Loja -->
+        <div id="settingsForm" style="display:none"></div>
 
       </div>
     </div>
@@ -3195,7 +3197,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
           <span>Blog</span>
         </button>
         <button class="more-btn purple" onclick="navigateMore('editor')">
-          <i class="fa-solid fa-palette"></i>
+          <i class="fa-solid fa-store"></i>
           <span>Editor</span>
         </button>
         <button class="more-btn teal" onclick="navigateMore('caixa')">
@@ -3213,10 +3215,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <button class="more-btn pink" onclick="navigateMore('colaboradores')">
           <i class="fa-solid fa-user-group"></i>
           <span>Equipa</span>
-        </button>
-        <button class="more-btn" onclick="navigateMore('settings')">
-          <i class="fa-solid fa-gear"></i>
-          <span>Config.</span>
         </button>
       </div>
     </div>
@@ -3475,7 +3473,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
             <div class="img-gh-blocked">
               <i class="fa-brands fa-github"></i>
               <p>GitHub não configurado — os uploads de ficheiros requerem um repositório GitHub para guardar as imagens.</p>
-              <button class="btn btn-outline btn-sm" onclick="closeModal('productModal');openDrawer();navigate('settings');settingsSection('visual')">
+              <button class="btn btn-outline btn-sm" onclick="closeModal('productModal');navigate('editor');switchEditorTab('loja');setTimeout(()=>openLojaAccordion('visual'),300)">
                 <i class="fa-solid fa-gear"></i> Configurar GitHub
               </button>
               <small>Podes usar URLs directas abaixo enquanto não configurares o GitHub.</small>
@@ -3690,62 +3688,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   </div>
 
   <div class="drawer-body">
-    <div class="drawer-section-label">Configurações da Loja</div>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('identity')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-store"></i></span>
-      <span class="drawer-item-text">Identidade</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('contacts')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-phone"></i></span>
-      <span class="drawer-item-text">Contactos</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('delivery')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-truck"></i></span>
-      <span class="drawer-item-text">Entrega</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('hours')">
-      <span class="drawer-item-icon"><i class="fa-regular fa-clock"></i></span>
-      <span class="drawer-item-text">Horários</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('visual')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-palette"></i></span>
-      <span class="drawer-item-text">Visual &amp; GitHub</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('notifications')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-bell"></i></span>
-      <span class="drawer-item-text">Notificações</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('seo')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-      <span class="drawer-item-text">SEO &amp; Legal</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('security')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-shield-halved"></i></span>
-      <span class="drawer-item-text">Segurança</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('referidos')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-users-between-lines"></i></span>
-      <span class="drawer-item-text">Sistema de Referidos</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('webhooks')">
-      <span class="drawer-item-icon"><i class="fa-solid fa-webhook"></i></span>
-      <span class="drawer-item-text">Webhooks & Integrações</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="closeDrawer();navigate('settings');settingsSection('analytics')">
-      <span class="drawer-item-icon"><i class="fa-brands fa-meta"></i></span>
-      <span class="drawer-item-text">Pixel & Analytics</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
     <button class="drawer-item" onclick="closeDrawer();openExportModal()">
       <span class="drawer-item-icon"><i class="fa-solid fa-download"></i></span>
       <span class="drawer-item-text">Exportar Dados</span>
@@ -3756,17 +3698,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <span class="drawer-item-text">Ver Site ao Vivo</span>
       <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
     </a>
-    <button class="drawer-item" onclick="closeDrawer();toggleTheme()">
-      <span class="drawer-item-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
-      <span class="drawer-item-text">Mudar Tema</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-    <button class="drawer-item" onclick="refreshData()">
-      <span class="drawer-item-icon"><i class="fa-solid fa-rotate"></i></span>
-      <span class="drawer-item-text">Actualizar Dados</span>
-      <i class="fa-solid fa-chevron-right drawer-item-arrow"></i>
-    </button>
-
     <div class="drawer-divider"></div>
     <button class="drawer-item danger" onclick="closeDrawer();logout()">
       <span class="drawer-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
@@ -3803,6 +3734,7 @@ let state = {
   clientes: [],
   currentPanel: 'dashboard',
   settingsSection: 'identity',
+  editorTab: 'visual',
   filteredOrders: [],
   filteredProducts: [],
   filteredClients: [],
@@ -4961,7 +4893,7 @@ function navigate(panel){
   }
   if(panel==='coupons')renderCoupons();
   if(panel==='cleanup')loadCleanup();
-  if(panel==='settings')renderSettingsForm();
+  if(panel==='settings'){navigate('editor');switchEditorTab('loja');return;}
   if(panel==='reports')renderReports();
   if(panel==='marketing')renderMarketing();
   if(panel==='stock')renderStock();
@@ -4991,6 +4923,72 @@ function closeDrawer(){
 function settingsSection(section){
   state.settingsSection=section;
   if(state.currentPanel==='settings')renderSettingsForm();
+}
+
+function switchEditorTab(tab){
+  state.editorTab=tab;
+  const isVisual=tab==='visual';
+  $('edPaneVisual').style.display=isVisual?'':'none';
+  $('edPaneLoja').style.display=isVisual?'none':'';
+  $('edTabVisual').classList.toggle('active',isVisual);
+  $('edTabLoja').classList.toggle('active',!isVisual);
+  $('edPageActions').style.display=isVisual?'':'none';
+  if(!isVisual && !$('edLojaAccordions').children.length) renderEditorLoja();
+}
+
+function renderEditorLoja(){
+  const cont=$('edLojaAccordions');
+  if(!cont)return;
+  const sections=['identity','contacts','delivery','hours','notifications','seo','security','referidos','webhooks','analytics'];
+  cont.innerHTML=sections.map((key,i)=>{
+    const meta=settingsSections[key];
+    if(!meta)return'';
+    const open=i===0;
+    return '<div class="editor-section" id="edLoja_'+key+'">'+
+      '<div class="editor-section-hdr'+(open?' open':'')+'" onclick="toggleEdSection(this)">'+
+        '<div class="editor-section-hdr-title"><i class="'+meta.icon+'"></i> '+meta.name+'</div>'+
+        '<i class="fa-solid fa-chevron-down toggle-chevron"></i>'+
+      '</div>'+
+      '<div class="editor-section-body'+(open?' open':'')+'">'+
+        meta.render()+
+        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'+
+          '<button class="btn btn-primary" onclick="saveLojaSection(\''+key+'\')">'+
+            '<i class="fa-solid fa-floppy-disk"></i> Guardar</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function openLojaAccordion(section){
+  const el=$('edLoja_'+section);
+  if(!el)return;
+  const hdr=el.querySelector('.editor-section-hdr');
+  const body=el.querySelector('.editor-section-body');
+  if(!hdr||!body)return;
+  if(!hdr.classList.contains('open')){
+    hdr.classList.add('open');
+    body.classList.add('open');
+  }
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function saveLojaSection(section){
+  state.settingsSection=section;
+  await saveSettings();
+}
+
+function refreshLojaSection(key){
+  const meta=settingsSections[key];
+  const el=$('edLoja_'+key);
+  if(!meta||!el)return;
+  const body=el.querySelector('.editor-section-body');
+  if(!body)return;
+  body.innerHTML=meta.render()+
+    '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'+
+      '<button class="btn btn-primary" onclick="saveLojaSection(\''+key+'\')">'+
+        '<i class="fa-solid fa-floppy-disk"></i> Guardar</button>'+
+    '</div>';
 }
 
 /* ============================================================
@@ -5999,7 +5997,7 @@ const settingsSections={
 
         /* Botões de ação push */
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
-          '<button class="btn '+((_notifEnabled)?'btn-danger':'btn-success')+'" onclick="toggleNotifications().then(()=>{settingsSection(\'notifications\');renderSettingsForm();})">'+
+          '<button class="btn '+((_notifEnabled)?'btn-danger':'btn-success')+'" onclick="toggleNotifications().then(()=>refreshLojaSection(\'notifications\'))">'+
             '<i class="fa-solid fa-bell'+((_notifEnabled)?'-slash':'')+'"></i> '+((_notifEnabled)?'Desativar push neste dispositivo':'Ativar push neste dispositivo')+
           '</button>'+
           '<button class="btn btn-outline" onclick="testarNotificacao()">'+
