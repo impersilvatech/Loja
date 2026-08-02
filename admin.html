@@ -162,21 +162,21 @@ body{
    7. SIDEBAR
    ============================================================ */
 .sidebar{
-  width:56px;background:var(--bg2);border-right:1px solid var(--border);
+  width:64px;background:var(--bg2);border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;
   padding:8px 0;gap:3px;flex-shrink:0;
-  transition:width .25s;overflow:hidden;
+  transition:width .25s;overflow-y:auto;overflow-x:hidden;
 }
-.sidebar.expanded{width:200px;align-items:stretch}
+.sidebar.expanded{width:210px;align-items:stretch}
 .sidebar-item{
-  width:40px;height:40px;border-radius:var(--r);
+  width:44px;height:44px;border-radius:var(--r);
   background:none;border:none;
   display:flex;align-items:center;justify-content:center;
-  font-size:.9rem;cursor:pointer;color:var(--muted);
+  font-size:1rem;cursor:pointer;color:var(--muted);
   transition:var(--tr);flex-shrink:0;position:relative;
 }
 .sidebar.expanded .sidebar-item{
-  width:auto;padding:0 14px;justify-content:flex-start;gap:10px;
+  width:auto;padding:0 16px;justify-content:flex-start;gap:10px;
 }
 .sidebar-item:hover{background:rgba(255,107,157,.08);color:var(--pink)}
 .sidebar-item.active{background:rgba(255,107,157,.12);color:var(--pink)}
@@ -614,7 +614,11 @@ select.form-input option{background:var(--bg2);color:var(--white)}
   .sidebar{display:none!important}
   .mobile-nav{display:flex}
   html,body,#app,.app-body,.main-content{overflow:auto;height:auto}
-  body{padding-bottom:60px}
+  body{padding-bottom:72px}
+  .topbar{position:sticky;top:0;z-index:200}
+  .mobile-nav{padding:8px 0 16px}
+  .mobile-nav-btn{font-size:.54rem;padding:0 10px;min-width:52px}
+  .mobile-nav-btn i{font-size:1.35rem}
 }
 .mobile-nav-btn{
   display:flex;flex-direction:column;align-items:center;gap:2px;
@@ -1744,7 +1748,6 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <span class="sidebar-item-label">Recuperação</span>
         <span class="sidebar-badge" id="sidebarRecuBadge" style="display:none;background:var(--red)">0</span>
       </button>
-      <div class="sidebar-spacer"></div>
       <div class="sidebar-divider"></div>
       <button class="sidebar-item" data-panel="marketing" onclick="navigate('marketing')">
         <i class="fa-solid fa-bullhorn"></i>
