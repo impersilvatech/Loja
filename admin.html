@@ -613,8 +613,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 @media(max-width:600px){
   .sidebar{display:none!important}
   .mobile-nav{display:flex}
-  html,body{overflow:auto;height:auto}
-  #app,.app-body,.main-content{overflow:visible;height:auto}
+  html{height:auto;overflow:visible}
+  body{height:auto;overflow-y:auto}
+  #app,.app-body,.main-content{height:auto}
   body{padding-bottom:72px}
   .topbar{position:sticky;top:0;z-index:200}
   .mobile-nav{padding:8px 0 16px}
