@@ -80,6 +80,44 @@ body{
 .login-error{color:var(--red);font-size:.75rem;text-align:center;margin-top:8px;min-height:18px}
 
 /* ============================================================
+   3b. SPLASH SCREEN (cobre tudo enquanto o auto-login decorre)
+   ============================================================ */
+#splashScreen{
+  position:fixed;inset:0;z-index:10001; /* acima do loginScreen (9999) */
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  transition:opacity .35s ease;
+  pointer-events:all;
+}
+#splashScreen.hiding{opacity:0;pointer-events:none}
+.splash-logo{
+  font-family:var(--ft);font-size:2.2rem;font-weight:900;
+  letter-spacing:.01em;margin-bottom:6px;
+}
+.splash-sub{
+  font-size:.6rem;letter-spacing:.22em;
+  color:var(--muted);text-transform:uppercase;
+  margin-bottom:52px;
+}
+.splash-bar-track{
+  width:110px;height:3px;
+  background:rgba(255,255,255,.07);
+  border-radius:99px;overflow:hidden;
+}
+.splash-bar{
+  height:100%;width:45%;
+  background:var(--grad);
+  border-radius:99px;
+  animation:splash-slide 1.3s ease-in-out infinite;
+}
+@keyframes splash-slide{
+  0%  {transform:translateX(-120%)}
+  50% {transform:translateX(190%)}
+  100%{transform:translateX(-120%)}
+}
+
+/* ============================================================
    4. APP CONTAINER
    ============================================================ */
 #app{display:none;flex:1;overflow:hidden;flex-direction:column}
@@ -1474,6 +1512,24 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 })();
 </script>
 <body>
+
+<!-- ═══ SPLASH SCREEN ════════════════════════════════════════════
+     z-index 10001 — cobre o loginScreen (9999) desde o primeiro pixel.
+     O utilizador nunca vê o formulário de senha nem o spinner de
+     verificação durante o auto-login. Desaparece com fade suave
+     quando a autenticação e os dados iniciais estiverem prontos.
+     hideSplash() é chamada em showLoginForm / showLoginError / enterApp.
+════════════════════════════════════════════════════════════════ -->
+<div id="splashScreen">
+  <div class="splash-logo">
+    <span style="color:#A9A9A9">IMPERSIL</span><span style="color:#e63946">V</span><span style="color:#4a90ff">A</span>
+  </div>
+  <div class="splash-sub">Painel de Gestão</div>
+  <div class="splash-bar-track">
+    <div class="splash-bar"></div>
+  </div>
+</div>
+
 <!-- Push Notifications Nativas (Web Push API) -->
 
 <!-- LOGIN SCREEN -->
@@ -3843,7 +3899,16 @@ function setLoginMsg(msg, subMsg){
   if(subEl)subEl.textContent=subMsg||'';
 }
 
+/* ── Splash screen ─────────────────────────────────────────────── */
+function hideSplash(){
+  var s=document.getElementById('splashScreen');
+  if(!s||s.style.display==='none')return;
+  s.classList.add('hiding');
+  setTimeout(function(){s.style.display='none';},350);
+}
+
 function showLoginForm(){
+  hideSplash();
   var app=$('app');
   if(app){app.style.display='none';app.classList.remove('active');}
   var ls=$('loginScreen');if(ls)ls.style.display='flex';
@@ -3871,6 +3936,7 @@ function showLoginLoading(msg,sub){
 }
 
 function showLoginError(title, msg){
+  hideSplash();
   $('loginSpinner').style.display='none';
   $('loginMsg').style.display='none';
   $('loginSubMsg').style.display='none';
@@ -4030,6 +4096,7 @@ async function enterApp(lojaData, token, colaborador){
     var app2=$('app');if(app2)app2.style.display='none';
     var ls=$('loginScreen');if(ls)ls.style.display='none';
     var app=$('app');if(app){app.style.display='flex';app.classList.add('active');}
+    hideSplash(); // fade do splash → revela o dashboard por baixo
     if(colaborador?.papel&&typeof applyRoleRestrictions==='function'){
       applyRoleRestrictions(colaborador.papel);
     }
