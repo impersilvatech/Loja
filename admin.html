@@ -2297,7 +2297,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <!-- Temas pré-definidos -->
               <div class="editor-section">
                 <div class="editor-section-hdr open" onclick="toggleEdSection(this)">
-                  <div class="editor-section-hdr-title">🎨 Temas Pré-definidos</div>
+                  <div class="editor-section-hdr-title"><i class="fa-solid fa-palette"></i> Temas Pré-definidos</div>
                   <i class="fa-solid fa-chevron-down toggle-chevron"></i>
                 </div>
                 <div class="editor-section-body open">
@@ -2581,9 +2581,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
                 <div class="fidel-preview-rule"><i class="fa-solid fa-tag"></i><span>Cada ponto vale <strong id="pvValor">10 Kz</strong> de desconto</span></div>
                 <div class="fidel-preview-rule"><i class="fa-solid fa-lock-open"></i><span>Resgate disponível a partir de <strong id="pvMin">50 pontos</strong> (<strong id="pvMinKz">500 Kz</strong> de desconto)</span></div>
                 <div class="fidel-tier-row">
-                  <div class="fidel-tier"><div class="fidel-tier-icon">🥉</div><div class="fidel-tier-lbl">Exemplo</div><div class="fidel-tier-val" id="pvEx1">—</div></div>
-                  <div class="fidel-tier"><div class="fidel-tier-icon">🥈</div><div class="fidel-tier-lbl">5 000 Kz</div><div class="fidel-tier-val" id="pvEx2">—</div></div>
-                  <div class="fidel-tier"><div class="fidel-tier-icon">🥇</div><div class="fidel-tier-lbl">20 000 Kz</div><div class="fidel-tier-val" id="pvEx3">—</div></div>
+                  <div class="fidel-tier"><div class="fidel-tier-icon"><i class="fa-solid fa-medal" style="color:#cd7f32"></i></div><div class="fidel-tier-lbl">Exemplo</div><div class="fidel-tier-val" id="pvEx1">—</div></div>
+                  <div class="fidel-tier"><div class="fidel-tier-icon"><i class="fa-solid fa-medal" style="color:#bbb"></i></div><div class="fidel-tier-lbl">5 000 Kz</div><div class="fidel-tier-val" id="pvEx2">—</div></div>
+                  <div class="fidel-tier"><div class="fidel-tier-icon"><i class="fa-solid fa-trophy" style="color:#ffd700"></i></div><div class="fidel-tier-lbl">20 000 Kz</div><div class="fidel-tier-val" id="pvEx3">—</div></div>
                 </div>
               </div>
               <div style="margin-top:12px;font-size:.72rem;color:var(--muted);line-height:1.5">
@@ -2753,14 +2753,14 @@ select.form-input option{background:var(--bg2);color:var(--white)}
                   <button class="blog-tb-btn" title="Título 3" onclick="blogTag('h3','Subtítulo')">H3</button>
                   <div class="blog-tb-sep"></div>
                   <button class="blog-tb-btn" title="Parágrafo" onclick="blogTag('p','Parágrafo de texto...')">¶</button>
-                  <button class="blog-tb-btn" title="Citação" onclick="blogTag('blockquote','Citação...')">❝</button>
+                  <button class="blog-tb-btn" title="Citação" onclick="blogTag('blockquote','Citação...')"><i class="fa-solid fa-quote-left"></i></button>
                   <button class="blog-tb-btn" title="Código" onclick="blogTag('code','código')"><code style="font-size:.7rem">&lt;/&gt;</code></button>
                   <div class="blog-tb-sep"></div>
                   <button class="blog-tb-btn" title="Lista" onclick="blogInsertList('ul')">• —</button>
                   <button class="blog-tb-btn" title="Lista numerada" onclick="blogInsertList('ol')">1. —</button>
                   <div class="blog-tb-sep"></div>
-                  <button class="blog-tb-btn" title="Link" onclick="blogInsertLink()">🔗</button>
-                  <button class="blog-tb-btn" title="Imagem" onclick="blogInsertImage()">🖼️</button>
+                  <button class="blog-tb-btn" title="Link" onclick="blogInsertLink()"><i class="fa-solid fa-link"></i></button>
+                  <button class="blog-tb-btn" title="Imagem" onclick="blogInsertImage()"><i class="fa-regular fa-image"></i></button>
                 </div>
                 <textarea class="blog-content-area" id="blogContent"
                           placeholder="Começa a escrever o teu artigo em HTML..."
@@ -2814,9 +2814,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 
           <!-- Stats de marketing -->
           <div class="mkt-stats-grid" id="mktStatsGrid">
-            <div class="mkt-stat"><div class="mkt-stat-icon">🎟️</div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Cupões utilizados</div></div>
-            <div class="mkt-stat"><div class="mkt-stat-icon">💸</div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Desconto concedido</div></div>
-            <div class="mkt-stat"><div class="mkt-stat-icon">🔗</div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Enc. com referido</div></div>
+            <div class="mkt-stat"><div class="mkt-stat-icon"><i class="fa-solid fa-ticket"></i></div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Cupões utilizados</div></div>
+            <div class="mkt-stat"><div class="mkt-stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Desconto concedido</div></div>
+            <div class="mkt-stat"><div class="mkt-stat-icon"><i class="fa-solid fa-link"></i></div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Enc. com referido</div></div>
             <div class="mkt-stat"><div class="mkt-stat-icon">⭐</div><div class="mkt-stat-val">—</div><div class="mkt-stat-lbl">Produtos destaque</div></div>
           </div>
 
@@ -2840,7 +2840,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <div class="form-row" style="margin-bottom:10px">
                 <div class="form-group" style="flex:1">
                   <label class="form-label">Badge (texto)</label>
-                  <input type="text" class="form-input" id="mktFlashBadge" placeholder="🔥 FLASH" maxlength="20" />
+                  <input type="text" class="form-input" id="mktFlashBadge" placeholder="FLASH" maxlength="20" />
                 </div>
               </div>
               <div class="form-row" style="margin-bottom:10px">
@@ -2868,7 +2868,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               </div>
               <div class="form-group" style="margin-bottom:10px">
                 <label class="form-label">Texto do anúncio</label>
-                <input type="text" class="form-input" id="mktAnuncioTexto" maxlength="120" placeholder="ex: Entrega grátis este fim-de-semana! 🎉" oninput="updateAnuncioPreview()" />
+                <input type="text" class="form-input" id="mktAnuncioTexto" maxlength="120" placeholder="ex: Entrega grátis este fim-de-semana!" oninput="updateAnuncioPreview()" />
                 <div class="form-hint">Aparece numa barra de topo na loja (max 120 caracteres)</div>
               </div>
               <div class="form-row" style="margin-bottom:10px">
@@ -2876,9 +2876,9 @@ select.form-input option{background:var(--bg2);color:var(--white)}
                   <label class="form-label">Tipo</label>
                   <select class="form-select" id="mktAnuncioTipo" onchange="updateAnuncioPreview()">
                     <option value="info">ℹ️ Informação</option>
-                    <option value="aviso">⚠️ Aviso</option>
-                    <option value="sucesso">✅ Sucesso</option>
-                    <option value="promo">🎉 Promoção</option>
+                    <option value="aviso">Aviso</option>
+                    <option value="sucesso">Sucesso</option>
+                    <option value="promo">Promoção</option>
                   </select>
                 </div>
               </div>
@@ -2945,7 +2945,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
               <div class="section-title"><i class="fa-solid fa-star" style="color:var(--yellow)"></i> Produtos em Destaque</div>
               <span id="mktDestCount" style="font-size:.7rem;color:var(--muted)"></span>
             </div>
-            <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">Activa ou desactiva o destaque de cada produto. Os produtos com ⭐ aparecem em primeiro na loja.</p>
+            <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">Activa ou desactiva o destaque de cada produto. Os produtos com <i class="fa-solid fa-star"></i> aparecem em primeiro na loja.</p>
             <div class="mkt-dest-grid" id="mktDestGrid"><div class="spinner"></div></div>
           </div>
         </div>
@@ -3271,8 +3271,8 @@ select.form-input option{background:var(--bg2);color:var(--white)}
         <div class="form-group" style="flex:1">
           <label class="form-label">Tipo</label>
           <select class="form-select" id="devTipo">
-            <option value="devolucao">🔄 Devolução (reembolso)</option>
-            <option value="troca">↔️ Troca (outro produto)</option>
+            <option value="devolucao">Devolução (reembolso)</option>
+            <option value="troca">Troca (outro produto)</option>
           </select>
         </div>
         <div class="form-group" style="flex:2">
@@ -3315,7 +3315,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
              ondragover="event.preventDefault();this.classList.add('drag-over')"
              ondragleave="this.classList.remove('drag-over')"
              ondrop="event.preventDefault();this.classList.remove('drag-over');handleCsvDrop(event.dataTransfer.files[0])">
-          <div class="csv-drop-icon">📄</div>
+          <div class="csv-drop-icon"><i class="fa-regular fa-file-lines"></i></div>
           <div style="font-size:.86rem;color:var(--white);margin-bottom:6px">Arrasta um ficheiro CSV ou clica para seleccionar</div>
           <div style="font-size:.7rem;color:var(--muted)">Colunas esperadas: nome, preco, categoria, stock, descricao</div>
         </div>
@@ -4153,8 +4153,8 @@ function emitirFatura(ref){
   @media print{body{background:#fff;padding:0}.page{box-shadow:none;max-width:100%}.no-print{display:none}}
 </style></head><body>
 <div class="no-print" style="text-align:center;margin-bottom:16px">
-  <button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">🖨️ Imprimir / Guardar PDF</button>
-  <button onclick="window.close()" style="background:#f0f0f0;color:#111;border:1px solid #ddd;padding:10px 20px;border-radius:6px;font-size:13px;cursor:pointer">✕ Fechar</button>
+  <button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px"><i class="fa-solid fa-print"></i> Imprimir / Guardar PDF</button>
+  <button onclick="window.close()" style="background:#f0f0f0;color:#111;border:1px solid #ddd;padding:10px 20px;border-radius:6px;font-size:13px;cursor:pointer"><i class="fa-solid fa-xmark"></i> Fechar</button>
 </div>
 <div class="page">
   <div class="header">
@@ -4204,7 +4204,7 @@ function emitirFatura(ref){
   </div>
   <div>
     <span class="status-badge ${enc.pagamento_estado==='pago'||enc.estado==='entregue'?'status-pago':'status-pend'}">
-      ${enc.pagamento_estado==='pago'||enc.estado==='entregue'?'✓ PAGO':'⏳ PENDENTE DE PAGAMENTO'}
+      ${enc.pagamento_estado==='pago'||enc.estado==='entregue'?'PAGO':'PENDENTE DE PAGAMENTO'}
     </span>
   </div>
   <div class="footer">
@@ -4344,7 +4344,7 @@ function emitirFatura(ref){
     try{state.produtos=await api('/api/produtos');state.filteredProducts=[...state.produtos];}catch(e){}
     closeModal('csvImportModal');
     if(fail)toast(ok+' importados, '+fail+' falharam','error');
-    else    toast('✅ '+ok+' produto'+(ok!==1?'s':'')+' importado'+(ok!==1?'s':'')+'!','success');
+    else    toast(ok+' produto'+(ok!==1?'s':'')+' importado'+(ok!==1?'s':'')+'!','success');
     renderProducts();
   };
 
@@ -4416,7 +4416,7 @@ function emitirFatura(ref){
       await api('/api/loja',{method:'PUT',body:JSON.stringify({zonas_entrega_json:_zonas})});
       state.loja.zonas_entrega_json=_zonas;
       closeModal('zonasModal');
-      toast('✅ Zonas de entrega guardadas!','success');
+      toast('Zonas de entrega guardadas!','success');
     }catch(e){toast('Erro: '+e.message,'error');}
     btnDone(b);
   };
@@ -4489,7 +4489,7 @@ function emitirFatura(ref){
     const sym=state.loja.simbolo_moeda||'Kz';
     cont.innerHTML=list.sort((a,b)=>new Date(b.criado_em||0)-new Date(a.criado_em||0)).map(d=>{
       const tipoCls=d.tipo==='troca'?'dev-tipo-troca':'dev-tipo-dev';
-      const tipotxt=d.tipo==='troca'?'↔️ Troca':'🔄 Devolução';
+      const tipotxt=d.tipo==='troca'?'Troca':'Devolução';
       const estCls=ESTADOS[d.estado]||'badge-pending';
       return '<div class="dev-card">'+
         '<div class="dev-card-header">'+
@@ -4750,7 +4750,7 @@ window.testWebhook=async function(slotId){
   try{
     const payload={evento:'teste',timestamp:new Date().toISOString(),loja:state.loja.nome||'Loja',mensagem:'Webhook de teste da IMPERSILVA TECH'};
     await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    toast('✅ Webhook enviado! Verifica o teu servidor.','success');
+    toast('Webhook enviado! Verifica o teu servidor.','success');
   }catch(e){
     toast('Erro ao enviar (CORS pode bloquear o browser). Testa via backend.','error');
   }
@@ -5988,7 +5988,7 @@ const settingsSections={
           (temVapid
             ? (_notifEnabled
                 ? 'Push ativo neste dispositivo. Podes usar o botão TEST para verificar.'
-                : 'VAPID configurado. Clica no sino (🔔) no topo para ativar neste dispositivo.')
+                : 'VAPID configurado. Clica no sino no topo para ativar neste dispositivo.')
             : 'VAPID nao configurado. Gera as chaves no Worker e define <code>VAPID_PUBLIC_KEY</code> como variavel do Worker.')+
         '</div>'+
 
@@ -7006,7 +7006,7 @@ function _mostrarInstrucoesIOS() {
     _iosStep('2', 'fa-arrow-up-from-bracket', '#30D158', 'Toca em <b>Partilhar</b>', 'O botão fica na barra de baixo do Safari — ícone de caixa com seta para cima') +
     _iosStep('3', 'fa-plus-square', '#FF9F0A', 'Toca em <b>"Adicionar ao ecrã inicial"</b>', 'Faz scroll para baixo na lista de opções se não vires logo') +
     _iosStep('4', 'fa-house', '#FF375F', 'Abre o Admin <b>pelo ícone</b> criado', 'Não pelo Safari directamente — pelo ícone no ecrã inicial') +
-    _iosStep('5', 'fa-bell', '#a78bfa', 'Clica no sino 🔔 e <b>permite</b> as notificações', 'O pedido de permissão aparece automaticamente') +
+    _iosStep('5', 'fa-bell', '#a78bfa', 'Clica no sino (<i class="fa-solid fa-bell"></i>) e <b>permite</b> as notificações', 'O pedido de permissão aparece automaticamente') +
     '</div>';
 
   var fecharBtn = '<button onclick="document.getElementById(\'iosInstallCard\').remove()" style="width:100%;padding:13px;background:var(--grad);border:none;border-radius:50px;color:#fff;font-family:var(--ft);font-size:.85rem;font-weight:700;cursor:pointer;margin-top:4px"><i class="fa-solid fa-check"></i> Percebi, vou instalar</button>';
@@ -7189,11 +7189,11 @@ window.addEventListener('pageshow',function(e){
    ============================================================ */
 (function(){
   const PAPEIS = {
-    gestor  : { nome:'Gestor',   icon:'🧑‍💼', color:'var(--purple)', desc:'Acesso amplo: tudo excepto configurações e colaboradores',
+    gestor  : { nome:'Gestor',   icon:'<i class="fa-solid fa-user-tie"></i>', color:'var(--purple)', desc:'Acesso amplo: tudo excepto configurações e colaboradores',
                 panels:['dashboard','orders','products','stock','categories','clients','agenda','reviews','coupons','blog','marketing','caixa','fidelizacao','recuperacao','reports'] },
-    operador: { nome:'Operador', icon:'📦', color:'var(--teal)',   desc:'Foco em encomendas, clientes e caixa',
+    operador: { nome:'Operador', icon:'<i class="fa-solid fa-box"></i>', color:'var(--teal)',   desc:'Foco em encomendas, clientes e caixa',
                 panels:['dashboard','orders','clients','caixa','recuperacao'] },
-    conteudo: { nome:'Conteúdo', icon:'✍️', color:'var(--blue)',   desc:'Gestão de produtos, categorias e blog',
+    conteudo: { nome:'Conteúdo', icon:'<i class="fa-solid fa-pen-nib"></i>', color:'var(--blue)',   desc:'Gestão de produtos, categorias e blog',
                 panels:['dashboard','products','stock','categories','blog','marketing'] },
   };
 
@@ -7389,7 +7389,7 @@ window.addEventListener('pageshow',function(e){
       closeColaboForm();
       renderColaboKPIs();
       renderColaboList();
-      toast(_editingColabo?'Colaborador actualizado':'✅ Colaborador adicionado!','success');
+      toast(_editingColabo?'Colaborador actualizado':'Colaborador adicionado!','success');
     }catch(err){toast('Erro: '+err.message,'error');}
     if(b)btnDone(btn);
   };
@@ -7425,10 +7425,10 @@ window.addEventListener('pageshow',function(e){
   function renderPermMatrix(){
     const cont=$('colaboPermMatrix'); if(!cont)return;
     const roles=[
-      {id:'admin',   nome:'👑 Admin'},
-      {id:'gestor',  nome:'🧑‍💼 Gestor'},
-      {id:'operador',nome:'📦 Operador'},
-      {id:'conteudo',nome:'✍️ Conteúdo'},
+      {id:'admin',   nome:'<i class="fa-solid fa-crown"></i> Admin'},
+      {id:'gestor',  nome:'<i class="fa-solid fa-user-tie"></i> Gestor'},
+      {id:'operador',nome:'<i class="fa-solid fa-box"></i> Operador'},
+      {id:'conteudo',nome:'<i class="fa-solid fa-pen-nib"></i> Conteúdo'},
     ];
     const adminPanels=FEATURES.map(f=>f.id);
     const allPanels={admin:adminPanels,...Object.fromEntries(Object.entries(PAPEIS).map(([k,v])=>[k,v.panels]))};
@@ -7542,10 +7542,10 @@ window.addEventListener('pageshow',function(e){
         '<div class="blog-art-title">'+esc(a.titulo||'Sem título')+'</div>'+
         '<div class="blog-art-meta">'+
           '<span class="'+(isPub?'blog-status-pub':'blog-status-draft')+'">'+
-            (isPub?'✓ Publicado':'✎ Rascunho')+'</span>'+
-          (a.categoria?'<span>📂 '+esc(a.categoria)+'</span>':'')+
-          (a.criado_em?'<span>📅 '+fmtDate(a.criado_em)+'</span>':'')+
-          (a.visitas?'<span>👁 '+a.visitas+'</span>':'')+
+            (isPub?'<i class="fa-solid fa-check"></i> Publicado':'<i class="fa-solid fa-pencil"></i> Rascunho')+'</span>'+
+          (a.categoria?'<span><i class="fa-solid fa-folder"></i> '+esc(a.categoria)+'</span>':'')+
+          (a.criado_em?'<span><i class="fa-regular fa-calendar-days"></i> '+fmtDate(a.criado_em)+'</span>':'')+
+          (a.visitas?'<span><i class="fa-regular fa-eye"></i> '+a.visitas+'</span>':'')+
         '</div>'+
         (excerpt?'<div class="blog-art-excerpt">'+esc(excerpt)+'</div>':'')+
         '<div class="blog-art-actions">'+
@@ -7673,7 +7673,7 @@ window.addEventListener('pageshow',function(e){
       }else{
         _artigos.unshift({...(saved||{}), ...body, id:(saved?.id||Date.now()), criado_em:new Date().toISOString(), visitas:0});
       }
-      toast(body.status==='publicado'?'🌐 Artigo publicado!':'📝 Rascunho guardado','success');
+      toast(body.status==='publicado'?'Artigo publicado!':'Rascunho guardado','success');
       closeBlogEditor();
       renderBlogKPIs();
       renderArtigosList();
@@ -7689,7 +7689,7 @@ window.addEventListener('pageshow',function(e){
       const a=_artigos.find(x=>String(x.id)===String(id));
       if(a)a.status=newStatus;
       renderBlogKPIs();renderArtigosList();
-      toast(newStatus==='publicado'?'🌐 Artigo publicado!':'Artigo despublicado','success');
+      toast(newStatus==='publicado'?'Artigo publicado!':'Artigo despublicado','success');
     }catch(e){toast('Erro: '+e.message,'error');}
   };
 
@@ -7960,7 +7960,7 @@ window.addEventListener('pageshow',function(e){
       await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
       Object.assign(state.loja,campos);
       renderDaySlots();
-      toast('📅 Agenda guardada!','success');
+      toast('Agenda guardada!','success');
     }catch(err){toast('Erro: '+err.message,'error');}
     if(b)btnDone(b);
   };
@@ -7970,7 +7970,7 @@ window.addEventListener('pageshow',function(e){
       try{await api('/api/admin/reservas/'+id+'/estado',{method:'PUT',body:JSON.stringify({estado:'confirmada'})});}catch(e){}
       const r=_reservas.find(x=>x.id===id);if(r)r.estado='confirmada';
       renderDaySlots();renderUpcoming();renderAgendaKPIs();updateAgendaBadge();
-      toast('✅ Reserva confirmada','success');
+      toast('Reserva confirmada','success');
     }catch(e){toast('Erro','error');}
   };
 
@@ -7990,24 +7990,24 @@ window.addEventListener('pageshow',function(e){
    ============================================================ */
 (function(){
   const THEMES=[
-    {id:'noite',    label:'🌙 Noite',      primary:'#b14ae8',secondary:'#ff6b9d',bg:'#0d0d1a',text:'#ffffff'},
-    {id:'oceano',   label:'🌊 Oceano',     primary:'#3d9eff',secondary:'#06d6a0',bg:'#070f1e',text:'#ffffff'},
-    {id:'solpoente',label:'🌅 Sol-poente', primary:'#ff9f43',secondary:'#ff6b9d',bg:'#100a08',text:'#ffffff'},
-    {id:'floresta', label:'🌿 Floresta',   primary:'#06d6a0',secondary:'#3d9eff',bg:'#060f0a',text:'#ffffff'},
-    {id:'dourado',  label:'✨ Dourado',    primary:'#ffd166',secondary:'#ff9f43',bg:'#100e06',text:'#ffffff'},
-    {id:'coral',    label:'🪸 Coral',      primary:'#ff4757',secondary:'#ff9f43',bg:'#10070a',text:'#ffffff'},
-    {id:'lavanda',  label:'💜 Lavanda',   primary:'#a55eea',secondary:'#3d9eff',bg:'#0d0a16',text:'#ffffff'},
-    {id:'minimal',  label:'⬜ Minimal',   primary:'#ffffff',secondary:'#aaaaaa',bg:'#111111',text:'#ffffff'},
+    {id:'noite',    label:'Noite',      primary:'#b14ae8',secondary:'#ff6b9d',bg:'#0d0d1a',text:'#ffffff'},
+    {id:'oceano',   label:'Oceano',     primary:'#3d9eff',secondary:'#06d6a0',bg:'#070f1e',text:'#ffffff'},
+    {id:'solpoente',label:'Sol-poente', primary:'#ff9f43',secondary:'#ff6b9d',bg:'#100a08',text:'#ffffff'},
+    {id:'floresta', label:'Floresta',   primary:'#06d6a0',secondary:'#3d9eff',bg:'#060f0a',text:'#ffffff'},
+    {id:'dourado',  label:'Dourado',    primary:'#ffd166',secondary:'#ff9f43',bg:'#100e06',text:'#ffffff'},
+    {id:'coral',    label:'Coral',      primary:'#ff4757',secondary:'#ff9f43',bg:'#10070a',text:'#ffffff'},
+    {id:'lavanda',  label:'Lavanda',   primary:'#a55eea',secondary:'#3d9eff',bg:'#0d0a16',text:'#ffffff'},
+    {id:'minimal',  label:'Minimal',   primary:'#ffffff',secondary:'#aaaaaa',bg:'#111111',text:'#ffffff'},
   ];
   const FONTS=['Inter','Poppins','Roboto','Montserrat','Open Sans','Raleway','Nunito','Lato','DM Sans','Playfair Display','Outfit','Urbanist'];
   const SECCOES=[
-    {id:'hero',        icon:'🖼️',label:'Hero / Banner',         hint:'Imagem de topo com CTA'},
-    {id:'categorias',  icon:'📂',label:'Categorias em Destaque', hint:'Grelha de categorias'},
-    {id:'destaques',   icon:'⭐',label:'Produtos Destaque',      hint:'Produtos marcados como destaque'},
-    {id:'novidades',   icon:'🆕',label:'Novidades',              hint:'Produtos marcados como novo'},
-    {id:'anuncio',     icon:'📢',label:'Barra de Anúncio',       hint:'Configurada em Marketing'},
-    {id:'testemunhos', icon:'💬',label:'Testemunhos',            hint:'Avaliações de clientes'},
-    {id:'newsletter',  icon:'📧',label:'Newsletter',             hint:'Formulário de subscrição'},
+    {id:'hero',        icon:'<i class="fa-regular fa-image"></i>',label:'Hero / Banner',         hint:'Imagem de topo com CTA'},
+    {id:'categorias',  icon:'<i class="fa-solid fa-folder"></i>',label:'Categorias em Destaque', hint:'Grelha de categorias'},
+    {id:'destaques',   icon:'<i class="fa-solid fa-star"></i>',label:'Produtos Destaque',      hint:'Produtos marcados como destaque'},
+    {id:'novidades',   icon:'<i class="fa-solid fa-certificate"></i>',label:'Novidades',              hint:'Produtos marcados como novo'},
+    {id:'anuncio',     icon:'<i class="fa-solid fa-bullhorn"></i>',label:'Barra de Anúncio',       hint:'Configurada em Marketing'},
+    {id:'testemunhos', icon:'<i class="fa-regular fa-comments"></i>',label:'Testemunhos',            hint:'Avaliações de clientes'},
+    {id:'newsletter',  icon:'<i class="fa-regular fa-envelope"></i>',label:'Newsletter',             hint:'Formulário de subscrição'},
   ];
   const COLOR_DEFS=[
     {id:'edCorPrimaria',   loja:'cor_primaria',   label:'Cor Primária',   def:'#b14ae8'},
@@ -8153,7 +8153,7 @@ window.addEventListener('pageshow',function(e){
     const mkCard=(nome,preco,img)=>
       '<div style="background:rgba(255,255,255,.05);border:'+cb+';box-shadow:'+cs+';width:'+cw+';flex-shrink:0;border-radius:10px;overflow:hidden">'+
         '<div style="height:64px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04)">'+
-          (img?'<img src="'+img+'" style="height:64px;width:100%;object-fit:cover" onerror="this.style.display=\'none\'">':'🛍️')+
+          (img?'<img src="'+img+'" style="height:64px;width:100%;object-fit:cover" onerror="this.style.display=\'none\'">''<i class="fa-solid fa-bag-shopping" style="font-size:2rem;opacity:.35"></i>')+
         '</div>'+
         '<div style="padding:6px">'+
           '<div style="font-size:.62rem;font-weight:600;color:'+v.text+';margin-bottom:2px">'+esc(nome)+'</div>'+
@@ -8162,7 +8162,7 @@ window.addEventListener('pageshow',function(e){
         '</div></div>';
     const cards=prods.length
       ? prods.map(p=>mkCard(p.nome,p.preco_promocional||p.preco,(p.imagens_json||[])[0]||'')).join('')
-      : ['Produto A 🍕','Produto B 🎧','Produto C 👟'].slice(0,v.gridCols).map(n=>mkCard(n,1500,'')).join('');
+      : ['Produto A','Produto B','Produto C'].slice(0,v.gridCols).map(n=>mkCard(n,1500,'')).join('');
     preview.innerHTML=
       '<div style="background:'+v.bg+';color:'+v.text+';min-height:100%;font-family:'+v.fonte+',sans-serif;font-size:'+v.fontSize+'">'+
         '<div style="display:flex;align-items:center;padding:10px 14px;background:'+v.bg+'cc;backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:5">'+
@@ -8220,7 +8220,7 @@ window.addEventListener('pageshow',function(e){
       Object.assign(state.loja,campos);
       applyLojaThemeToAdmin();
       markUnsaved(false);
-      toast('🚀 Alterações publicadas na loja!','success');
+      toast('Alterações publicadas na loja!','success');
     }catch(err){toast('Erro: '+err.message,'error');}
     btnDone(b);
   };
@@ -8387,7 +8387,7 @@ window.addEventListener('pageshow',function(e){
     const cont=$('recuRiskList');
     if(!list.length){
       cont.innerHTML='<div class="recu-empty"><i class="fa-solid fa-circle-check" style="color:var(--teal)"></i>'+
-        'Nenhuma encomenda em risco 🎉</div>'; return;
+        'Nenhuma encomenda em risco</div>'; return;
     }
     cont.innerHTML='<div class="recu-risk-list">'+list.map(e=>{
       const sev=ageSev(e.criado_em);
@@ -8448,7 +8448,7 @@ window.addEventListener('pageshow',function(e){
       await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({estado:'confirmada'})});
       const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
       if(idx>=0)state.encomendas[idx].estado='confirmada';
-      toast('✅ Encomenda '+ref+' confirmada!','success');
+      toast('Encomenda '+ref+' confirmada!','success');
       renderRecuperacao();
     }catch(err){toast('Erro: '+err.message,'error');btnDone(b);}
   };
@@ -8612,7 +8612,7 @@ window.addEventListener('pageshow',function(e){
       await api('/api/loja',{method:'PUT',body:JSON.stringify(campos)});
       Object.assign(state.loja,campos);
       renderFidelizacao();
-      toast('🏆 Programa "'+campos.pontos_nome+'" guardado!','success');
+      toast('Programa "'+campos.pontos_nome+'" guardado!','success');
     }catch(e){toast('Erro: '+e.message,'error');}
     btnDone(b);
   };
@@ -8693,7 +8693,7 @@ window.addEventListener('pageshow',function(e){
       })});
       if(!state.coupons)state.coupons=[];
       state.coupons.unshift({codigo,tipo:'fixo',valor:desconto,usos:0,ativo:1,max_usos:1});
-      toast('🎁 Cupão '+codigo+' criado — '+kz(desconto,sym)+' de desconto para '+nome,'success');
+      toast('Cupão '+codigo+' criado — '+kz(desconto,sym)+' de desconto para '+nome,'success');
       // copiar para clipboard
       try{await navigator.clipboard.writeText(codigo);}catch(e){}
     }catch(e){toast('Erro ao criar cupão: '+e.message,'error');}
@@ -8872,7 +8872,7 @@ window.addEventListener('pageshow',function(e){
     const b=btnBusy(btn);
     const {ok,fail}=await _markPaid([ref]);
     _selectedRefs.delete(ref);
-    if(ok)toast('✅ '+ref+' marcada como paga','success');
+    if(ok)toast(ref+' marcada como paga','success');
     else  toast('Erro ao marcar pagamento','error');
     renderCaixa();
     // não precisamos btnDone pois o row vai desaparecer
@@ -8884,7 +8884,7 @@ window.addEventListener('pageshow',function(e){
     const {ok,fail}=await _markPaid(refs);
     _selectedRefs.clear();
     if(fail)toast(ok+' pagas, '+fail+' com erro','error');
-    else    toast('✅ '+ok+' encomenda'+(ok!==1?'s':'')+' paga'+(ok!==1?'s':''),'success');
+    else    toast(ok+' encomenda'+(ok!==1?'s':'')+' paga'+(ok!==1?'s':''),'success');
     renderCaixa();
   };
 
@@ -9206,7 +9206,7 @@ window.addEventListener('pageshow',function(e){
     renderBulkTable();
     updateStockBadge();
     if(fail) toast(ok+' actualizados, '+fail+' com erro','error');
-    else     toast('✅ '+ok+' produto'+(ok!==1?'s':'')+' actualizado'+(ok!==1?'s':'')+'!','success');
+    else     toast(ok+' produto'+(ok!==1?'s':'')+' actualizado'+(ok!==1?'s':'')+'!','success');
   };
 
   window.filterBulkStock = function(){
@@ -9248,7 +9248,7 @@ window.addEventListener('pageshow',function(e){
     // Produtos destaque
     const destCount = (state.produtos || []).filter(p => p.destaque).length;
 
-    const icons = ['🎟️','💸','🔗','⭐'];
+    const icons = ['<i class="fa-solid fa-ticket"></i>','<i class="fa-solid fa-money-bill-wave"></i>','<i class="fa-solid fa-link"></i>','<i class="fa-solid fa-star"></i>'];
     const vals  = [comCupao.length, kz(descTotal, sym), comRef.length, destCount];
     const lbls  = ['Cupões utilizados','Desconto concedido','Enc. com referido','Produtos destaque'];
 
@@ -9265,7 +9265,7 @@ window.addEventListener('pageshow',function(e){
   function renderFlashForm(){
     const l = state.loja;
     const pct    = l.flash_desconto   || '';
-    const badge  = l.flash_badge      || '🔥 FLASH';
+    const badge  = l.flash_badge      || 'FLASH';
     const inicio = l.flash_inicio     || '';
     const fim    = l.flash_fim        || '';
     const ativa  = !!l.flash_ativa;
@@ -9332,7 +9332,7 @@ window.addEventListener('pageshow',function(e){
   window.saveFlashSale = async function(){
     const btn = event.target;
     const pct   = parseFloat($('mktFlashPct').value) || 0;
-    const badge = $('mktFlashBadge').value.trim() || '🔥 FLASH';
+    const badge = $('mktFlashBadge').value.trim() || 'FLASH';
     const ini   = $('mktFlashInicio').value;
     const fim   = $('mktFlashFim').value;
     const ativa = $('mktFlashAtiva').checked ? 1 : 0;
@@ -9349,7 +9349,7 @@ window.addEventListener('pageshow',function(e){
       Object.assign(state.loja, campos);
       updateFlashPill(!!ativa, fim);
       updateFlashCountdown();
-      toast(ativa ? '🔥 Promoção Relâmpago activada!' : 'Promoção desactivada', 'success');
+      toast(ativa ? 'Promoção Relâmpago activada!' : 'Promoção desactivada', 'success');
     }catch(e){ toast('Erro: '+e.message, 'error'); }
     btnDone(b);
   };
@@ -9396,7 +9396,7 @@ window.addEventListener('pageshow',function(e){
       await api('/api/loja', {method:'PUT', body: JSON.stringify(campos)});
       Object.assign(state.loja, campos);
       renderAnuncioForm();
-      toast(ativo ? '📢 Anúncio publicado na loja!' : 'Anúncio removido da loja', 'success');
+      toast(ativo ? 'Anúncio publicado na loja!' : 'Anúncio removido da loja', 'success');
     }catch(e){ toast('Erro: '+e.message, 'error'); }
     btnDone(b);
   };
@@ -9449,7 +9449,7 @@ window.addEventListener('pageshow',function(e){
       const count = $('mktDestCount');
       const nDest = (state.produtos||[]).filter(x=>x.destaque).length;
       if(count) count.textContent = nDest+' produto'+(nDest!==1?'s':'')+' em destaque';
-      toast(newVal ? '⭐ Produto colocado em destaque' : 'Destaque removido', 'success');
+      toast(newVal ? 'Produto colocado em destaque' : 'Destaque removido', 'success');
     }catch(e){
       chk.checked = !chk.checked; // reverter visualmente
       toast('Erro ao guardar: '+e.message, 'error');
@@ -9481,7 +9481,7 @@ window.addEventListener('pageshow',function(e){
       ['qcCodigo','qcValor','qcMaxUsos','qcFim','qcMin'].forEach(id=>{ const el=$( id); if(el)el.value='';});
       $('qcTipo').value='percentagem';
       renderMktStats();
-      toast('🎟️ Cupão "'+codigo+'" criado!','success');
+      toast('Cupão "'+codigo+'" criado!','success');
     }catch(e){ toast('Erro: '+e.message,'error'); }
     btnDone(b);
   };
