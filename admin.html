@@ -1494,6 +1494,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
       <div id="loginModeAdmin">
         <div style="position:relative;margin-bottom:10px">
           <input type="password" id="loginTokenInput"
+            autocomplete="new-password" spellcheck="false"
             placeholder="Cole o seu token de administrador..."
             style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 44px 12px 14px;color:var(--white);font-size:.86rem;box-sizing:border-box;outline:none;transition:border-color .2s;font-family:inherit"
             onkeydown="if(event.key==='Enter')doManualLogin()"
@@ -1606,7 +1607,7 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 <!-- APP -->
 <div id="printArea"></div>
 
-<div id="app">
+<div id="app" style="display:none">
 
   <!-- TOPBAR -->
   <div class="topbar">
@@ -4024,6 +4025,8 @@ async function enterApp(lojaData, token, colaborador){
   if(ghBranch!==null)state.loja.github_branch=ghBranch||'main';
   // loginScreen é position:fixed z-index:9999 — ao escondê-lo o app aparece instantaneamente
   setTimeout(function(){
+    // Garantir que o app estava hidden antes de mostrar
+    var app2=$('app');if(app2)app2.style.display='none';
     var ls=$('loginScreen');if(ls)ls.style.display='none';
     var app=$('app');if(app){app.style.display='flex';app.classList.add('active');}
     if(colaborador?.papel&&typeof applyRoleRestrictions==='function'){
@@ -7090,6 +7093,20 @@ applyTheme();
 })();
 
 autoLogin();
+
+// Correcção bfcache: o browser Android restaura a página do cache com o app visível.
+// O evento pageshow com e.persisted=true indica restauração do bfcache.
+window.addEventListener('pageshow',function(e){
+  if(e.persisted){
+    // Página restaurada do bfcache — reset forçado ao estado de login
+    var app=document.getElementById('app');
+    if(app){app.style.display='none';app.classList.remove('active');}
+    var ls=document.getElementById('loginScreen');
+    if(ls)ls.style.display='flex';
+    // Re-executar auto-login para validar token ainda válido
+    setTimeout(autoLogin,50);
+  }
+});
 
 /* ============================================================
    MULTI-COLABORADOR
