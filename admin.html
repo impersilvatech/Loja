@@ -8153,7 +8153,7 @@ window.addEventListener('pageshow',function(e){
     const mkCard=(nome,preco,img)=>
       '<div style="background:rgba(255,255,255,.05);border:'+cb+';box-shadow:'+cs+';width:'+cw+';flex-shrink:0;border-radius:10px;overflow:hidden">'+
         '<div style="height:64px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04)">'+
-          (img?'<img src="'+img+'" style="height:64px;width:100%;object-fit:cover" onerror="this.style.display=\'none\'">''<i class="fa-solid fa-bag-shopping" style="font-size:2rem;opacity:.35"></i>')+
+          (img?'<img src="'+img+'" style="height:64px;width:100%;object-fit:cover" onerror="this.style.display=\'none\'">' : '<i class="fa-solid fa-bag-shopping" style="font-size:2rem;opacity:.35"></i>')+
         '</div>'+
         '<div style="padding:6px">'+
           '<div style="font-size:.62rem;font-weight:600;color:'+v.text+';margin-bottom:2px">'+esc(nome)+'</div>'+
