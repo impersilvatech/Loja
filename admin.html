@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
@@ -21,8 +21,8 @@
   --pink:#ff6b9d; --purple:#b14ae8; --teal:#06d6a0;
   --yellow:#ffd166; --red:#ff4757; --blue:#3d9eff; --orange:#ff9f43;
   --white:#f0f0ff; --muted:#8888aa; --muted2:#44445a;
-  --ft:'Fredoka One', cursive;
-  --fb:'Nunito', sans-serif;
+  --ft:'Poppins', sans-serif;
+  --fb:'Poppins', sans-serif;
   --r:10px; --r2:15px; --r3:20px;
   --tr:all .2s cubic-bezier(.4,0,.2,1);
   --grad:linear-gradient(135deg,#ff6b9d,#b14ae8);
@@ -1501,6 +1501,62 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 [data-auto-login] #loginMsg,
 [data-auto-login] #loginSubMsg { display: block  !important }
 </style>
+
+/* ============================================================
+   CUSTOM SELECT COMPONENT
+   ============================================================ */
+.cs-wrap{position:relative;display:block}
+.cs-trigger{
+  width:100%;padding:10px 13px;
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);
+  font-family:var(--fb);font-size:.85rem;color:var(--white);
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:border-color .2s,box-shadow .2s;user-select:none;
+  text-align:left;outline:none;
+}
+.cs-trigger:hover,.cs-trigger.cs-open{border-color:var(--pink)}
+.cs-trigger.cs-open{box-shadow:0 0 0 3px rgba(255,107,157,.1)}
+.cs-trigger-val{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--white)}
+.cs-trigger-val.cs-placeholder{color:var(--muted2)}
+.cs-trigger-arrow{font-size:.6rem;color:var(--muted);transition:transform .2s,color .2s;flex-shrink:0}
+.cs-trigger.cs-open .cs-trigger-arrow{transform:rotate(180deg);color:var(--pink)}
+
+/* search-select variant */
+.cs-wrap.cs-sm .cs-trigger{
+  padding:9px 12px;font-family:var(--ft);font-size:.65rem;
+  background:var(--card2);max-width:160px;
+}
+/* xs: inline table selects */
+.cs-wrap.cs-xs .cs-trigger{
+  padding:4px 10px;font-size:.62rem;width:auto;
+  background:var(--bg3);border-width:1px;
+}
+
+.cs-panel{
+  position:absolute;top:calc(100% + 5px);left:0;min-width:100%;
+  z-index:800;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);box-shadow:0 8px 36px rgba(0,0,0,.55);
+  overflow:hidden;max-height:260px;overflow-y:auto;
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+  transition:opacity .15s ease,transform .15s ease;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.cs-panel.cs-open{opacity:1;transform:translateY(0);pointer-events:all}
+.cs-opt{
+  padding:10px 14px;font-size:.82rem;color:var(--white);
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  transition:background .1s;border-bottom:1px solid rgba(42,42,69,.3);
+}
+.cs-opt:last-child{border-bottom:none}
+.cs-opt:hover{background:rgba(255,107,157,.08);color:var(--pink)}
+.cs-opt.cs-sel{background:rgba(255,107,157,.1);color:var(--pink);font-weight:700}
+.cs-opt.cs-sel::after{
+  content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;
+  font-size:.58rem;opacity:.9;flex-shrink:0;margin-left:8px;
+}
+.cs-wrap.cs-sm .cs-opt,.cs-wrap.cs-xs .cs-opt{
+  padding:8px 12px;font-size:.76rem;
+}
 </head>
 <script>
 /* ── Script bloqueante anti-flash ────────────────────────────────
@@ -5884,7 +5940,7 @@ const settingsSections={
       const l=state.loja;
       return '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-solid fa-store"></i> Identidade</div></div>'+
         '<div class="form-row"><div class="form-group"><label>Nome *</label><input class="form-input" id="cfgNome" value="'+esc(l.nome||'')+'"/></div>'+
-        '<div class="form-group"><label>Tipo</label><select class="form-input" id="cfgTipo">'+['loja','restaurante','hotel','servico','outro'].map(t=>'<option value="'+t+'"'+(l.tipo===t?' selected':'')+'>'+t.charAt(0).toUpperCase()+t.slice(1)+'</option>').join('')+'</select></div></div>'+
+        '<div class="form-group"><label>Tipo</label><select class="form-input" id="cfgTipo">'+Object.entries({loja:'Loja',restaurante:'Restaurante',farmacia:'Farmácia',pastelaria:'Pastelaria',vestuario:'Vestuário & Moda',electronica:'Electrónica',celulares:'Celulares & Acessórios',cosmetica:'Cosmética & Beleza',livraria:'Livraria & Papelaria',outro:'Outro'}).map(([v,lb])=>'<option value="'+v+'"'+(l.tipo===v?' selected':'')+'>'+lb+'</option>').join('')+'</select></div></div>'+
         '<div class="form-row"><div class="form-group"><label>Slogan PT</label><input class="form-input" id="cfgSlogan" value="'+esc(l.slogan||'')+'"/></div>'+
         '<div class="form-group"><label>Slogan EN</label><input class="form-input" id="cfgSloganEn" value="'+esc(l.slogan_en||'')+'"/></div></div>'+
         '<div class="form-group"><label>Descrição PT</label><textarea class="form-input" id="cfgDesc" rows="2">'+esc(l.descricao||'')+'</textarea></div>'+
@@ -9794,6 +9850,152 @@ window.openClientHistory = function(email){
         '</div>';
       }).join('')+'</div>');
 };
+
+/* ============================================================
+   CUSTOM SELECT COMPONENT
+   ============================================================ */
+(function(){
+  'use strict';
+
+  function closeAll(except){
+    document.querySelectorAll('.cs-panel.cs-open').forEach(function(p){
+      if(p===except) return;
+      p.classList.remove('cs-open');
+      var t=p.closest('.cs-wrap') && p.closest('.cs-wrap').querySelector('.cs-trigger');
+      if(t) t.classList.remove('cs-open');
+    });
+  }
+  document.addEventListener('click', function(){ closeAll(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeAll(); });
+
+  function csInit(sel){
+    if(sel._csReady) return;
+    sel._csReady = true;
+    sel.style.cssText += ';display:none!important';
+
+    /* size variant */
+    var sizeClass='';
+    if(sel.classList.contains('search-select')) sizeClass='cs-sm';
+    else if(sel.style.padding && sel.style.padding.indexOf('4px')===0) sizeClass='cs-xs';
+    else if(parseFloat(sel.style.fontSize||'1')<0.7) sizeClass='cs-xs';
+
+    /* wrap */
+    var wrap=document.createElement('div');
+    wrap.className='cs-wrap'+(sizeClass?' '+sizeClass:'');
+    if(sizeClass==='cs-xs' && sel.style.width) wrap.style.width=sel.style.width;
+    sel.parentNode.insertBefore(wrap,sel);
+    wrap.appendChild(sel);
+
+    /* trigger */
+    var trigger=document.createElement('button');
+    trigger.type='button';
+    trigger.className='cs-trigger';
+    trigger.innerHTML='<span class="cs-trigger-val"></span><i class="fa-solid fa-chevron-down cs-trigger-arrow"></i>';
+    wrap.insertBefore(trigger,sel);
+
+    /* panel */
+    var panel=document.createElement('div');
+    panel.className='cs-panel';
+    wrap.appendChild(panel);
+
+    function updateTrigger(){
+      var idx=sel.selectedIndex;
+      var opt=idx>=0?sel.options[idx]:null;
+      var val=trigger.querySelector('.cs-trigger-val');
+      if(opt && opt.text){
+        val.textContent=opt.text;
+        val.className='cs-trigger-val';
+      } else {
+        val.textContent=sel.getAttribute('placeholder')||'Seleccionar...';
+        val.className='cs-trigger-val cs-placeholder';
+      }
+    }
+
+    function buildOpts(){
+      panel.innerHTML='';
+      Array.from(sel.options).forEach(function(o){
+        var d=document.createElement('div');
+        d.className='cs-opt'+(o.selected?' cs-sel':'');
+        d.textContent=o.text||o.value;
+        d.dataset.v=o.value;
+        d.addEventListener('click',function(e){
+          e.stopPropagation();
+          sel.value=o.value;
+          sel.dispatchEvent(new Event('change',{bubbles:true}));
+          updateTrigger();
+          close();
+        });
+        panel.appendChild(d);
+      });
+    }
+
+    function open(){
+      closeAll(panel);
+      buildOpts();
+      panel.classList.add('cs-open');
+      trigger.classList.add('cs-open');
+      /* scroll selected into view */
+      requestAnimationFrame(function(){
+        var s=panel.querySelector('.cs-sel');
+        if(s) s.scrollIntoView({block:'nearest'});
+      });
+    }
+
+    function close(){
+      panel.classList.remove('cs-open');
+      trigger.classList.remove('cs-open');
+    }
+
+    trigger.addEventListener('click',function(e){
+      e.stopPropagation();
+      panel.classList.contains('cs-open')?close():open();
+    });
+
+    /* intercept programmatic value changes */
+    try{
+      var pd=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+      Object.defineProperty(sel,'value',{
+        get:function(){ return pd.get.call(this); },
+        set:function(v){ pd.set.call(this,v); requestAnimationFrame(updateTrigger); },
+        configurable:true
+      });
+    }catch(e){}
+
+    /* watch option list changes */
+    new MutationObserver(function(){ updateTrigger(); })
+      .observe(sel,{childList:true,subtree:true,attributes:true,attributeFilter:['selected','value']});
+
+    updateTrigger();
+  }
+
+  window.initCustomSelects=function(root){
+    (root||document).querySelectorAll('select:not([data-cs-skip])').forEach(function(s){
+      if(!s._csReady) csInit(s);
+    });
+  };
+
+  /* auto-init new selects added dynamically */
+  new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      m.addedNodes.forEach(function(n){
+        if(n.nodeType!==1) return;
+        if(n.tagName==='SELECT' && !n._csReady) csInit(n);
+        else if(n.querySelectorAll){
+          n.querySelectorAll('select:not([data-cs-skip])').forEach(function(s){
+            if(!s._csReady) csInit(s);
+          });
+        }
+      });
+    });
+  }).observe(document.documentElement,{childList:true,subtree:true});
+
+  /* init selects already in DOM */
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', function(){ initCustomSelects(); });
+  } else {
+    initCustomSelects();
+  }
+})();
 </script>
 
 </body>
