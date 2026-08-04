@@ -146,8 +146,29 @@ body{
   max-width:140px;
 }
 
-/* ─── PESQUISA GLOBAL ─── */
-.gs-wrap{flex:1;position:relative;max-width:440px;margin:0 auto}
+/* ── Barra de pesquisa global — só desktop ── */
+.global-search-bar{
+  display:none; /* oculta por defeito (mobile) */
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:7px 16px;
+  flex-shrink:0;
+  z-index:49;
+}
+.global-search-bar .gs-wrap{
+  max-width:600px;
+  margin:0 auto;
+}
+@media(min-width:769px){
+  .global-search-bar{display:block}
+  /* No desktop a barra de pesquisa já não está no topbar */
+  .topbar-loja{display:block !important}
+}
+/* Posicionamento fixo no mobile: topbar fixo → conteúdo desce */
+@media(max-width:600px){
+  .global-search-bar{display:none !important}
+  .topbar-loja{display:none}
+}
 .gs-inner{
   display:flex;align-items:center;background:var(--card);
   border:1px solid var(--border);border-radius:50px;
@@ -203,7 +224,6 @@ body{
 @media(max-width:768px){
   .gs-kbd{display:none}
   .topbar-loja{display:none}
-  .gs-wrap{max-width:100%}
 }
 .topbar-actions{display:flex;gap:6px;align-items:center}
 .topbar-btn{
@@ -1660,6 +1680,10 @@ body.offline-mode #app     { padding-top: 36px; }
 @media(max-width:600px){
   body.offline-mode .app-body { padding-top: calc(52px + 36px); }
 }
+/* ── No desktop, app-body não precisa de padding extra (search bar está no fluxo normal) ── */
+@media(min-width:769px){
+  #app{flex-direction:column}
+}
    Quando existe token guardado (detectado pelo script abaixo ANTES
    de o body ser pintado), escondemos o formulário e mostramos o
    spinner desde o primeiro frame — eliminando o "flash" do campo
@@ -1924,18 +1948,7 @@ body.offline-mode #app     { padding-top: 36px; }
     <div class="topbar-logo"><i class="fa-solid fa-gear"></i> Admin</div>
     <div class="topbar-separator"></div>
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
-    <!-- PESQUISA GLOBAL -->
-    <div class="gs-wrap" id="gsWrap">
-      <div class="gs-inner">
-        <i class="fa-solid fa-magnifying-glass gs-icon"></i>
-        <input id="gsInput" class="gs-input" type="search"
-          placeholder="Pesquisar encomendas, produtos, clientes…"
-          oninput="gsOnInput()" onkeydown="gsOnKey(event)"
-          autocomplete="off" autocorrect="off" spellcheck="false"/>
-        <span class="gs-kbd">⌘K</span>
-      </div>
-      <div id="gsResults" class="gs-results"></div>
-    </div>
+    <div style="flex:1"></div><!-- espaçador -->
     <div class="topbar-actions">
       <!-- Indicador de última actualização -->
       <div id="refreshIndicator" title="Clique para actualizar agora" onclick="manualRefresh()" style="display:none;align-items:center;gap:4px;font-size:.6rem;color:var(--muted);cursor:pointer;padding:4px 8px;border:1px solid var(--border);border-radius:50px;transition:var(--tr)">
@@ -1951,6 +1964,21 @@ body.offline-mode #app     { padding-top: 36px; }
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="openExportModal()" title="Exportar dados"><i class="fa-solid fa-download"></i></button>
       <button class="topbar-btn" onclick="confirmLogout()" title="Terminar sessão" style="color:var(--red);border-color:rgba(255,71,87,.3)"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+
+  <!-- BARRA DE PESQUISA GLOBAL — só desktop (≥ 769px) -->
+  <div id="globalSearchBar" class="global-search-bar">
+    <div class="gs-wrap" id="gsWrap">
+      <div class="gs-inner">
+        <i class="fa-solid fa-magnifying-glass gs-icon"></i>
+        <input id="gsInput" class="gs-input" type="search"
+          placeholder="Pesquisar encomendas, produtos, clientes…"
+          oninput="gsOnInput()" onkeydown="gsOnKey(event)"
+          autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <span class="gs-kbd">⌘K</span>
+      </div>
+      <div id="gsResults" class="gs-results"></div>
     </div>
   </div>
 
@@ -3893,7 +3921,7 @@ body.offline-mode #app     { padding-top: 36px; }
           <div id="discountPreview" style="display:none">
             <div class="discount-badge active" id="discountBadgeEl"><i class="fa-solid fa-percent"></i> <span id="discountPct">0%</span> de desconto automático</div>
           </div>
-          <div class="form-group" style="margin-top:10px">
+          <div class="form-group" style="margin-top:10px" id="stockGeneralGroup">
             <label>Stock <span class="optional">(-1 = ilimitado)</span></label>
             <div style="display:flex;gap:8px;align-items:center">
               <input class="form-input" type="number" id="productStock" value="-1" style="max-width:110px"/>
@@ -3902,6 +3930,9 @@ body.offline-mode #app     { padding-top: 36px; }
                 <button type="button" class="btn btn-outline btn-sm" onclick="$('productStock').value='10'">10</button>
                 <button type="button" class="btn btn-outline btn-sm" onclick="$('productStock').value='50'">50</button>
               </div>
+            </div>
+            <div id="stockGeneralHint" style="display:none;font-size:.62rem;color:var(--orange);margin-top:4px">
+              <i class="fa-solid fa-triangle-exclamation"></i> Com variações activas, o stock é gerido por cada variante. Este campo é ignorado.
             </div>
           </div>
         </div>
@@ -3982,8 +4013,11 @@ body.offline-mode #app     { padding-top: 36px; }
       </div>
 
       <!-- SECÇÃO: Características & Variações -->
-      <div class="prod-section">
-        <div class="prod-section-hd"><i class="fa-solid fa-list-ul"></i> Detalhes &amp; Variações</div>
+      <div class="prod-section" id="varSection">
+        <div class="prod-section-hd">
+          <i class="fa-solid fa-list-ul"></i> Detalhes &amp; Variações
+          <span id="varSectionBadge" style="display:none;margin-left:auto;font-size:.58rem;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(177,74,232,.12);color:var(--purple);border:1px solid rgba(177,74,232,.25)"></span>
+        </div>
         <div class="prod-section-bd">
           <div class="form-row">
             <div class="form-group">
@@ -3995,31 +4029,154 @@ body.offline-mode #app     { padding-top: 36px; }
               <textarea class="form-input" id="productSpecs" rows="3" placeholder="Andares: 2 a 5&#10;Sabores: Baunilha / Chocolate&#10;Prazo mínimo: 15 dias"></textarea>
             </div>
           </div>
+
+          <!-- ── VARIAÇÕES ── -->
           <div class="form-group" style="margin-top:4px">
-            <label>Variações <span class="optional">(tamanho, sabor, etc.)</span></label>
-            <div class="var-list" id="variationsList"></div>
-            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn-outline btn-sm" onclick="addVariation()"><i class="fa-solid fa-plus"></i> Adicionar Variação</button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="toggleMatrixBuilder()" id="matrixToggleBtn"><i class="fa-solid fa-table-cells"></i> Modo Matriz</button>
+            <label style="display:flex;align-items:center;gap:6px;justify-content:space-between">
+              <span>Variações <span class="optional">(tamanho, sabor, cor...)</span></span>
+              <span id="varModeLabel" style="font-size:.6rem;padding:2px 8px;border-radius:50px;display:none"></span>
+            </label>
+
+            <!-- Escolha do modo — visível quando não há modo activo -->
+            <div id="varModeChooser" style="margin-top:10px">
+
+              <!-- Presets rápidos -->
+              <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">
+                Escolhe o tipo de variação:
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:10px">
+
+                <!-- Roupa / Moda -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('roupa_tamanho')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">👕</span>
+                  <span style="font-weight:700;font-size:.72rem">Tamanhos</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">XS · S · M · L · XL · XXL</span>
+                </button>
+
+                <!-- Roupa com cor -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('roupa_tamanho_cor')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">🎨</span>
+                  <span style="font-weight:700;font-size:.72rem">Tamanho × Cor</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Grelha S/M/L × cores</span>
+                </button>
+
+                <!-- Pastelaria / Comida -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('pastelaria_tamanho')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">🎂</span>
+                  <span style="font-weight:700;font-size:.72rem">Dose / Tamanho</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Pequeno · Médio · Grande</span>
+                </button>
+
+                <!-- Pastelaria sabor + tamanho -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('pastelaria_sabor_tamanho')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">🍰</span>
+                  <span style="font-weight:700;font-size:.72rem">Sabor × Tamanho</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Chocolate/Baunilha × doses</span>
+                </button>
+
+                <!-- Electrónica / Armazenamento -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('electronica_armazenamento')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">📱</span>
+                  <span style="font-weight:700;font-size:.72rem">Armazenamento</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">64GB · 128GB · 256GB</span>
+                </button>
+
+                <!-- Embalagem / Quantidade -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('embalagem')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">📦</span>
+                  <span style="font-weight:700;font-size:.72rem">Embalagem / Qtd</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Unitário · Pack 2 · Pack 5</span>
+                </button>
+
+                <!-- Cosméticos / Volume -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('cosmeticos_volume')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">💄</span>
+                  <span style="font-weight:700;font-size:.72rem">Volume / Tamanho</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">30ml · 50ml · 100ml</span>
+                </button>
+
+                <!-- Cores simples -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('cores')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
+                  <span style="font-size:.95rem">🖌️</span>
+                  <span style="font-weight:700;font-size:.72rem">Só Cores</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Lista de cores disponíveis</span>
+                </button>
+
+                <!-- Personalizado -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('personalizado')"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left;border-style:dashed">
+                  <span style="font-size:.95rem">✏️</span>
+                  <span style="font-weight:700;font-size:.72rem">Personalizado</span>
+                  <span style="font-size:.58rem;color:var(--muted);font-weight:400">Definir do zero</span>
+                </button>
+
+                <!-- Sem variações -->
+                <button type="button" class="btn btn-outline btn-sm" onclick="_clearVariantMode()"
+                  style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left;color:var(--muted2);border-color:var(--border)">
+                  <span style="font-size:.95rem">🚫</span>
+                  <span style="font-weight:700;font-size:.72rem">Sem variações</span>
+                  <span style="font-size:.58rem;color:var(--muted2);font-weight:400">Produto único</span>
+                </button>
+              </div>
             </div>
-            <!-- MATRIX BUILDER -->
-            <div class="matrix-builder" id="matrixBuilder" style="display:none">
-              <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Matriz de Variações (Eixo × Eixo)</div>
-              <div class="matrix-axis-row">
-                <span class="matrix-axis-lbl">Eixo 1</span>
-                <div style="display:flex;gap:6px;flex:1">
-                  <input type="text" class="form-input" id="matAxis1Nome" placeholder="Nome (ex: Tamanho)" style="width:130px;flex-shrink:0" oninput="previewMatrix()"/>
-                  <input type="text" class="form-input" id="matAxis1Vals" placeholder="Valores separados por vírgula (S, M, L, XL)" oninput="previewMatrix()"/>
-                </div>
+
+            <!-- MODO SIMPLES -->
+            <div id="varSimpleArea" style="display:none;margin-top:8px">
+              <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;padding:7px 10px;background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.15);border-radius:var(--r)">
+                <i class="fa-solid fa-circle-info" style="color:var(--teal)"></i>
+                Cada variação tem o seu próprio stock e pode ter um preço adicional.
+                O campo <strong>Stock geral</strong> do produto é ignorado.
               </div>
-              <div class="matrix-axis-row">
-                <span class="matrix-axis-lbl">Eixo 2 <span class="optional">(opcional)</span></span>
-                <div style="display:flex;gap:6px;flex:1">
-                  <input type="text" class="form-input" id="matAxis2Nome" placeholder="Nome (ex: Cor)" style="width:130px;flex-shrink:0" oninput="previewMatrix()"/>
-                  <input type="text" class="form-input" id="matAxis2Vals" placeholder="Azul, Vermelho, Verde..." oninput="previewMatrix()"/>
-                </div>
+              <div class="var-list" id="variationsList"></div>
+              <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addVariation()">
+                <i class="fa-solid fa-plus"></i> Adicionar variação
+              </button>
+            </div>
+
+            <!-- MODO MATRIZ -->
+            <div id="varMatrixArea" style="display:none;margin-top:8px">
+              <div style="font-size:.68rem;color:var(--muted);margin-bottom:10px;padding:7px 10px;background:rgba(177,74,232,.04);border:1px solid rgba(177,74,232,.15);border-radius:var(--r)">
+                <i class="fa-solid fa-circle-info" style="color:var(--purple)"></i>
+                Define os eixos e a grelha gera todas as combinações com stock e preço independentes.
+                Exemplo: Eixo 1 = <strong>Tamanho</strong> (S, M, L, XL) · Eixo 2 = <strong>Cor</strong> (Azul, Preto).
               </div>
-              <div class="matrix-grid-wrap" id="matrixGridWrap"></div>
+              <div class="matrix-builder" id="matrixBuilder">
+                <div class="matrix-axis-row">
+                  <span class="matrix-axis-lbl">Eixo 1 *</span>
+                  <div style="display:flex;gap:6px;flex:1">
+                    <input type="text" class="form-input" id="matAxis1Nome" placeholder="Nome (ex: Tamanho)" style="width:130px;flex-shrink:0" oninput="previewMatrix()"/>
+                    <input type="text" class="form-input" id="matAxis1Vals" placeholder="Valores separados por vírgula: S, M, L, XL" oninput="previewMatrix()"/>
+                  </div>
+                </div>
+                <div class="matrix-axis-row" style="margin-top:6px">
+                  <span class="matrix-axis-lbl" style="font-size:.65rem">Eixo 2 <span class="optional">(opcional)</span></span>
+                  <div style="display:flex;gap:6px;flex:1">
+                    <input type="text" class="form-input" id="matAxis2Nome" placeholder="Nome (ex: Cor)" style="width:130px;flex-shrink:0" oninput="previewMatrix()"/>
+                    <input type="text" class="form-input" id="matAxis2Vals" placeholder="Azul, Preto, Branco..." oninput="previewMatrix()"/>
+                  </div>
+                </div>
+                <div class="matrix-grid-wrap" id="matrixGridWrap" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+            <!-- Sem variações — produto único com stock geral (estado default) -->
+            <div id="varNoneHint" style="display:none;margin-top:8px;font-size:.68rem;color:var(--muted2);font-style:italic">
+              Sem variações. O stock do produto é controlado pelo campo acima.
+            </div>
+
+            <!-- Botão para mudar de modo quando já há um activo -->
+            <div id="varChangeModeBtn" style="display:none;margin-top:10px">
+              <button type="button" class="btn btn-outline btn-sm" onclick="_showModeChooser()" style="font-size:.6rem;color:var(--muted)">
+                <i class="fa-solid fa-pen"></i> Mudar tipo de variações
+              </button>
             </div>
           </div>
         </div>
@@ -5229,14 +5386,271 @@ function emitirFatura(ref){
    VARIAÇÕES EM MATRIZ
    ============================================================ */
 (function(){
-  window.toggleMatrixBuilder=function(){
-    const mb=$('matrixBuilder');
-    const btn=$('matrixToggleBtn');
-    const show=mb.style.display==='none';
-    mb.style.display=show?'':'none';
-    if(btn)btn.style.background=show?'rgba(255,107,157,.1)':'';
-    if(show)previewMatrix();
+  // ── Estado do modo de variações ──
+  // 'none' | 'simple' | 'matrix'
+  window._varMode='none';
+
+  function _setVarModeUI(mode){
+    window._varMode=mode;
+    const chooser=$('varModeChooser');
+    const simpleArea=$('varSimpleArea');
+    const matrixArea=$('varMatrixArea');
+    const noneHint=$('varNoneHint');
+    const changeBtn=$('varChangeModeBtn');
+    const modeLabel=$('varModeLabel');
+    const badge=$('varSectionBadge');
+    const stockHint=$('stockGeneralHint');
+    const stockInput=$('productStock');
+
+    // Resetar tudo
+    if(chooser)chooser.style.display='none';
+    if(simpleArea)simpleArea.style.display='none';
+    if(matrixArea)matrixArea.style.display='none';
+    if(noneHint)noneHint.style.display='none';
+    if(changeBtn)changeBtn.style.display='none';
+    if(modeLabel)modeLabel.style.display='none';
+    if(badge)badge.style.display='none';
+    if(stockHint)stockHint.style.display='none';
+    if(stockInput)stockInput.disabled=false;
+
+    if(mode==='none'){
+      if(chooser)chooser.style.display='flex';
+    } else if(mode==='simple'){
+      if(simpleArea)simpleArea.style.display='';
+      if(changeBtn)changeBtn.style.display='';
+      if(modeLabel){
+        modeLabel.style.display='';
+        modeLabel.style.background='rgba(6,214,160,.12)';
+        modeLabel.style.color='var(--teal)';
+        modeLabel.style.border='1px solid rgba(6,214,160,.25)';
+        modeLabel.textContent='Modo Simples';
+      }
+      _updateVarBadge();
+      if(stockHint)stockHint.style.display='';
+      if(stockInput){stockInput.value='-1';stockInput.disabled=true;}
+    } else if(mode==='matrix'){
+      if(matrixArea)matrixArea.style.display='';
+      if(changeBtn)changeBtn.style.display='';
+      if(modeLabel){
+        modeLabel.style.display='';
+        modeLabel.style.background='rgba(177,74,232,.12)';
+        modeLabel.style.color='var(--purple)';
+        modeLabel.style.border='1px solid rgba(177,74,232,.25)';
+        modeLabel.textContent='Modo Matriz';
+      }
+      _updateVarBadge();
+      if(stockHint)stockHint.style.display='';
+      if(stockInput){stockInput.value='-1';stockInput.disabled=true;}
+    }
+  }
+
+  function _updateVarBadge(){
+    const badge=$('varSectionBadge');
+    if(!badge)return;
+    if(window._varMode==='simple'){
+      const n=document.querySelectorAll('#variationsList .var-row').length;
+      badge.textContent=n+' variante'+(n!==1?'s':'');
+      badge.style.display=n?'':'none';
+    } else if(window._varMode==='matrix'){
+      const a1v=($('matAxis1Vals')?.value||'').split(',').map(v=>v.trim()).filter(Boolean);
+      const a2v=($('matAxis2Vals')?.value||'').split(',').map(v=>v.trim()).filter(Boolean);
+      const combos=a1v.length*(a2v.length||1);
+      badge.textContent=combos?combos+' combinaç'+(combos===1?'ão':'ões'):'';
+      badge.style.display=combos?'':'none';
+    }
+  }
+
+  window._activateSimpleMode=function(){
+    $('variationsList').innerHTML='';
+    _setVarModeUI('simple');
   };
+
+  window._activateMatrixMode=function(){
+    _setVarModeUI('matrix');
+  };
+
+  window._clearVariantMode=function(){
+    $('variationsList').innerHTML='';
+    $('matAxis1Nome').value='';$('matAxis1Vals').value='';
+    $('matAxis2Nome').value='';$('matAxis2Vals').value='';
+    const mw=$('matrixGridWrap');if(mw)mw.innerHTML='';
+    _setVarModeUI('none');
+    const hint=$('varNoneHint');if(hint)hint.style.display='';
+    const chooser=$('varModeChooser');if(chooser)chooser.style.display='none';
+    const stockInput=$('productStock');
+    if(stockInput){stockInput.disabled=false;}
+    const stockHint=$('stockGeneralHint');if(stockHint)stockHint.style.display='none';
+  };
+
+  window._showModeChooser=function(){
+    // Confirmar mudança se já há dados
+    const hasRows=document.querySelectorAll('#variationsList .var-row').length>0;
+    const hasMatrix=($('matAxis1Vals')?.value||'').trim().length>0;
+    if(hasRows||hasMatrix){
+      if(!confirm('Mudar o tipo de variações irá apagar as variantes actuais. Continuar?'))return;
+    }
+    $('variationsList').innerHTML='';
+    $('matAxis1Nome').value='';$('matAxis1Vals').value='';
+    $('matAxis2Nome').value='';$('matAxis2Vals').value='';
+    const mw=$('matrixGridWrap');if(mw)mw.innerHTML='';
+    _setVarModeUI('none');
+    const chooser=$('varModeChooser');if(chooser)chooser.style.display='flex';
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // PRESETS DE VARIAÇÃO — configurações prontas por negócio
+  // ─────────────────────────────────────────────────────────
+  const PRESETS={
+    // Simples (1 eixo) → modo simples com var-rows
+    roupa_tamanho:{
+      modo:'simples',
+      label:'Tamanhos de roupa',
+      vars:[
+        {nome:'XS',preco_extra:0,stock:0},
+        {nome:'S', preco_extra:0,stock:0},
+        {nome:'M', preco_extra:0,stock:0},
+        {nome:'L', preco_extra:0,stock:0},
+        {nome:'XL',preco_extra:0,stock:0},
+        {nome:'XXL',preco_extra:500,stock:0},
+      ]
+    },
+    pastelaria_tamanho:{
+      modo:'simples',
+      label:'Doses / Tamanhos',
+      vars:[
+        {nome:'Individual',preco_extra:0,   stock:0},
+        {nome:'Pequeno',   preco_extra:2000, stock:0},
+        {nome:'Médio',     preco_extra:5000, stock:0},
+        {nome:'Grande',    preco_extra:9000, stock:0},
+        {nome:'Festa (20+ pessoas)', preco_extra:18000,stock:0},
+      ]
+    },
+    embalagem:{
+      modo:'simples',
+      label:'Embalagem / Quantidade',
+      vars:[
+        {nome:'Unitário',  preco_extra:0,    stock:0},
+        {nome:'Pack de 2', preco_extra:1500, stock:0},
+        {nome:'Pack de 5', preco_extra:3000, stock:0},
+        {nome:'Pack de 10',preco_extra:5000, stock:0},
+      ]
+    },
+    cosmeticos_volume:{
+      modo:'simples',
+      label:'Volume / Tamanho',
+      vars:[
+        {nome:'30ml', preco_extra:0,    stock:0},
+        {nome:'50ml', preco_extra:2000, stock:0},
+        {nome:'100ml',preco_extra:5000, stock:0},
+        {nome:'200ml',preco_extra:9000, stock:0},
+      ]
+    },
+    electronica_armazenamento:{
+      modo:'simples',
+      label:'Armazenamento',
+      vars:[
+        {nome:'64 GB',  preco_extra:0,     stock:0},
+        {nome:'128 GB', preco_extra:15000, stock:0},
+        {nome:'256 GB', preco_extra:30000, stock:0},
+        {nome:'512 GB', preco_extra:60000, stock:0},
+      ]
+    },
+    cores:{
+      modo:'simples',
+      label:'Cores',
+      vars:[
+        {nome:'Preto',  preco_extra:0,stock:0},
+        {nome:'Branco', preco_extra:0,stock:0},
+        {nome:'Azul',   preco_extra:0,stock:0},
+        {nome:'Vermelho',preco_extra:0,stock:0},
+      ]
+    },
+    // Matriz (2 eixos)
+    roupa_tamanho_cor:{
+      modo:'matriz',
+      label:'Tamanho × Cor',
+      eixo1:{nome:'Tamanho',valores:['S','M','L','XL']},
+      eixo2:{nome:'Cor',valores:['Preto','Branco','Azul']}
+    },
+    pastelaria_sabor_tamanho:{
+      modo:'matriz',
+      label:'Sabor × Tamanho',
+      eixo1:{nome:'Sabor',valores:['Chocolate','Baunilha','Morango']},
+      eixo2:{nome:'Tamanho',valores:['Pequeno','Médio','Grande']}
+    },
+    // Personalizado — abre builder vazio
+    personalizado:{modo:'personalizado'}
+  };
+
+  window._applyPreset=function(key){
+    const p=PRESETS[key];
+    if(!p)return;
+
+    if(p.modo==='simples'){
+      $('variationsList').innerHTML='';
+      _setVarModeUI('simple');
+      // Adicionar var-rows do preset
+      p.vars.forEach(v=>addVariation(v.nome,v.preco_extra,v.stock));
+      // Mostrar toast de orientação
+      toast('Variações de "'+p.label+'" carregadas. Ajusta os stocks.','info');
+
+    } else if(p.modo==='matriz'){
+      _setVarModeUI('matrix');
+      // Preencher eixos
+      $('matAxis1Nome').value=p.eixo1.nome;
+      $('matAxis1Vals').value=p.eixo1.valores.join(', ');
+      $('matAxis2Nome').value=p.eixo2.nome;
+      $('matAxis2Vals').value=p.eixo2.valores.join(', ');
+      previewMatrix();
+      _updateVarBadge();
+      toast('Grelha "'+p.label+'" criada. Preenche o stock de cada combinação.','info');
+
+    } else if(p.modo==='personalizado'){
+      // Perguntar ao utilizador: simples ou matriz?
+      _setVarModeUI('none');
+      const chooser=$('varModeChooser');
+      if(chooser){
+        chooser.style.display='block';
+        // Mostrar sub-chooser técnico (simples/matriz)
+        chooser.innerHTML=
+          '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Tipo de variação personalizada:</div>'+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+            '<button type="button" class="btn btn-outline btn-sm" onclick="_activateSimpleMode()" style="flex:1;min-width:130px;flex-direction:column;align-items:flex-start;padding:10px;height:auto;gap:3px">'+
+              '<span style="font-weight:700;display:flex;align-items:center;gap:5px"><i class="fa-solid fa-list-ul" style="color:var(--teal)"></i> Lista simples</span>'+
+              '<span style="font-size:.6rem;color:var(--muted);font-weight:400">Uma linha por opção</span>'+
+            '</button>'+
+            '<button type="button" class="btn btn-outline btn-sm" onclick="_activateMatrixMode()" style="flex:1;min-width:130px;flex-direction:column;align-items:flex-start;padding:10px;height:auto;gap:3px">'+
+              '<span style="font-weight:700;display:flex;align-items:center;gap:5px"><i class="fa-solid fa-table-cells" style="color:var(--purple)"></i> Grelha (2 eixos)</span>'+
+              '<span style="font-size:.6rem;color:var(--muted);font-weight:400">Ex: Tamanho × Cor</span>'+
+            '</button>'+
+            '<button type="button" class="btn btn-outline btn-sm" style="color:var(--muted);padding:8px 12px" onclick="_resetPresetChooser()">'+
+              '<i class="fa-solid fa-arrow-left"></i> Voltar'+
+            '</button>'+
+          '</div>';
+      }
+    }
+  };
+
+  // _resetPresetChooser — repõe o ecrã de presets sem fechar o modal
+  window._resetPresetChooser=function(){
+    $('variationsList').innerHTML='';
+    $('matAxis1Nome').value='';$('matAxis1Vals').value='';
+    $('matAxis2Nome').value='';$('matAxis2Vals').value='';
+    const mw=$('matrixGridWrap');if(mw)mw.innerHTML='';
+    _setVarModeUI('none');
+  };
+
+  // Compatibilidade retroactiva
+  window._showPresetChooser=window._resetPresetChooser;
+  window.toggleMatrixBuilder=function(){window._activateMatrixMode();};
+
+  // Actualizar badge ao digitar nos eixos da matriz
+  document.addEventListener('input',function(e){
+    if(e.target.id==='matAxis1Vals'||e.target.id==='matAxis2Vals'||
+       e.target.id==='matAxis1Nome'||e.target.id==='matAxis2Nome'){
+      if(typeof _updateVarBadge==='function')_updateVarBadge();
+    }
+  });
 
   window.previewMatrix=function(){
     const a1n=($('matAxis1Nome')?.value||'').trim()||'Eixo 1';
@@ -5350,12 +5764,7 @@ function emitirFatura(ref){
   };
 
   window.loadMatrixData=function(matrizJson){
-    if(!matrizJson){
-      $('matrixBuilder').style.display='none';
-      const btn=$('matrixToggleBtn');
-      if(btn)btn.style.background='';
-      return;
-    }
+    if(!matrizJson)return;
     $('matAxis1Nome').value=matrizJson.eixo1?.nome||'';
     $('matAxis1Vals').value=(matrizJson.eixo1?.valores||[]).join(', ');
     if(matrizJson.eixo2){
@@ -5365,25 +5774,20 @@ function emitirFatura(ref){
       $('matAxis2Nome').value='';
       $('matAxis2Vals').value='';
     }
-    // Pré-carregar `saved` no wrap para que previewMatrix os leia e preencha
-    const wrap=$('matrixGridWrap');
-    if(wrap&&matrizJson.cells){
-      // Criar inputs temporários invisíveis com os valores para que saved{} os capture
-      // (abordagem mais robusta: popular depois do render)
-      $('matrixBuilder').style.display='';
-      const btn=$('matrixToggleBtn');if(btn)btn.style.background='rgba(255,107,157,.1)';
-      previewMatrix(); // 1.ª passagem: cria grelha com zeros
-      // 2.ª passagem: preencher com valores guardados
-      wrap.querySelectorAll('input[data-key]').forEach(inp=>{
+    // Render grelha com zeros, depois preencher com valores guardados
+    previewMatrix();
+    if(matrizJson.cells){
+      $('matrixGridWrap').querySelectorAll('input[data-key]').forEach(inp=>{
         const key=inp.dataset.key;
         const field=inp.dataset.field;
         if(matrizJson.cells[key]!==undefined){
-          inp.value=matrizJson.cells[key][field]||0;
-          if(field==='stock')window._matCellColor(inp);
+          inp.value=matrizJson.cells[key][field]??0;
+          if(field==='stock')window._matCellColor&&window._matCellColor(inp);
         }
       });
-      _updateMatrixTotal();
+      _updateMatrixTotal&&_updateMatrixTotal();
     }
+    _updateVarBadge&&_updateVarBadge();
   };
 })();
 
@@ -6442,7 +6846,7 @@ function renderProductImages(){
   
   const ghToken=localStorage.getItem('adm_gh');
   if(ghToken||state.productImages.length>0){
-    html+='<div class="image-add" id="imageAddBtn" onclick="document.getElementById(\'multiImgInput\').click()"><i class="fa-solid fa-plus"></i><span>Adicionar</span></div>';
+    html+='<div class="image-add" onclick="document.getElementById(\'multiImgInput\').click()"><i class="fa-solid fa-plus"></i><span>Adicionar</span></div>';
   }
   grid.innerHTML=html;
 }
@@ -6588,12 +6992,12 @@ function openProductModal(id=null){
   syncToggleCards();
   updateTagPreview();
 
-  // Limpar completamente a matriz
+  // Limpar completamente a matriz e repor modo neutro
   $('matAxis1Nome').value='';$('matAxis1Vals').value='';
   $('matAxis2Nome').value='';$('matAxis2Vals').value='';
   const mb=$('matrixBuilder');if(mb)mb.style.display='none';
-  const mbtn=$('matrixToggleBtn');if(mbtn)mbtn.style.background='';
   const mw=$('matrixGridWrap');if(mw)mw.innerHTML='';
+  if(typeof _setVarModeUI==='function')_setVarModeUI('none');
 
   // GitHub check — show/hide upload area
   const ghToken=localStorage.getItem('adm_gh');
@@ -6647,8 +7051,8 @@ async function loadProductForEdit(id){
     // Limpar matrix builder antes de carregar
     $('matAxis1Nome').value='';$('matAxis1Vals').value='';
     $('matAxis2Nome').value='';$('matAxis2Vals').value='';
-    $('matrixBuilder').style.display='none';
-    const matBtn=$('matrixToggleBtn');if(matBtn)matBtn.style.background='';
+    const mw2=$('matrixGridWrap');if(mw2)mw2.innerHTML='';
+    if(typeof _setVarModeUI==='function')_setVarModeUI('none');
 
     $('variationsList').innerHTML='';
 
@@ -6656,17 +7060,26 @@ async function loadProductForEdit(id){
     let variacoes=[];
     try{variacoes=Array.isArray(p.variacoes)?p.variacoes:(typeof p.variacoes==='string'?JSON.parse(p.variacoes||'[]'):[]);}catch(e){}
 
-    const temSku=variacoes.length>0&&variacoes.some(v=>v.sku&&v.sku.includes(':'));
-    if(temSku){
-      // Reconstruir matriz a partir das variantes guardadas
-      const matrizJson=_reconstroiMatrizDeVariantes(variacoes);
-      if(matrizJson){
-        loadMatrixData(matrizJson);
+    if(variacoes.length===0){
+      // Sem variações — modo neutro com chooser visível
+      _setVarModeUI('none');
+    } else {
+      const temSku=variacoes.some(v=>v.sku&&v.sku.includes(':'));
+      if(temSku){
+        // Reconstruir matriz
+        const matrizJson=_reconstroiMatrizDeVariantes(variacoes);
+        if(matrizJson){
+          _setVarModeUI('matrix');
+          loadMatrixData(matrizJson);
+        } else {
+          _setVarModeUI('simple');
+          variacoes.forEach(v=>addVariation(v.nome,v.preco_extra,v.stock));
+        }
       } else {
+        // Variações simples
+        _setVarModeUI('simple');
         variacoes.forEach(v=>addVariation(v.nome,v.preco_extra,v.stock));
       }
-    } else {
-      variacoes.forEach(v=>addVariation(v.nome,v.preco_extra,v.stock));
     }
 
     $('faqList').innerHTML='';
@@ -6679,18 +7092,31 @@ async function loadProductForEdit(id){
 }
 
 function addVariation(nome='',preco=0,stock=-1){
+  // Activar modo simples automaticamente se ainda não activo
+  if(window._varMode!=='simple'&&typeof _setVarModeUI==='function')_setVarModeUI('simple');
+
   const list=$('variationsList');
   const row=document.createElement('div');
   row.className='var-row';
   const sc=stock===0?'var(--red)':stock>0&&stock<=5?'var(--orange)':stock>5?'var(--teal)':'var(--muted2)';
   row.innerHTML=
-    '<input placeholder="Nome (ex: Grande)" value="'+esc(String(nome))+'" style="flex:2"/>'+
+    '<input placeholder="Nome (ex: Grande)" value="'+esc(String(nome))+'" style="flex:2" '+
+      'oninput="if(typeof _updateVarBadge===\'function\')_updateVarBadge()"/>'+
     '<span class="var-sep">+Kz</span>'+
     '<input type="number" placeholder="0" value="'+preco+'" style="width:55px"/>'+
     '<span class="var-sep" style="color:'+sc+'">Stk</span>'+
-    '<input type="number" placeholder="-1" value="'+stock+'" style="width:50px;border-color:'+sc+'" oninput="this.previousElementSibling.style.color=parseInt(this.value)===0?\'var(--red)\':parseInt(this.value)<=5&&parseInt(this.value)>0?\'var(--orange)\':parseInt(this.value)>5?\'var(--teal)\':\'var(--muted2)\';this.style.borderColor=this.previousElementSibling.style.color"/>'+
-    '<button class="var-row-delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>';
+    '<input type="number" placeholder="-1" value="'+stock+'" style="width:50px;border-color:'+sc+'" '+
+      'oninput="const v=parseInt(this.value);'+
+        'const c=v===0?\'var(--red)\':v>0&&v<=5?\'var(--orange)\':v>5?\'var(--teal)\':\'var(--muted2)\';'+
+        'this.previousElementSibling.style.color=c;this.style.borderColor=c;'+
+        'if(typeof _updateVarBadge===\'function\')_updateVarBadge()"/>'+
+    '<button type="button" class="var-row-delete" onclick="'+
+      'this.parentElement.remove();'+
+      'if(typeof _updateVarBadge===\'function\')_updateVarBadge();'+
+      'if(!document.querySelectorAll(\'#variationsList .var-row\').length&&typeof _setVarModeUI===\'function\')_setVarModeUI(\'none\')">'+
+      '<i class="fa-solid fa-xmark"></i></button>';
   list.appendChild(row);
+  if(typeof _updateVarBadge==='function')_updateVarBadge();
 }
 
 // Reconstrói a estrutura de matriz a partir de variantes guardadas com campo `sku`
@@ -6781,36 +7207,40 @@ async function saveProduct(){
     }
   }
 
-  // Variações — combinar var-rows manuais + matriz
+  // Variações — leitura baseada no modo activo
   const vars=[];
-  document.querySelectorAll('.var-row').forEach(row=>{
-    const inputs=row.querySelectorAll('input');
-    const n=inputs[0].value.trim();
-    if(n)vars.push({nome:n,preco_extra:parseFloat(inputs[1].value)||0,stock:parseInt(inputs[2].value)||-1});
-  });
-  // Integrar dados da matriz (se activa sobrepõe os var-rows)
-  const matData=window.getMatrixData?window.getMatrixData():null;
-  if(matData&&matData.eixo1?.valores?.length){
-    vars.length=0; // limpar rows manuais se matriz activa
-    const a1vals=matData.eixo1.valores;
-    const a2vals=matData.eixo2?.valores||[];
-    const a1nome=matData.eixo1.nome||'Eixo1';
-    const a2nome=matData.eixo2?.nome||'Eixo2';
-    if(a2vals.length){
-      a1vals.forEach(v1=>{
-        a2vals.forEach(v2=>{
-          const key=v1+'_'+v2;
-          const cell=matData.cells[key]||{stock:0,preco_extra:0};
-          vars.push({nome:v1+' / '+v2,sku:a1nome+':'+v1+'|'+a2nome+':'+v2,preco_extra:cell.preco_extra||0,stock:parseInt(cell.stock)||0});
+  if(window._varMode==='matrix'){
+    // Modo Matriz: gerar variantes das células da grelha
+    const matData=window.getMatrixData?window.getMatrixData():null;
+    if(matData&&matData.eixo1?.valores?.length){
+      const a1vals=matData.eixo1.valores;
+      const a2vals=matData.eixo2?.valores||[];
+      const a1nome=matData.eixo1.nome||'Eixo1';
+      const a2nome=matData.eixo2?.nome||'Eixo2';
+      if(a2vals.length){
+        a1vals.forEach(v1=>{
+          a2vals.forEach(v2=>{
+            const key=v1+'_'+v2;
+            const cell=matData.cells[key]||{stock:0,preco_extra:0};
+            vars.push({nome:v1+' / '+v2,sku:a1nome+':'+v1+'|'+a2nome+':'+v2,preco_extra:cell.preco_extra||0,stock:parseInt(cell.stock)||0});
+          });
         });
-      });
-    } else {
-      a1vals.forEach(v1=>{
-        const cell=matData.cells[v1]||{stock:0,preco_extra:0};
-        vars.push({nome:v1,sku:a1nome+':'+v1,preco_extra:cell.preco_extra||0,stock:parseInt(cell.stock)||0});
-      });
+      } else {
+        a1vals.forEach(v1=>{
+          const cell=matData.cells[v1]||{stock:0,preco_extra:0};
+          vars.push({nome:v1,sku:a1nome+':'+v1,preco_extra:cell.preco_extra||0,stock:parseInt(cell.stock)||0});
+        });
+      }
     }
+  } else if(window._varMode==='simple'){
+    // Modo Simples: ler var-rows
+    document.querySelectorAll('#variationsList .var-row').forEach(row=>{
+      const inputs=row.querySelectorAll('input');
+      const n=inputs[0].value.trim();
+      if(n)vars.push({nome:n,preco_extra:parseFloat(inputs[1].value)||0,stock:parseInt(inputs[2].value)||-1});
+    });
   }
+  // _varMode==='none' → vars permanece [] → produto sem variações
 
   const faqs=getFaqs();
   const body={
