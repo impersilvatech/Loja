@@ -167,7 +167,6 @@ body{
 /* Posicionamento fixo no mobile: topbar fixo → conteúdo desce */
 @media(max-width:600px){
   .global-search-bar{display:none !important}
-  .topbar-loja{display:none}
 }
 .gs-inner{
   display:flex;align-items:center;background:var(--card);
@@ -223,7 +222,11 @@ body{
 .gs-empty i{font-size:1.5rem;opacity:.5}
 @media(max-width:768px){
   .gs-kbd{display:none}
-  .topbar-loja{display:none}
+  .topbar-loja{
+    display:block;
+    font-size:.66rem;
+    max-width:100px;
+  }
 }
 .topbar-actions{display:flex;gap:6px;align-items:center}
 .topbar-btn{
@@ -1948,19 +1951,18 @@ body.offline-mode #app     { padding-top: 36px; }
     <div class="topbar-logo"><i class="fa-solid fa-gear"></i> Admin</div>
     <div class="topbar-separator"></div>
     <div class="topbar-loja" id="topbarLoja">A carregar...</div>
-    <div style="flex:1"></div><!-- espaçador -->
+    <div style="flex:1"></div>
     <div class="topbar-actions">
-      <!-- Indicador de última actualização -->
       <div id="refreshIndicator" title="Clique para actualizar agora" onclick="manualRefresh()" style="display:none;align-items:center;gap:4px;font-size:.6rem;color:var(--muted);cursor:pointer;padding:4px 8px;border:1px solid var(--border);border-radius:50px;transition:var(--tr)">
         <i class="fa-solid fa-rotate" id="refreshIcon" style="font-size:.55rem"></i>
         <span id="refreshAge">Agora</span>
       </div>
-      <!-- Botão sync offline — só visível quando há fila -->
       <button class="topbar-btn" id="syncQueueBtn" onclick="manualSync()" title="Sincronizar operações pendentes" style="display:none;color:var(--orange);border-color:rgba(255,159,67,.35)">
         <i class="fa-solid fa-rotate" style="font-size:.75rem"></i>
         <span id="syncQueueCount" style="font-size:.5rem;font-weight:700;margin-left:1px"></span>
       </button>
       <button class="topbar-btn" id="notifBtn" onclick="toggleNotifications()" title="Notificações push"><i class="fa-solid fa-bell-slash" id="notifIcon"></i></button>
+      <button class="topbar-btn" onclick="testarNotificacao()" title="Testar notificação" style="font-size:.52rem;font-weight:700;letter-spacing:.03em;padding:0 7px;color:var(--muted)">TEST</button>
       <button class="topbar-btn" onclick="toggleTheme()" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button class="topbar-btn" onclick="openExportModal()" title="Exportar dados"><i class="fa-solid fa-download"></i></button>
       <button class="topbar-btn" onclick="confirmLogout()" title="Terminar sessão" style="color:var(--red);border-color:rgba(255,71,87,.3)"><i class="fa-solid fa-right-from-bracket"></i></button>
