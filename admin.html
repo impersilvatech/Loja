@@ -604,7 +604,16 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 }
 .modal-close:hover{border-color:var(--red);color:var(--red)}
 .modal-body{padding:0 18px 18px}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border);margin-top:12px}
+.modal-footer{
+  display:flex;gap:8px;justify-content:flex-end;
+  padding:12px 18px;
+  border-top:1px solid var(--border);
+  margin-top:12px;
+  position:sticky;bottom:0;
+  background:var(--card);
+  z-index:3;
+  flex-wrap:wrap;
+}
 
 /* ============================================================
    22. IMAGE UPLOAD - MÚLTIPLAS
@@ -3640,6 +3649,28 @@ body.offline-mode #app     { padding-top: 36px; }
 </div>
 
 <!-- ============================================================
+     MODAL - CONFIRMAÇÃO PERSONALIZADA (substituí confirm() nativo)
+     ============================================================ -->
+<div class="modal-overlay" id="adminConfirmModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title" id="adminConfirmTitle">
+        <i class="fa-solid fa-triangle-exclamation" style="color:var(--yellow)"></i> Confirmar
+      </div>
+      <button class="modal-close" onclick="_adminConfirmCancel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="adminConfirmMsg" style="font-size:.84rem;color:var(--white);line-height:1.55;margin-bottom:0"></p>
+      <p id="adminConfirmSub" style="font-size:.72rem;color:var(--muted);margin-top:6px;display:none"></p>
+      <div class="modal-footer" style="margin-top:16px">
+        <button class="btn btn-outline" onclick="_adminConfirmCancel()">Cancelar</button>
+        <button class="btn btn-primary" id="adminConfirmOkBtn" onclick="_adminConfirmOk()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      MODAL - CONCLUSÃO DE DEVOLUÇÃO (Reembolso / Troca)
      ============================================================ -->
 <div class="modal-overlay" id="devConclusaoModal">
@@ -4048,82 +4079,72 @@ body.offline-mode #app     { padding-top: 36px; }
               </div>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:10px">
 
-                <!-- Roupa / Moda -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('roupa_tamanho')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">👕</span>
+                  <span style="font-size:.85rem;color:var(--blue)"><i class="fa-solid fa-shirt"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Tamanhos</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">XS · S · M · L · XL · XXL</span>
                 </button>
 
-                <!-- Roupa com cor -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('roupa_tamanho_cor')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">🎨</span>
+                  <span style="font-size:.85rem;color:var(--purple)"><i class="fa-solid fa-palette"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Tamanho × Cor</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Grelha S/M/L × cores</span>
                 </button>
 
-                <!-- Pastelaria / Comida -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('pastelaria_tamanho')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">🎂</span>
+                  <span style="font-size:.85rem;color:var(--pink)"><i class="fa-solid fa-cake-candles"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Dose / Tamanho</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Pequeno · Médio · Grande</span>
                 </button>
 
-                <!-- Pastelaria sabor + tamanho -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('pastelaria_sabor_tamanho')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">🍰</span>
+                  <span style="font-size:.85rem;color:var(--orange)"><i class="fa-solid fa-utensils"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Sabor × Tamanho</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Chocolate/Baunilha × doses</span>
                 </button>
 
-                <!-- Electrónica / Armazenamento -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('electronica_armazenamento')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">📱</span>
+                  <span style="font-size:.85rem;color:var(--teal)"><i class="fa-solid fa-mobile-screen"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Armazenamento</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">64GB · 128GB · 256GB</span>
                 </button>
 
-                <!-- Embalagem / Quantidade -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('embalagem')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">📦</span>
+                  <span style="font-size:.85rem;color:var(--yellow)"><i class="fa-solid fa-box"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Embalagem / Qtd</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Unitário · Pack 2 · Pack 5</span>
                 </button>
 
-                <!-- Cosméticos / Volume -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('cosmeticos_volume')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">💄</span>
+                  <span style="font-size:.85rem;color:var(--pink)"><i class="fa-solid fa-droplet"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Volume / Tamanho</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">30ml · 50ml · 100ml</span>
                 </button>
 
-                <!-- Cores simples -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('cores')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left">
-                  <span style="font-size:.95rem">🖌️</span>
+                  <span style="font-size:.85rem;color:var(--purple)"><i class="fa-solid fa-swatchbook"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Só Cores</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Lista de cores disponíveis</span>
                 </button>
 
-                <!-- Personalizado -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_applyPreset('personalizado')"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left;border-style:dashed">
-                  <span style="font-size:.95rem">✏️</span>
+                  <span style="font-size:.85rem;color:var(--muted)"><i class="fa-solid fa-pen"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Personalizado</span>
                   <span style="font-size:.58rem;color:var(--muted);font-weight:400">Definir do zero</span>
                 </button>
 
-                <!-- Sem variações -->
                 <button type="button" class="btn btn-outline btn-sm" onclick="_clearVariantMode()"
                   style="flex-direction:column;align-items:flex-start;padding:9px 11px;height:auto;gap:2px;text-align:left;color:var(--muted2);border-color:var(--border)">
-                  <span style="font-size:.95rem">🚫</span>
+                  <span style="font-size:.85rem;color:var(--muted2)"><i class="fa-solid fa-ban"></i></span>
                   <span style="font-weight:700;font-size:.72rem">Sem variações</span>
                   <span style="font-size:.58rem;color:var(--muted2);font-weight:400">Produto único</span>
                 </button>
@@ -5489,7 +5510,15 @@ function emitirFatura(ref){
     const hasRows=document.querySelectorAll('#variationsList .var-row').length>0;
     const hasMatrix=($('matAxis1Vals')?.value||'').trim().length>0;
     if(hasRows||hasMatrix){
-      if(!confirm('Mudar o tipo de variações irá apagar as variantes actuais. Continuar?'))return;
+      adminConfirm('Mudar o tipo de variações irá apagar as variantes actuais. Continuar?',function(){
+        $('variationsList').innerHTML='';
+        $('matAxis1Nome').value='';$('matAxis1Vals').value='';
+        $('matAxis2Nome').value='';$('matAxis2Vals').value='';
+        const mw=$('matrixGridWrap');if(mw)mw.innerHTML='';
+        _setVarModeUI('none');
+        const chooser=$('varModeChooser');if(chooser)chooser.style.display='flex';
+      },{danger:true,okLabel:'Mudar',title:'Mudar variações'});
+      return;
     }
     $('variationsList').innerHTML='';
     $('matAxis1Nome').value='';$('matAxis1Vals').value='';
@@ -7324,14 +7353,15 @@ async function duplicateProduct(id){
 }
 
 async function deleteProduct(id,nome){
-  if(!confirm('Apagar "'+nome+'"?'))return;
-  try{
-    await api('/api/produtos/'+id,{method:'DELETE'});
-    if(typeof invalidarCache==='function')invalidarCache();
-    toast('Produto removido','success');
-    logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Produto eliminado: '+nome);
-    await loadProdutos();state.filteredProducts=[...state.produtos];renderProducts();updateDashboardStats();
-  }catch(e){toast('Erro ao remover','error');}
+  adminConfirm('Apagar o produto "'+nome+'"?',async function(){
+    try{
+      await api('/api/produtos/'+id,{method:'DELETE'});
+      if(typeof invalidarCache==='function')invalidarCache();
+      toast('Produto removido','success');
+      logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Produto eliminado: '+nome);
+      await loadProdutos();state.filteredProducts=[...state.produtos];renderProducts();updateDashboardStats();
+    }catch(e){toast('Erro ao remover','error');}
+  },{danger:true,okLabel:'Apagar'});
 }
 
 /* ============================================================
@@ -7383,14 +7413,15 @@ async function saveCategory(){
 }
 
 async function deleteCategory(id,nome){
-  if(!confirm('Apagar "'+nome+'"?'))return;
-  try{
-    await api('/api/categorias/'+id,{method:'DELETE'});
-    if(typeof invalidarCache==='function')invalidarCache();
-    toast('Categoria removida','success');
-    logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Categoria eliminada: '+nome);
-    await loadCategorias();renderCategories();
-  }catch(e){toast('Erro ao remover','error');}
+  adminConfirm('Apagar a categoria "'+nome+'"?',async function(){
+    try{
+      await api('/api/categorias/'+id,{method:'DELETE'});
+      if(typeof invalidarCache==='function')invalidarCache();
+      toast('Categoria removida','success');
+      logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Categoria eliminada: '+nome);
+      await loadCategorias();renderCategories();
+    }catch(e){toast('Erro ao remover','error');}
+  },{danger:true,okLabel:'Apagar'});
 }
 
 /* ============================================================
@@ -7489,11 +7520,12 @@ window.renderPrecoHist=function(){
 };
 
 window.limparPrecoHist=function(){
-  if(!confirm('Limpar todo o histórico de alterações de preço?'))return;
-  localStorage.removeItem(PRECO_HIST_KEY);
-  renderRecentPrecoHist();
-  renderPrecoHist();
-  toast('Histórico limpo','success');
+  adminConfirm('Limpar todo o histórico de alterações de preço?',function(){
+    localStorage.removeItem(PRECO_HIST_KEY);
+    renderRecentPrecoHist();
+    renderPrecoHist();
+    toast('Histórico limpo','success');
+  },{danger:true,okLabel:'Limpar'});
 };
 
 window.openPrecoHistProduto=function(){
@@ -7502,6 +7534,39 @@ window.openPrecoHistProduto=function(){
   closeModal('productModal');
   openModal('precoHistModal');
   renderPrecoHist();
+};
+
+/* ============================================================
+   CONFIRMAÇÃO PERSONALIZADA — substitui window.confirm() nativo
+   ============================================================ */
+let _adminConfirmCb=null;
+
+window.adminConfirm=function(msg,onOk,opts={}){
+  $('adminConfirmMsg').textContent=msg;
+  const sub=$('adminConfirmSub');
+  if(opts.sub){sub.textContent=opts.sub;sub.style.display='';}
+  else sub.style.display='none';
+  const title=$('adminConfirmTitle');
+  if(opts.danger){
+    title.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> '+(opts.title||'Atenção');
+    $('adminConfirmOkBtn').className='btn btn-danger';
+  } else {
+    title.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--yellow)"></i> '+(opts.title||'Confirmar');
+    $('adminConfirmOkBtn').className='btn btn-primary';
+  }
+  $('adminConfirmOkBtn').textContent=opts.okLabel||'Confirmar';
+  _adminConfirmCb=onOk||null;
+  openModal('adminConfirmModal');
+};
+
+window._adminConfirmOk=function(){
+  closeModal('adminConfirmModal');
+  if(typeof _adminConfirmCb==='function')_adminConfirmCb();
+  _adminConfirmCb=null;
+};
+window._adminConfirmCancel=function(){
+  closeModal('adminConfirmModal');
+  _adminConfirmCb=null;
 };
 
 /* ============================================================
@@ -7853,9 +7918,10 @@ async function changeToken(){
   const t1=$('cfgNewTok')?.value?.trim(),t2=$('cfgNewTok2')?.value?.trim();
   if(!t1||t1.length<12){toast('Token deve ter ≥12 caracteres','error');return;}
   if(t1!==t2){toast('Tokens não coincidem','error');return;}
-  if(!confirm('Alterar o token irá desligar a sessão. Confirmas?'))return;
-  const btn=btnBusy(document.activeElement);
-  try{await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:t1})});toast('Token alterado!','success');setTimeout(logout,2000);}catch(e){toast('Erro: '+e.message,'error');btnDone(btn);}
+  adminConfirm('Alterar o token irá desligar a sessão actual. Confirmas?',async function(){
+    const btn=btnBusy(document.activeElement);
+    try{await api('/api/loja',{method:'PUT',body:JSON.stringify({admin_token:t1})});toast('Token alterado!','success');setTimeout(logout,2000);}catch(e){toast('Erro: '+e.message,'error');btnDone(btn);}
+  },{danger:true,okLabel:'Alterar e sair'});
 }
 
 /* ============================================================
@@ -7940,16 +8006,16 @@ async function approveReview(id, status) {
 }
 
 async function deleteReview(id) {
-  if (!confirm('Apagar esta avaliação?')) return;
-  const btn=btnBusy(document.activeElement);
-  try {
-    await api('/api/admin/avaliacoes/' + id, { method: 'DELETE' });
-    state.avaliacoes = state.avaliacoes.filter(a => a.id !== id);
-    toast('Avaliação removida');
-    filterReviews();
-    loadReviews();
-  } catch(e) { toast('Erro ao remover', 'error'); }
-  btnDone(btn);
+  adminConfirm('Apagar esta avaliação?',async function(){
+    const btn=btnBusy(document.activeElement);
+    try {
+      await api('/api/admin/avaliacoes/' + id, { method: 'DELETE' });
+      state.avaliacoes = state.avaliacoes.filter(a => a.id !== id);
+      toast('Avaliação removida');
+      filterReviews();loadReviews();
+    } catch(e) { toast('Erro ao remover', 'error'); }
+    btnDone(btn);
+  },{danger:true,okLabel:'Apagar'});
 }
 
 /* ============================================================
@@ -8064,16 +8130,17 @@ async function saveCoupon() {
 }
 
 async function deleteCoupon(id, codigo) {
-  if (!confirm('Apagar o cupão "' + codigo + '"?')) return;
-  const btn = btnBusy(document.activeElement);
-  try {
-    await api('/api/admin/cupoes/' + id, { method: 'DELETE' });
-    state.coupons = state.coupons.filter(c => c.id !== id);
-    toast('Cupão removido', 'success');
-    logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Cupão eliminado: '+codigo);
-    renderCoupons();
-  } catch(e) { toast('Erro ao remover', 'error'); }
-  btnDone(btn);
+  adminConfirm('Apagar o cupão "'+codigo+'"?',async function(){
+    const btn = btnBusy(document.activeElement);
+    try {
+      await api('/api/admin/cupoes/' + id, { method: 'DELETE' });
+      state.coupons = state.coupons.filter(c => c.id !== id);
+      toast('Cupão removido', 'success');
+      logActivity('<i class="fa-solid fa-trash" style="color:var(--red)"></i>','Cupão eliminado: '+codigo);
+      renderCoupons();
+    } catch(e) { toast('Erro ao remover', 'error'); }
+    btnDone(btn);
+  },{danger:true,okLabel:'Apagar'});
 }
 
 /* ============================================================
@@ -8123,42 +8190,29 @@ async function loadCleanup() {
 }
 
 async function removerImagem(path, sha, nome) {
-  if (!confirm('Remover "' + nome + '" do GitHub?\n\nEsta ação é irreversível!')) return;
-  
-  const btn = btnBusy(document.activeElement);
-  try {
-    await api('/api/admin/imagens/remover', {
-      method: 'DELETE',
-      body: JSON.stringify({ path, sha })
-    });
-    toast('Imagem removida!', 'success');
-    loadCleanup();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-  }
-  btnDone(btn);
+  adminConfirm('Remover "'+nome+'" do GitHub?',async function(){
+    const btn = btnBusy(document.activeElement);
+    try {
+      await api('/api/admin/imagens/remover',{method:'DELETE',body:JSON.stringify({path,sha})});
+      toast('Imagem removida!','success');loadCleanup();
+    }catch(e){toast('Erro: '+e.message,'error');}
+    btnDone(btn);
+  },{danger:true,okLabel:'Remover',sub:'Esta acção é irreversível.'});
 }
 
 async function removerTodasOrfas() {
   if (!cleanupData.orfas || cleanupData.orfas.length === 0) {
-    toast('Nenhuma imagem órfã para remover.', 'info');
-    return;
+    toast('Nenhuma imagem órfã para remover.', 'info'); return;
   }
-  
-  if (!confirm('Remover TODAS as ' + cleanupData.orfas.length + ' imagens não utilizadas?\n\nEsta ação é irreversível!')) return;
-  
-  const btn = btnBusy(document.activeElement);
-  try {
-    const result = await api('/api/admin/imagens/remover-todas', {
-      method: 'DELETE',
-      body: JSON.stringify({ orfas: cleanupData.orfas })
-    });
-    toast('Removidas: ' + result.removidas + ' | Erros: ' + result.erros, 'success');
-    loadCleanup();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-  }
-  btnDone(btn);
+  adminConfirm('Remover TODAS as '+cleanupData.orfas.length+' imagens não utilizadas?',async function(){
+    const btn = btnBusy(document.activeElement);
+    try {
+      const result = await api('/api/admin/imagens/remover-todas',{method:'DELETE',body:JSON.stringify({orfas:cleanupData.orfas})});
+      toast('Removidas: '+(result.removidas||0)+' | Erros: '+(result.erros||0),'success');
+      loadCleanup();
+    }catch(e){toast('Erro: '+e.message,'error');}
+    btnDone(btn);
+  },{danger:true,okLabel:'Remover tudo',sub:'Esta acção é irreversível.'});
 }
 
 /* ============================================================
@@ -9050,16 +9104,17 @@ window.addEventListener('pageshow',function(e){
   /* ---- delete ---- */
   window.deleteColabo = async function(id){
     const c=_colaboradores.find(x=>String(x.id)===String(id));
-    if(!confirm('Eliminar colaborador "'+(c?.nome||'?')+'"?'))return;
-    try{
-      try{await api('/api/admin/colaboradores/'+id,{method:'DELETE'});}catch(e){}
-      _colaboradores=_colaboradores.filter(x=>String(x.id)!==String(id));
-      // also update loja fallback
-      state.loja.colaboradores_json=_colaboradores;
-      try{await api('/api/loja',{method:'PUT',body:JSON.stringify({colaboradores_json:_colaboradores})});}catch(e){}
-      renderColaboKPIs(); renderColaboList();
-      toast('Colaborador eliminado','success');
-      logActivity('<i class="fa-solid fa-user-minus" style="color:var(--red)"></i>','Colaborador eliminado: '+(c?.nome||'?'));
+    adminConfirm('Eliminar o colaborador "'+(c?.nome||'?')+'"?',async function(){
+      try{
+        try{await api('/api/admin/colaboradores/'+id,{method:'DELETE'});}catch(e){}
+        _colaboradores=_colaboradores.filter(x=>String(x.id)!==String(id));
+        state.loja.colaboradores_json=_colaboradores;
+        try{await api('/api/loja',{method:'PUT',body:JSON.stringify({colaboradores_json:_colaboradores})});}catch(e){}
+        renderColaboKPIs(); renderColaboList();
+        toast('Colaborador eliminado','success');
+        logActivity('<i class="fa-solid fa-user-minus" style="color:var(--red)"></i>','Colaborador eliminado: '+(c?.nome||'?'));
+      }catch(e){toast('Erro','error');}
+    },{danger:true,okLabel:'Eliminar'});
     }catch(e){toast('Erro','error');}
   };
 
@@ -9117,10 +9172,11 @@ window.addEventListener('pageshow',function(e){
   };
 
   window.clearActivityLog = function(){
-    if(!confirm('Limpar todo o registo de actividade?')) return;
-    localStorage.removeItem(ACT_KEY);
-    renderActivityLog();
-    toast('Registo limpo','info');
+    adminConfirm('Limpar todo o registo de actividade?',function(){
+      localStorage.removeItem(ACT_KEY);
+      renderActivityLog();
+      toast('Registo limpo','info');
+    },{okLabel:'Limpar'});
   };
 
   function renderActivityLog(){
@@ -9389,13 +9445,14 @@ window.addEventListener('pageshow',function(e){
   /* ---- delete ---- */
   window.deleteBlogArtigo=async function(id){
     const a=_artigos.find(x=>String(x.id)===String(id));
-    if(!confirm('Eliminar "'+(a?.titulo||'artigo')+ '"? Esta acção não pode ser desfeita.'))return;
-    try{
-      await api('/api/admin/artigos/'+id,{method:'DELETE'});
-      _artigos=_artigos.filter(x=>String(x.id)!==String(id));
-      renderBlogKPIs();renderArtigosList();
-      toast('Artigo eliminado','success');
-    }catch(e){toast('Erro: '+e.message,'error');}
+    adminConfirm('Eliminar "' +(a?.titulo||'artigo')+'"?',async function(){
+      try{
+        await api('/api/admin/artigos/'+id,{method:'DELETE'});
+        _artigos=_artigos.filter(x=>String(x.id)!==String(id));
+        renderBlogKPIs();renderArtigosList();
+        toast('Artigo eliminado','success');
+      }catch(e){toast('Erro: '+e.message,'error');}
+    },{danger:true,okLabel:'Eliminar',sub:'Esta acção não pode ser desfeita.'});
   };
 })();
 
@@ -9668,13 +9725,14 @@ window.addEventListener('pageshow',function(e){
   };
 
   window.cancelarReserva=async function(id){
-    if(!confirm('Cancelar esta reserva?'))return;
-    try{
-      try{await api('/api/admin/reservas/'+id+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});}catch(e){}
-      const r=_reservas.find(x=>x.id===id);if(r)r.estado='cancelada';
-      renderDaySlots();renderUpcoming();renderAgendaKPIs();updateAgendaBadge();
-      toast('Reserva cancelada','success');
-    }catch(e){toast('Erro','error');}
+    adminConfirm('Cancelar esta reserva?',async function(){
+      try{
+        try{await api('/api/admin/reservas/'+id+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});}catch(e){}
+        const r=_reservas.find(x=>x.id===id);if(r)r.estado='cancelada';
+        renderDaySlots();renderUpcoming();renderAgendaKPIs();updateAgendaBadge();
+        toast('Reserva cancelada','success');
+      }catch(e){toast('Erro','error');}
+    },{danger:true,okLabel:'Cancelar reserva'});
   };
 })();
 
@@ -9919,9 +9977,10 @@ window.addEventListener('pageshow',function(e){
   };
 
   window.resetEditorVisual=function(){
-    if(!confirm('Repor para os valores guardados? As alterações não publicadas serão perdidas.'))return;
-    ['edColorRows','edThemeGrid','edSeccoesList','edFonte'].forEach(id=>{const e=$(id);if(e)e._built=false;});
-    renderEditorVisual();
+    adminConfirm('Repor para os valores guardados?',function(){
+      ['edColorRows','edThemeGrid','edSeccoesList','edFonte'].forEach(id=>{const e=$(id);if(e)e._built=false;});
+      renderEditorVisual();
+    },{okLabel:'Repor',sub:'As alterações não publicadas serão perdidas.'});
   };
 
   window.toggleEdSection=function(hdr){
@@ -10147,14 +10206,16 @@ window.addEventListener('pageshow',function(e){
   };
 
   window.cancelOrderFromRecu=async function(ref,btn){
-    if(!confirm('Cancelar a encomenda '+ref+'? Não pode ser desfeito.'))return;
-    const b=btnBusy(btn);
-    try{
-      await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});
-      const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
-      if(idx>=0)state.encomendas[idx].estado='cancelada';
-      toast('Encomenda '+ref+' cancelada','success');
-      renderRecuperacao();
+    adminConfirm('Cancelar a encomenda '+ref+'?',async function(){
+      const b=btnBusy(btn);
+      try{
+        await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify({estado:'cancelada'})});
+        const idx=(state.encomendas||[]).findIndex(e=>e.ref===ref);
+        if(idx>=0)state.encomendas[idx].estado='cancelada';
+        toast('Encomenda '+ref+' cancelada','success');
+        renderRecuperacao();
+      }catch(err){toast('Erro: '+err.message,'error');btnDone(b);}
+    },{danger:true,okLabel:'Cancelar',sub:'Esta acção não pode ser desfeita.'});
     }catch(err){toast('Erro: '+err.message,'error');btnDone(b);}
   };
 
@@ -10378,19 +10439,18 @@ window.addEventListener('pageshow',function(e){
     const sym      = state.loja.simbolo_moeda||'Kz';
     const slug     = nome.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
     const codigo   = 'PONTOS'+slug+Math.random().toString(36).slice(2,5).toUpperCase();
-    if(!confirm('Gerar cupão de resgate '+kz(desconto,sym)+' para '+nome+'?\n\nCódigo: '+codigo+'\n\nAtenção: os pontos são calculados do histórico; confirma que foi acordado com o cliente.'))return;
-    try{
-      await api('/api/admin/cupoes',{method:'POST',body:JSON.stringify({
-        codigo,tipo:'fixo',valor:desconto,
-        minimo_encomenda:0,data_fim:null,max_usos:1,ativo:1
-      })});
-      if(!state.coupons)state.coupons=[];
-      state.coupons.unshift({codigo,tipo:'fixo',valor:desconto,usos:0,ativo:1,max_usos:1});
-      toast('Cupão '+codigo+' criado — '+kz(desconto,sym)+' de desconto para '+nome,'success');
-      // copiar para clipboard
-      try{await navigator.clipboard.writeText(codigo);}catch(e){}
-    }catch(e){toast('Erro ao criar cupão: '+e.message,'error');}
-  };
+    adminConfirm('Gerar cupão de '+kz(desconto,sym)+' para '+nome+'?',async function(){
+      try{
+        await api('/api/admin/cupoes',{method:'POST',body:JSON.stringify({
+          codigo,tipo:'fixo',valor:desconto,
+          minimo_encomenda:0,data_fim:null,max_usos:1,ativo:1
+        })});
+        if(!state.coupons)state.coupons=[];
+        state.coupons.unshift({codigo,tipo:'fixo',valor:desconto,usos:0,ativo:1,max_usos:1});
+        toast('Cupão '+codigo+' criado — '+kz(desconto,sym)+' de desconto para '+nome,'success');
+        try{await navigator.clipboard.writeText(codigo);}catch(e){}
+      }catch(e){toast('Erro ao criar cupão: '+e.message,'error');}
+    },{okLabel:'Gerar cupão',title:'Resgate de Pontos',sub:'Código: '+codigo+' · Confirma que foi acordado com o cliente.'});
 
   /* ---- exportar CSV ---- */
   window.exportPontosCSV=function(){
@@ -10584,10 +10644,10 @@ window.addEventListener('pageshow',function(e){
   window.markAllPendingAsPaid=async function(){
     const list=getPendingList();
     if(!list.length){toast('Nenhum pagamento pendente','info');return;}
-    if(!confirm('Marcar '+list.length+' encomenda'+(list.length!==1?'s':'')+' como paga'+(list.length!==1?'s':'')+'?'))return;
-    list.forEach(e=>_selectedRefs.add(e.ref));
-    await markSelectedAsPaid();
-  };
+    adminConfirm('Marcar '+list.length+' encomenda'+(list.length!==1?'s':'')+' como paga'+(list.length!==1?'s':'')+'?',async function(){
+      list.forEach(e=>_selectedRefs.add(e.ref));
+      await markSelectedAsPaid();
+    },{okLabel:'Marcar como pago'});
 
   function renderEmAberto(){
     const sym=state.loja.simbolo_moeda||'Kz';
@@ -12146,36 +12206,33 @@ async function applyBulkOrderStatus(){
   if(!estado){ toast('Escolhe um estado primeiro','info'); return; }
   if(!_selectedOrders.size){ toast('Nenhuma encomenda seleccionada','info'); return; }
   const refs = [..._selectedOrders];
-  if(!confirm('Alterar '+refs.length+' encomenda(s) para "'+estadoLabel(estado)+'"?')) return;
-
-  const btn = document.querySelector('#ordersBulkBar .btn-primary');
-  const origHtml = btn?.innerHTML; if(btn){ btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; }
-
-  let ok=0, fail=0;
-  for(const ref of refs){
-    try{
-      const body = {estado};
-      if(estado==='entregue') body.pagamento_estado='pago';
-      await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify(body)});
-      const idx = state.encomendas.findIndex(e=>e.ref===ref);
-      if(idx>=0){
-        state.encomendas[idx].estado = estado;
-        if(estado==='entregue') state.encomendas[idx].pagamento_estado='pago';
-      }
-      ok++;
-    }catch(e){ fail++; }
-  }
-
-  if(btn){ btn.disabled=false; btn.innerHTML=origHtml||'<i class="fa-solid fa-check"></i> Aplicar'; }
-  if(typeof logActivity==='function')
-    logActivity('<i class="fa-solid fa-list-check" style="color:var(--blue)"></i>',
-      'Massa: '+ok+' enc. → '+estadoLabel(estado)+(fail?' ('+fail+' erro(s))':''));
-  toast(ok+' encomenda(s) actualizadas'+(fail?' · '+fail+' erro(s)':''),'success');
-  _selectedOrders.clear();
-  filterOrders();
-  updateDashboardStats();
-  renderOrders();
-}
+  adminConfirm('Alterar '+refs.length+' encomenda(s) para "'+estadoLabel(estado)+'"?',async function(){
+    const btn = document.querySelector('#ordersBulkBar .btn-primary');
+    const origHtml = btn?.innerHTML; if(btn){ btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; }
+    let ok=0, fail=0;
+    for(const ref of refs){
+      try{
+        const body = {estado};
+        if(estado==='entregue') body.pagamento_estado='pago';
+        await api('/api/admin/encomendas/'+ref+'/estado',{method:'PUT',body:JSON.stringify(body)});
+        const idx = state.encomendas.findIndex(e=>e.ref===ref);
+        if(idx>=0){
+          state.encomendas[idx].estado = estado;
+          if(estado==='entregue') state.encomendas[idx].pagamento_estado='pago';
+        }
+        ok++;
+      }catch(e){ fail++; }
+    }
+    if(btn){ btn.disabled=false; btn.innerHTML=origHtml||'<i class="fa-solid fa-check"></i> Aplicar'; }
+    if(typeof logActivity==='function')
+      logActivity('<i class="fa-solid fa-list-check" style="color:var(--blue)"></i>',
+        'Massa: '+ok+' enc. → '+estadoLabel(estado)+(fail?' ('+fail+' erro(s))':''));
+    toast(ok+' encomenda(s) actualizadas'+(fail?' · '+fail+' erro(s)':''),'success');
+    _selectedOrders.clear();
+    filterOrders();
+    updateDashboardStats();
+    renderOrders();
+  },{okLabel:'Aplicar'});
 </script>
 
 </body>
