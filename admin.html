@@ -1489,7 +1489,58 @@ select.form-input option{background:var(--bg2);color:var(--white)}
 .color-reset-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--white);cursor:pointer;padding:4px 8px;font-size:.7rem;border-radius:4px;transition:color .15s,background .15s;flex-shrink:0;line-height:1;white-space:nowrap}
 .color-reset-btn:hover{color:var(--pink);border-color:var(--pink);background:rgba(255,71,87,.08)}
 
-/* ── Painel de Suporte ── */
+/* ── Biblioteca de Imagens ── */
+.imglib-upload-area{
+  border:2px dashed var(--border);border-radius:var(--r2);
+  padding:32px 16px;text-align:center;cursor:pointer;
+  transition:var(--tr);margin-bottom:10px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.imglib-upload-area:hover,.imglib-upload-area.drag-over{
+  border-color:var(--pink);background:rgba(29,140,248,.04);
+}
+.imglib-gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:10px;
+}
+.imglib-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;position:relative;
+  transition:var(--tr);
+}
+.imglib-card:hover{border-color:var(--pink);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.imglib-thumb{
+  width:100%;aspect-ratio:1;object-fit:cover;display:block;
+  background:var(--bg3);
+}
+.imglib-thumb-placeholder{
+  width:100%;aspect-ratio:1;display:flex;align-items:center;
+  justify-content:center;font-size:2rem;background:var(--bg3);
+}
+.imglib-info{padding:8px}
+.imglib-name{font-size:.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px}
+.imglib-actions{display:flex;gap:4px}
+.imglib-btn{
+  flex:1;padding:4px;border-radius:4px;border:1px solid var(--border);
+  background:none;font-size:.6rem;color:var(--muted);cursor:pointer;
+  transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:3px;
+}
+.imglib-btn:hover{border-color:var(--pink);color:var(--pink)}
+.imglib-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.imglib-uploading{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:.7rem;color:#fff;gap:6px;
+}
+.imglib-progress{
+  width:70%;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;
+}
+.imglib-progress-fill{height:100%;background:var(--pink);border-radius:2px;transition:width .3s}
+.imglib-empty{
+  grid-column:1/-1;text-align:center;padding:40px 16px;
+  font-size:.8rem;color:var(--muted);
+}
 .sup-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:14px}
 .sup-section-title{font-size:.78rem;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .sup-health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
@@ -2297,6 +2348,10 @@ body.offline-mode #app     { padding-top: 36px; }
       <button class="sidebar-item" data-panel="reports" onclick="navigate('reports')">
         <i class="fa-solid fa-chart-pie"></i>
         <span class="sidebar-item-label">Relatórios</span>
+      </button>
+      <button class="sidebar-item" data-panel="imagens" onclick="navigate('imagens')">
+        <i class="fa-solid fa-images"></i>
+        <span class="sidebar-item-label">Imagens</span>
       </button>
       <button class="sidebar-item" data-panel="suporte" onclick="navigate('suporte')">
         <i class="fa-solid fa-headset"></i>
@@ -3691,6 +3746,45 @@ body.offline-mode #app     { padding-top: 36px; }
         </div>
 
         <!-- ============================================
+             BIBLIOTECA DE IMAGENS
+             ============================================ -->
+        <div class="panel" id="panel-imagens">
+          <div class="page-header">
+            <div class="page-title"><i class="fa-solid fa-images" style="color:var(--purple)"></i> Biblioteca de Imagens</div>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="$('siteImgInput').click()">
+                <i class="fa-solid fa-upload"></i> Fazer Upload
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload area -->
+          <div class="imglib-upload-area" id="imgLibDrop" onclick="$('siteImgInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;color:var(--muted);margin-bottom:10px"></i>
+            <div style="font-size:.85rem;color:var(--white);font-weight:600;margin-bottom:4px">Clica ou arrasta imagens aqui</div>
+            <div style="font-size:.72rem;color:var(--muted)">PNG, JPG, WebP, SVG — máx. 2MB por imagem</div>
+            <input type="file" id="siteImgInput" accept="image/*" multiple style="display:none" onchange="handleSiteImageUpload(this)"/>
+          </div>
+          <div id="siteImgStatus" style="min-height:24px;margin-bottom:8px"></div>
+
+          <!-- Filtro / pesquisa -->
+          <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+            <div style="position:relative;flex:1">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.75rem"></i>
+              <input id="imgLibSearch" class="form-input" style="padding-left:30px;font-size:.78rem" placeholder="Pesquisar imagens..." oninput="renderImageLib()"/>
+            </div>
+            <select id="imgLibSort" class="form-input" style="width:auto;font-size:.75rem" onchange="renderImageLib()">
+              <option value="newest">Mais recentes</option>
+              <option value="oldest">Mais antigas</option>
+              <option value="name">Nome A-Z</option>
+            </select>
+          </div>
+
+          <!-- Galeria -->
+          <div id="imgLibGallery" class="imglib-gallery"></div>
+        </div>
+
+        <!-- ============================================
              SUPORTE & IMPERSILVA
              ============================================ -->
         <div class="panel" id="panel-suporte">
@@ -3860,6 +3954,10 @@ body.offline-mode #app     { padding-top: 36px; }
         <button class="more-btn pink" onclick="navigateMore('colaboradores')">
           <i class="fa-solid fa-user-group"></i>
           <span>Equipa</span>
+        </button>
+        <button class="more-btn blue" onclick="navigateMore('imagens')">
+          <i class="fa-solid fa-images"></i>
+          <span>Imagens</span>
         </button>
         <button class="more-btn blue" onclick="navigateMore('suporte')">
           <i class="fa-solid fa-headset"></i>
@@ -6551,8 +6649,209 @@ window.fireWebhook=async function(evento,data){
 };
 
 /* ============================================================
-   PAINEL DE SUPORTE & IMPERSILVA
+   BIBLIOTECA DE IMAGENS DO SITE
    ============================================================ */
+(function(){
+  const LIB_KEY = 'impersilva_imglib';
+  const PASTA   = 'imagens/site/';
+
+  function getLib(){ try{ return JSON.parse(localStorage.getItem(LIB_KEY)||'[]'); }catch{ return []; } }
+  function saveLib(lib){ localStorage.setItem(LIB_KEY, JSON.stringify(lib)); }
+
+  /* ── Upload ── */
+  window.handleSiteImageUpload = async function(input){
+    const glToken  = localStorage.getItem('adm_gl');
+    const glNs     = localStorage.getItem('adm_gl_ns')    || GL_DEFAULT_NS;
+    const glRepo   = localStorage.getItem('adm_gl_repo')  || GL_DEFAULT_REPO;
+    const glBranch = localStorage.getItem('adm_gl_branch')|| 'main';
+
+    if(!glToken){
+      toast('Configura o GitLab em Configurações → Visual & GitLab antes de fazer upload','info');
+      input.value=''; return;
+    }
+
+    const files  = Array.from(input.files);
+    const status = $('siteImgStatus');
+    const project = encodeURIComponent(glNs+'/'+glRepo);
+    const glBase  = 'https://gitlab.com/api/v4/projects/'+project+'/repository/files/';
+
+    for(let i=0; i<files.length; i++){
+      const file = files[i];
+      if(file.size > 2*1024*1024){ toast(file.name+' demasiado grande (máx 2MB)','error'); continue; }
+
+      if(status) status.innerHTML =
+        '<span style="font-size:.72rem;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> A enviar '+esc(file.name)+' ('+(i+1)+'/'+files.length+')...</span>';
+
+      try{
+        const b64 = await new Promise((res,rej)=>{
+          const r=new FileReader();
+          r.onload=e=>res(e.target.result);
+          r.onerror=rej;
+          r.readAsDataURL(file);
+        });
+
+        const ext   = file.name.split('.').pop().toLowerCase()||'jpg';
+        const slug  = file.name.replace(/\.[^.]+$/,'').replace(/[^a-z0-9]/gi,'_').toLowerCase().slice(0,40);
+        const fname = PASTA + slug + '_' + Date.now() + '.' + ext;
+        const content = b64.split(',')[1];
+        const encodedPath = encodeURIComponent(fname);
+
+        // Verificar se já existe
+        let fileExists = false;
+        try{
+          const ck = await fetch(glBase+encodedPath+'?ref='+glBranch, { headers:{'PRIVATE-TOKEN':glToken} });
+          fileExists = ck.ok;
+        }catch{}
+
+        const res = await fetch(glBase+encodedPath, {
+          method: fileExists ? 'PUT' : 'POST',
+          headers: {'PRIVATE-TOKEN':glToken,'Content-Type':'application/json'},
+          body: JSON.stringify({
+            branch: glBranch,
+            commit_message: 'Upload imagem site via Admin IMPERSILVA',
+            content, encoding:'base64'
+          })
+        });
+
+        if(res.ok){
+          const rawUrl = 'https://gitlab.com/'+glNs+'/'+glRepo+'/-/raw/'+glBranch+'/'+fname;
+          const lib = getLib();
+          // Guardar apenas metadados — SEM base64 para não encher o localStorage
+          lib.push({ id:Date.now(), name:file.name, slug, url:rawUrl, path:fname, size:file.size, uploaded:new Date().toISOString() });
+          saveLib(lib);
+          renderImageLib();
+          if(status) status.innerHTML = '<span style="font-size:.72rem;color:var(--teal)"><i class="fa-solid fa-circle-check"></i> '+esc(file.name)+' enviado!</span>';
+        }else{
+          const d = await res.json();
+          throw new Error(d.message||'Erro '+res.status);
+        }
+      }catch(err){
+        toast('Erro ao enviar '+file.name+': '+err.message,'error');
+        if(status) status.innerHTML = '<span style="font-size:.72rem;color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> Falhou: '+esc(file.name)+'</span>';
+      }
+    }
+
+    setTimeout(()=>{ if(status) status.innerHTML=''; }, 2500);
+    input.value='';
+  };
+
+  /* ── Render galeria ── */
+  window.renderImageLib = function(){
+    const gallery = $('imgLibGallery');
+    if(!gallery) return;
+
+    const search = ($('imgLibSearch')?.value||'').toLowerCase();
+    const sort   = $('imgLibSort')?.value || 'newest';
+    let lib = getLib().filter(img => !search || img.name.toLowerCase().includes(search) || img.slug.includes(search));
+
+    if(sort==='newest')  lib.sort((a,b)=>b.id-a.id);
+    else if(sort==='oldest') lib.sort((a,b)=>a.id-b.id);
+    else if(sort==='name')   lib.sort((a,b)=>a.name.localeCompare(b.name));
+
+    if(!lib.length){
+      gallery.innerHTML = '<div class="imglib-empty"><i class="fa-solid fa-images" style="font-size:2rem;margin-bottom:8px;display:block;color:var(--muted)"></i>'+(search?'Nenhuma imagem encontrada.':'Ainda sem imagens. Faz upload acima.')+'</div>';
+      return;
+    }
+
+    gallery.innerHTML = lib.map(img=>`
+      <div class="imglib-card" id="imgcard-${img.id}">
+        <img class="imglib-thumb" src="${esc(img.url)}" alt="${esc(img.name)}" loading="lazy"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="imglib-thumb-placeholder" style="display:none"><i class="fa-solid fa-image" style="color:var(--muted)"></i></div>
+        <div class="imglib-info">
+          <div class="imglib-name" title="${esc(img.name)}">${esc(img.name)}</div>
+          <div class="imglib-actions">
+            <button class="imglib-btn" onclick="copiarUrlImagem('${img.id}')" title="Copiar URL">
+              <i class="fa-solid fa-copy"></i> URL
+            </button>
+            <button class="imglib-btn danger" onclick="apagarImagem('${img.id}')" title="Apagar">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  /* ── Copiar URL ── */
+  window.copiarUrlImagem = function(id){
+    const img = getLib().find(i=>String(i.id)===String(id));
+    if(!img) return;
+    navigator.clipboard?.writeText(img.url).then(()=>{
+      toast('URL copiado! Cole onde precisas no site.','success');
+    }).catch(()=>{
+      // Fallback para mobile
+      const ta = document.createElement('textarea');
+      ta.value = img.url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('URL copiado!','success');
+    });
+  };
+
+  /* ── Apagar imagem ── */
+  window.apagarImagem = function(id){
+    adminConfirm('Apagar esta imagem da biblioteca?', async function(){
+      const lib = getLib();
+      const img = lib.find(i=>String(i.id)===String(id));
+      if(!img){ toast('Imagem não encontrada','error'); return; }
+
+      // Tentar apagar do GitLab também
+      const glToken  = localStorage.getItem('adm_gl');
+      const glNs     = localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS;
+      const glRepo   = localStorage.getItem('adm_gl_repo')||GL_DEFAULT_REPO;
+      const glBranch = localStorage.getItem('adm_gl_branch')||'main';
+
+      if(glToken && img.path){
+        try{
+          const project = encodeURIComponent(glNs+'/'+glRepo);
+          await fetch('https://gitlab.com/api/v4/projects/'+project+'/repository/files/'+encodeURIComponent(img.path),{
+            method:'DELETE',
+            headers:{'PRIVATE-TOKEN':glToken,'Content-Type':'application/json'},
+            body: JSON.stringify({ branch:glBranch, commit_message:'Apagar imagem via Admin IMPERSILVA' })
+          });
+        }catch{}
+      }
+
+      const novaLib = lib.filter(i=>String(i.id)!==String(id));
+      saveLib(novaLib);
+      renderImageLib();
+      toast('Imagem apagada','success');
+    },{ danger:true, okLabel:'Apagar' });
+  };
+
+  /* ── Drag & Drop — inicializado quando o painel abre ── */
+  function initDragDrop(){
+    const drop = $('imgLibDrop');
+    if(!drop || drop._ddInit) return;
+    drop._ddInit = true;
+    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('drag-over'); });
+    drop.addEventListener('dragleave', ()=> drop.classList.remove('drag-over'));
+    drop.addEventListener('drop', e=>{
+      e.preventDefault();
+      drop.classList.remove('drag-over');
+      const input = $('siteImgInput');
+      if(input && e.dataTransfer.files.length){
+        const dt = new DataTransfer();
+        Array.from(e.dataTransfer.files).forEach(f=>dt.items.add(f));
+        input.files = dt.files;
+        handleSiteImageUpload(input);
+      }
+    });
+  }
+
+  // Chamar initDragDrop quando renderImageLib é executado
+  const _origRender = window.renderImageLib;
+  window.renderImageLib = function(){
+    _origRender();
+    initDragDrop();
+  };
+
+})();
+
+
 (function(){
   const TICKETS_KEY='impersilva_tickets';
 
@@ -7303,6 +7602,7 @@ function settingsSection(section){
   state.settingsSection=section;
   if(state.currentPanel==='settings')renderSettingsForm();
   if(state.currentPanel==='suporte')renderSuportePanel();
+  if(state.currentPanel==='imagens')renderImageLib();
 }
 
 function switchEditorTab(tab){
