@@ -3861,6 +3861,10 @@ body.offline-mode #app     { padding-top: 36px; }
           <i class="fa-solid fa-user-group"></i>
           <span>Equipa</span>
         </button>
+        <button class="more-btn blue" onclick="navigateMore('suporte')">
+          <i class="fa-solid fa-headset"></i>
+          <span>Suporte</span>
+        </button>
       </div>
     </div>
   </div>
@@ -7315,7 +7319,7 @@ function switchEditorTab(tab){
 function renderEditorLoja(){
   const cont=$('edLojaAccordions');
   if(!cont)return;
-  const sections=['identity','contacts','delivery','hours','notifications','seo','security','referidos','webhooks','analytics','dominio'];
+  const sections=['identity','contacts','delivery','hours','notifications','seo','security','referidos','webhooks','analytics','visual','dominio'];
   cont.innerHTML=sections.map((key,i)=>{
     const meta=settingsSections[key];
     if(!meta)return'';
