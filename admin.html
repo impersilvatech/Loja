@@ -4840,8 +4840,11 @@ body.offline-mode #app     { padding-top: 36px; }
    CONFIGURAÇÃO
    ============================================================ */
 const API = 'https://impersilva-d1work.3miliosilva.workers.dev';
-const GL_DEFAULT_NS = '';
+const GL_DEFAULT_NS   = '';
 const GL_DEFAULT_REPO = '';
+// GitHub — usado exclusivamente para upload de imagens (URLs públicas)
+const GH_DEFAULT_USER = '';
+const GH_DEFAULT_REPO_IMG = '';
 
 
 let state = {
@@ -6660,20 +6663,18 @@ window.fireWebhook=async function(evento,data){
 
   /* ── Upload ── */
   window.handleSiteImageUpload = async function(input){
-    const glToken  = localStorage.getItem('adm_gl');
-    const glNs     = localStorage.getItem('adm_gl_ns')    || GL_DEFAULT_NS;
-    const glRepo   = localStorage.getItem('adm_gl_repo')  || GL_DEFAULT_REPO;
-    const glBranch = localStorage.getItem('adm_gl_branch')|| 'main';
+    const ghToken  = localStorage.getItem('adm_gh');
+    const ghUser   = localStorage.getItem('adm_gh_user') || GH_DEFAULT_USER;
+    const ghRepo   = localStorage.getItem('adm_gh_repo') || GH_DEFAULT_REPO_IMG;
+    const ghBranch = localStorage.getItem('adm_gh_branch') || 'main';
 
-    if(!glToken){
-      toast('Configura o GitLab em Configurações → Visual & GitLab antes de fazer upload','info');
+    if(!ghToken){
+      toast('Configura o GitHub em Configurações → Visual & GitLab antes de fazer upload','info');
       input.value=''; return;
     }
 
     const files  = Array.from(input.files);
     const status = $('siteImgStatus');
-    const project = encodeURIComponent(glNs+'/'+glRepo);
-    const glBase  = 'https://gitlab.com/api/v4/projects/'+project+'/repository/files/';
 
     for(let i=0; i<files.length; i++){
       const file = files[i];
@@ -6684,46 +6685,41 @@ window.fireWebhook=async function(evento,data){
 
       try{
         const b64 = await new Promise((res,rej)=>{
-          const r=new FileReader();
-          r.onload=e=>res(e.target.result);
-          r.onerror=rej;
-          r.readAsDataURL(file);
+          const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file);
         });
 
         const ext   = file.name.split('.').pop().toLowerCase()||'jpg';
         const slug  = file.name.replace(/\.[^.]+$/,'').replace(/[^a-z0-9]/gi,'_').toLowerCase().slice(0,40);
         const fname = PASTA + slug + '_' + Date.now() + '.' + ext;
         const content = b64.split(',')[1];
-        const encodedPath = encodeURIComponent(fname);
 
-        // Verificar se já existe
-        let fileExists = false;
+        // Verificar SHA se já existe
+        let sha = null;
         try{
-          const ck = await fetch(glBase+encodedPath+'?ref='+glBranch, { headers:{'PRIVATE-TOKEN':glToken} });
-          fileExists = ck.ok;
+          const ck = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+fname,{
+            headers:{'Authorization':'token '+ghToken}
+          });
+          if(ck.ok){ const cd=await ck.json(); sha=cd.sha; }
         }catch{}
 
-        const res = await fetch(glBase+encodedPath, {
-          method: fileExists ? 'PUT' : 'POST',
-          headers: {'PRIVATE-TOKEN':glToken,'Content-Type':'application/json'},
-          body: JSON.stringify({
-            branch: glBranch,
-            commit_message: 'Upload imagem site via Admin IMPERSILVA',
-            content, encoding:'base64'
-          })
-        });
+        const body = {message:'Upload imagem site via Admin IMPERSILVA', content, branch:ghBranch};
+        if(sha) body.sha = sha;
 
-        if(res.ok){
-          const rawUrl = 'https://gitlab.com/'+glNs+'/'+glRepo+'/-/raw/'+glBranch+'/'+fname;
+        const res = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+fname,{
+          method:'PUT',
+          headers:{'Authorization':'token '+ghToken,'Content-Type':'application/json'},
+          body:JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if(data.content?.download_url){
           const lib = getLib();
-          // Guardar apenas metadados — SEM base64 para não encher o localStorage
-          lib.push({ id:Date.now(), name:file.name, slug, url:rawUrl, path:fname, size:file.size, uploaded:new Date().toISOString() });
+          lib.push({ id:Date.now(), name:file.name, slug, url:data.content.download_url, path:fname, size:file.size, uploaded:new Date().toISOString() });
           saveLib(lib);
           renderImageLib();
           if(status) status.innerHTML = '<span style="font-size:.72rem;color:var(--teal)"><i class="fa-solid fa-circle-check"></i> '+esc(file.name)+' enviado!</span>';
         }else{
-          const d = await res.json();
-          throw new Error(d.message||'Erro '+res.status);
+          throw new Error(data.message||'Erro no upload');
         }
       }catch(err){
         toast('Erro ao enviar '+file.name+': '+err.message,'error');
@@ -6799,19 +6795,25 @@ window.fireWebhook=async function(evento,data){
       if(!img){ toast('Imagem não encontrada','error'); return; }
 
       // Tentar apagar do GitLab também
-      const glToken  = localStorage.getItem('adm_gl');
-      const glNs     = localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS;
-      const glRepo   = localStorage.getItem('adm_gl_repo')||GL_DEFAULT_REPO;
-      const glBranch = localStorage.getItem('adm_gl_branch')||'main';
+      const ghToken  = localStorage.getItem('adm_gh');
+      const ghUser   = localStorage.getItem('adm_gh_user')||GH_DEFAULT_USER;
+      const ghRepo   = localStorage.getItem('adm_gh_repo')||GH_DEFAULT_REPO_IMG;
+      const ghBranch = localStorage.getItem('adm_gh_branch')||'main';
 
-      if(glToken && img.path){
+      if(ghToken && img.path){
         try{
-          const project = encodeURIComponent(glNs+'/'+glRepo);
-          await fetch('https://gitlab.com/api/v4/projects/'+project+'/repository/files/'+encodeURIComponent(img.path),{
-            method:'DELETE',
-            headers:{'PRIVATE-TOKEN':glToken,'Content-Type':'application/json'},
-            body: JSON.stringify({ branch:glBranch, commit_message:'Apagar imagem via Admin IMPERSILVA' })
+          // Obter SHA actual para apagar
+          const ck = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+img.path,{
+            headers:{'Authorization':'token '+ghToken}
           });
+          if(ck.ok){
+            const cd = await ck.json();
+            await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+img.path,{
+              method:'DELETE',
+              headers:{'Authorization':'token '+ghToken,'Content-Type':'application/json'},
+              body:JSON.stringify({message:'Apagar imagem via Admin IMPERSILVA',sha:cd.sha,branch:ghBranch})
+            });
+          }
         }catch{}
       }
 
@@ -8634,8 +8636,8 @@ function renderProductImages(){
     '</div>';
   });
   
-  const glToken=localStorage.getItem('adm_gl');
-  if(glToken||state.productImages.length>0){
+  const ghToken=localStorage.getItem('adm_gh');
+  if(ghToken||state.productImages.length>0){
     html+='<div class="image-add" onclick="document.getElementById(\'multiImgInput\').click()"><i class="fa-solid fa-plus"></i><span>Adicionar</span></div>';
   }
   grid.innerHTML=html;
@@ -8683,95 +8685,73 @@ function handleDrop(e){
 }
 
 async function handleMultiImageUpload(input){
-  const glToken=localStorage.getItem('adm_gl');
-  const glNs=localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS;
-  const glRepo=localStorage.getItem('adm_gl_repo')||GL_DEFAULT_REPO;
-  const glBranch=localStorage.getItem('adm_gl_branch')||'main';
+  const ghToken  = localStorage.getItem('adm_gh');
+  const ghUser   = localStorage.getItem('adm_gh_user') || GH_DEFAULT_USER;
+  const ghRepo   = localStorage.getItem('adm_gh_repo') || GH_DEFAULT_REPO_IMG;
+  const ghBranch = localStorage.getItem('adm_gh_branch') || 'main';
 
-  if(!glToken){
-    toast('Configura o GitLab em Configurações > Visual & GitLab antes de fazer upload','info');
-    input.value='';
-    return;
+  if(!ghToken){
+    toast('Configura o GitHub em Configurações → Imagens & GitHub antes de fazer upload','info');
+    input.value=''; return;
   }
 
-  const files=Array.from(input.files);
-  const remaining=5-state.productImages.length;
+  const files     = Array.from(input.files);
+  const remaining = 5 - state.productImages.length;
 
-  if(files.length>remaining){
+  if(files.length > remaining){
     toast('Só podes adicionar mais '+remaining+' imagem(ns)','info');
-    input.value='';
-    return;
+    input.value=''; return;
   }
 
-  const project=encodeURIComponent(glNs+'/'+glRepo);
-  const glBase='https://gitlab.com/api/v4/projects/'+project+'/repository/files/';
+  for(let i=0; i<files.length; i++){
+    const file = files[i];
+    if(file.size > 2*1024*1024){ toast('Imagem '+file.name+' demasiado grande (máx 2MB)','error'); continue; }
 
-  for(let i=0;i<files.length;i++){
-    const file=files[i];
-    if(file.size>2*1024*1024){
-      toast('Imagem '+file.name+' demasiado grande (máx 2MB)','error');
-      continue;
-    }
-
-    const statusEl=$('imgStatus');
-    if(statusEl)statusEl.innerHTML='<span style="font-size:.7rem;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> A enviar '+esc(file.name)+' ('+(i+1)+'/'+files.length+')...</span>';
+    const statusEl = $('imgStatus');
+    if(statusEl) statusEl.innerHTML='<span style="font-size:.7rem;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> A enviar '+esc(file.name)+' ('+(i+1)+'/'+files.length+')...</span>';
 
     try{
-      const b64=await new Promise(function(resolve,reject){
-        var reader=new FileReader();
-        reader.onload=function(e){resolve(e.target.result);};
-        reader.onerror=function(e){reject(e);};
-        reader.readAsDataURL(file);
+      const b64 = await new Promise((res,rej)=>{
+        const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file);
       });
 
-      const ext=file.name.split('.').pop().toLowerCase()||'jpg';
-      const fname='imagens/produtos/'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'.'+ext;
-      const content=b64.split(',')[1];
-      const encodedPath=encodeURIComponent(fname);
+      const ext   = file.name.split('.').pop().toLowerCase()||'jpg';
+      const fname = 'imagens/produtos/'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'.'+ext;
+      const content = b64.split(',')[1];
 
-      // Verificar se o ficheiro já existe (para usar PUT em vez de POST)
-      let fileExists=false;
+      // Verificar SHA se ficheiro já existe
+      let sha = null;
       try{
-        const ck=await fetch(glBase+encodedPath+'?ref='+glBranch,{
-          headers:{'PRIVATE-TOKEN':glToken}
+        const ck = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+fname,{
+          headers:{'Authorization':'token '+ghToken}
         });
-        fileExists=ck.ok;
-      }catch(ex){}
+        if(ck.ok){ const cd=await ck.json(); sha=cd.sha; }
+      }catch{}
 
-      const body={
-        branch:glBranch,
-        commit_message:'Upload imagem produto via Admin IMPERSILVA',
-        content:content,
-        encoding:'base64'
-      };
+      const body = {message:'Upload imagem produto via Admin IMPERSILVA', content, branch:ghBranch};
+      if(sha) body.sha = sha;
 
-      const res=await fetch(glBase+encodedPath,{
-        method:fileExists?'PUT':'POST',
-        headers:{'PRIVATE-TOKEN':glToken,'Content-Type':'application/json'},
+      const res = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo+'/contents/'+fname,{
+        method:'PUT',
+        headers:{'Authorization':'token '+ghToken,'Content-Type':'application/json'},
         body:JSON.stringify(body)
       });
+      const data = await res.json();
 
-      if(res.ok){
-        // URL pública do ficheiro no GitLab
-        const rawUrl='https://gitlab.com/'+glNs+'/'+glRepo+'/-/raw/'+glBranch+'/'+fname;
-        addProductImage(rawUrl);
-        if(statusEl)statusEl.innerHTML='<span style="font-size:.7rem;color:var(--teal)"><i class="fa-solid fa-circle-check"></i> '+esc(file.name)+' enviado! ('+(i+1)+'/'+files.length+')</span>';
+      if(data.content?.download_url){
+        addProductImage(data.content.download_url);
+        if(statusEl) statusEl.innerHTML='<span style="font-size:.7rem;color:var(--teal)"><i class="fa-solid fa-circle-check"></i> '+esc(file.name)+' enviado! ('+(i+1)+'/'+files.length+')</span>';
       }else{
-        const data=await res.json();
-        throw new Error(data.message||'Erro '+res.status);
+        throw new Error(data.message||'Erro no upload');
       }
     }catch(err){
-      toast('Erro ao enviar '+esc(file.name)+': '+err.message,'error');
+      toast('Erro ao enviar '+file.name+': '+err.message,'error');
       const statusEl=$('imgStatus');
-      if(statusEl)statusEl.innerHTML='<span style="font-size:.7rem;color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> Falhou: '+esc(file.name)+'</span>';
+      if(statusEl) statusEl.innerHTML='<span style="font-size:.7rem;color:var(--red)"><i class="fa-solid fa-circle-xmark"></i> Falhou: '+esc(file.name)+'</span>';
     }
   }
 
-  setTimeout(function(){
-    const statusEl=$('imgStatus');
-    if(statusEl)statusEl.innerHTML='';
-  },2000);
-
+  setTimeout(()=>{ const s=$('imgStatus'); if(s)s.innerHTML=''; },2000);
   input.value='';
 }
 
@@ -8799,9 +8779,9 @@ function openProductModal(id=null){
   if(typeof _setVarModeUI==='function')_setVarModeUI('none');
 
   // GitHub check — show/hide upload area
-  const glToken=localStorage.getItem('adm_gl');
-  $('imgGhBlocked').style.display=glToken?'none':'block';
-  $('imgUploadArea').style.display=glToken?'block':'none';
+  const ghToken=localStorage.getItem('adm_gh');
+  $('imgGhBlocked').style.display=ghToken?'none':'block';
+  $('imgUploadArea').style.display=ghToken?'block':'none';
   
   const sel=$('productCategory');
   sel.innerHTML='<option value="">Sem categoria</option>'+state.categorias.map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('');
@@ -9529,8 +9509,19 @@ const settingsSections={
         '<div class="form-group"><label>Logo URL</label><input class="form-input" id="cfgLogo" value="'+esc(l.logo_url||'')+'"/></div>'+
         '<div class="form-group"><label>Banner URL</label><input class="form-input" id="cfgBanner" value="'+esc(l.banner_url||'')+'"/></div>'+
         '<div class="form-group"><label>Favicon URL</label><input class="form-input" id="cfgFavicon" value="'+esc(l.favicon_url||'')+'"/></div>'+
-      '</div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-brands fa-gitlab"></i> GitLab — Upload de Imagens</div></div>'+
-        '<div class="info-box success">Estas configurações são guardadas na base de dados e usadas para upload de imagens dos clientes.</div>'+
+      '</div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-brands fa-github"></i> GitHub — Upload de Imagens</div></div>'+
+        '<div class="info-box success">Usado para upload de imagens de produtos e biblioteca. O repositório deve ser <b>público</b> para as imagens funcionarem no site.</div>'+
+        '<div class="form-group"><label>Personal Access Token (ghp_...)</label><input class="form-input" type="password" id="cfgGhTk" value="'+(localStorage.getItem('adm_gh')||'')+'" placeholder="ghp_..."/></div>'+
+        '<div class="form-row"><div class="form-group"><label>Utilizador GitHub</label><input class="form-input" id="cfgGhUser" value="'+(localStorage.getItem('adm_gh_user')||GH_DEFAULT_USER)+'" placeholder="username"/></div>'+
+        '<div class="form-group"><label>Repositório</label><input class="form-input" id="cfgGhRepo" value="'+(localStorage.getItem('adm_gh_repo')||GH_DEFAULT_REPO_IMG)+'" placeholder="nome-do-repo"/></div></div>'+
+        '<div class="form-group"><label>Branch</label><input class="form-input" id="cfgGhBranch" value="'+(localStorage.getItem('adm_gh_branch')||'main')+'" placeholder="main"/></div>'+
+        '<div id="ghTestResult" style="display:none;font-size:.75rem;margin-top:8px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--border)"></div>'+
+        '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+          '<button class="btn btn-outline btn-sm" onclick="saveGhConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>'+
+          '<button class="btn btn-outline btn-sm" onclick="testGhToken()"><i class="fa-brands fa-github"></i> Testar Ligação</button>'+
+        '</div>'+
+      '</div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-brands fa-gitlab"></i> GitLab — Código do Site</div></div>'+
+        '<div class="info-box">Usado para o código do site. Pode ser privado.</div>'+
         '<div class="form-group"><label>Personal Access Token</label><input class="form-input" type="password" id="cfgGlTk" value="'+(l.gitlab_token||localStorage.getItem('adm_gl')||'')+'" placeholder="glpat-..."/></div>'+
         '<div class="form-row"><div class="form-group"><label>Namespace GitLab</label><input class="form-input" id="cfgGlNs" value="'+(l.gitlab_namespace||localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS)+'"/></div>'+
         '<div class="form-group"><label>Repositório</label><input class="form-input" id="cfgGlRepo" value="'+(l.gitlab_repo||localStorage.getItem('adm_gl_repo')||GL_DEFAULT_REPO)+'"/></div></div>'+
@@ -9836,6 +9827,41 @@ async function saveSettings(){
   }catch(e){toast('Erro: '+e.message,'error');}
   btnDone(btn);
 }
+
+window.saveGhConfig=function(){
+  const tk=$('cfgGhTk')?.value?.trim();
+  const user=$('cfgGhUser')?.value?.trim();
+  const repo=$('cfgGhRepo')?.value?.trim();
+  const branch=$('cfgGhBranch')?.value?.trim()||'main';
+  if(tk)localStorage.setItem('adm_gh',tk);
+  if(user)localStorage.setItem('adm_gh_user',user);
+  if(repo)localStorage.setItem('adm_gh_repo',repo);
+  localStorage.setItem('adm_gh_branch',branch);
+  toast('Configuração GitHub guardada!','success');
+};
+
+window.testGhToken=async function(){
+  const tk=$('cfgGhTk')?.value?.trim()||localStorage.getItem('adm_gh');
+  const user=$('cfgGhUser')?.value?.trim()||localStorage.getItem('adm_gh_user');
+  const repo=$('cfgGhRepo')?.value?.trim()||localStorage.getItem('adm_gh_repo');
+  const res=$('ghTestResult');
+  if(!tk||!user||!repo){if(res){res.style.display='block';res.style.color='var(--red)';res.textContent='Preenche token, utilizador e repositório.';}return;}
+  if(res){res.style.display='block';res.style.color='var(--muted)';res.textContent='A verificar...';}
+  try{
+    const r=await fetch('https://api.github.com/repos/'+user+'/'+repo,{headers:{'Authorization':'token '+tk}});
+    const d=await r.json();
+    if(res){
+      res.style.display='block';
+      if(r.ok){
+        res.style.color=d.private?'var(--orange)':'var(--teal)';
+        res.innerHTML='<i class="fa-solid fa-circle-check"></i> Ligado! '+esc(d.full_name)+(d.private?' — ⚠️ repo privado, imagens não serão públicas':' — ✓ repo público');
+      }else{
+        res.style.color='var(--red)';
+        res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Erro '+r.status+': '+esc(d.message||'?');
+      }
+    }
+  }catch(e){if(res){res.style.display='block';res.style.color='var(--red)';res.textContent='Erro de ligação: '+e.message;}}
+};
 
 async function saveGitLabToDB(){
   const token=$('cfgGlTk')?.value?.trim()||'';
