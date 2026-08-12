@@ -4840,9 +4840,7 @@ body.offline-mode #app     { padding-top: 36px; }
    CONFIGURAÇÃO
    ============================================================ */
 const API = 'https://impersilva-d1work.3miliosilva.workers.dev';
-const GL_DEFAULT_NS   = '';
-const GL_DEFAULT_REPO = '';
-// GitHub — usado exclusivamente para upload de imagens (URLs públicas)
+// GitHub — usado para upload de imagens (URLs públicas)
 const GH_DEFAULT_USER = '';
 const GH_DEFAULT_REPO_IMG = '';
 
@@ -6669,7 +6667,7 @@ window.fireWebhook=async function(evento,data){
     const ghBranch = localStorage.getItem('adm_gh_branch') || 'main';
 
     if(!ghToken){
-      toast('Configura o GitHub em Configurações → Visual & GitLab antes de fazer upload','info');
+      toast('Configura o GitHub em Configurações → Configurações de Imagem antes de fazer upload','info');
       input.value=''; return;
     }
 
@@ -9497,7 +9495,7 @@ const settingsSections={
     }
   },
   visual:{
-    icon:'fa-solid fa-palette',name:'Visual & GitLab',
+    icon:'fa-solid fa-palette',name:'Configurações de Imagem',
     render:()=>{
       const l=state.loja;
       const glNs=localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS;
@@ -9520,14 +9518,7 @@ const settingsSections={
           '<button class="btn btn-outline btn-sm" onclick="saveGhConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>'+
           '<button class="btn btn-outline btn-sm" onclick="testGhToken()"><i class="fa-brands fa-github"></i> Testar Ligação</button>'+
         '</div>'+
-      '</div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fa-brands fa-gitlab"></i> GitLab — Código do Site</div></div>'+
-        '<div class="info-box">Usado para o código do site. Pode ser privado.</div>'+
-        '<div class="form-group"><label>Personal Access Token</label><input class="form-input" type="password" id="cfgGlTk" value="'+(l.gitlab_token||localStorage.getItem('adm_gl')||'')+'" placeholder="glpat-..."/></div>'+
-        '<div class="form-row"><div class="form-group"><label>Namespace GitLab</label><input class="form-input" id="cfgGlNs" value="'+(l.gitlab_namespace||localStorage.getItem('adm_gl_ns')||GL_DEFAULT_NS)+'"/></div>'+
-        '<div class="form-group"><label>Repositório</label><input class="form-input" id="cfgGlRepo" value="'+(l.gitlab_repo||localStorage.getItem('adm_gl_repo')||GL_DEFAULT_REPO)+'"/></div></div>'+
-        '<div class="form-group"><label>Branch</label><input class="form-input" id="cfgGlBranch" value="'+(l.gitlab_branch||localStorage.getItem('adm_gl_branch')||'main')+'" placeholder="main"/></div>'+
-        '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-outline btn-sm" onclick="saveGitLabToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> Guardar na Base de Dados</button><button class="btn btn-outline btn-sm" onclick="testGitLab()"><i class="fa-brands fa-gitlab"></i> Testar Ligação</button></div>'+
-        '<p id="glTestResult" style="font-size:.72rem;margin-top:8px;display:none"></p></div>';
+      '</div>';
     }
   },
   notifications:{
@@ -9862,60 +9853,6 @@ window.testGhToken=async function(){
     }
   }catch(e){if(res){res.style.display='block';res.style.color='var(--red)';res.textContent='Erro de ligação: '+e.message;}}
 };
-
-async function saveGitLabToDB(){
-  const token=$('cfgGlTk')?.value?.trim()||'';
-  const user=$('cfgGlNs')?.value?.trim()||GL_DEFAULT_NS;
-  const repo=$('cfgGlRepo')?.value?.trim()||GL_DEFAULT_REPO;
-  const branch=$('cfgGlBranch')?.value?.trim()||'main';
-  const btn=btnBusy(document.activeElement);
-  try{
-    await api('/api/loja',{method:'PUT',body:JSON.stringify({
-      gitlab_token:token,gitlab_namespace:user,gitlab_repo:repo,gitlab_branch:branch
-    })});
-    Object.assign(state.loja,{gitlab_token:token,gitlab_namespace:user,gitlab_repo:repo,gitlab_branch:branch});
-    if(token)localStorage.setItem('adm_gl',token);
-    localStorage.setItem('adm_gl_ns',user);
-    localStorage.setItem('adm_gl_repo',repo);
-    localStorage.setItem('adm_gl_branch',branch);
-    toast('GitLab guardado na base de dados!','success');
-  }catch(e){toast('Erro: '+e.message,'error');}
-  btnDone(btn);
-}
-
-function saveGitLabConfig(){
-  const tk=$('cfgGlTk')?.value?.trim();
-  const user=$('cfgGlNs')?.value?.trim();
-  const repo=$('cfgGlRepo')?.value?.trim();
-  const branch=$('cfgGlBranch')?.value?.trim()||'main';
-  if(tk)localStorage.setItem('adm_gl',tk);else localStorage.removeItem('adm_gl');
-  if(user)localStorage.setItem('adm_gl_ns',user);
-  if(repo)localStorage.setItem('adm_gl_repo',repo);
-  localStorage.setItem('adm_gl_branch',branch);
-  toast('GitLab guardado!','success');
-}
-
-async function testGitLab(){
-  const tk=$('cfgGlTk')?.value?.trim()||localStorage.getItem('adm_gl');
-  const ns=$('cfgGlNs')?.value?.trim()||localStorage.getItem('adm_gl_ns');
-  const repo=$('cfgGlRepo')?.value?.trim()||localStorage.getItem('adm_gl_repo');
-  const res=$('glTestResult');
-  if(!tk||!ns||!repo){res.textContent='Preenche token, namespace e repositório.';res.style.color='var(--red)';res.style.display='block';return;}
-  const btn=btnBusy(document.activeElement);
-  res.textContent='A verificar...';res.style.color='var(--muted)';res.style.display='block';
-  try{
-    const project=encodeURIComponent(ns+'/'+repo);
-    const r=await fetch('https://gitlab.com/api/v4/projects/'+project,{
-      headers:{'PRIVATE-TOKEN':tk}
-    });
-    const d=await r.json();
-    res.innerHTML=r.ok
-      ?'<i class="fa-solid fa-circle-check" style="color:var(--teal)"></i> Ligado! '+esc(d.path_with_namespace)
-      :'<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Erro '+r.status+': '+esc(d.message||'?');
-    res.style.color=r.ok?'var(--teal)':'var(--red)';
-  }catch(e){res.innerHTML='<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Erro de ligação';res.style.color='var(--red)';}
-  btnDone(btn);
-}
 
 async function changeToken(){
   const t1=$('cfgNewTok')?.value?.trim(),t2=$('cfgNewTok2')?.value?.trim();
